@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TruckerChris Apps</title>
+  <meta name="description" content="Download TruckerChris Android apps.">
+  <meta name="theme-color" content="#0e1116">
+  <style>
+    :root {
+      --bg: #0e1116;
+      --card: #171c24;
+      --line: #2a3340;
+      --text: #e8eef6;
+      --muted: #9aa8b8;
+      --accent: #f0a202;
+      --accent-ink: #1a1200;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header, main {
+      width: min(980px, calc(100% - 32px));
+      margin-inline: auto;
+    }
+    header { padding: 28px 0 4px; }
+    h1 {
+      font-size: 1.85rem;
+      line-height: 1.15;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+    .lede { margin: 0 0 18px; color: var(--muted); }
+    .note {
+      background: #121820;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 0 0 22px;
+    }
+    .note h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .note ol { margin: 0; padding-left: 1.2rem; color: var(--muted); }
+    .note li { margin: 6px 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      padding-bottom: 40px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card h2 { font-size: 1.15rem; margin: 0; }
+    .version {
+      margin: 0;
+      width: fit-content;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      background: rgba(240, 162, 2, 0.14);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .desc { margin: 0; color: var(--muted); flex: 1; }
+    .download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+      min-height: 48px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .download:hover, .download:focus-visible { filter: brightness(1.08); }
+    .download:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TruckerChris Apps</h1>
+    <p class="lede">Android apps by TruckerChris. Each download is the APK attached to that app’s GitHub Release.</p>
+    <section class="note" aria-labelledby="install-heading">
+      <h2 id="install-heading">How to install an APK</h2>
+      <ol>
+        <li>Tap Download APK and wait for the file to finish saving.</li>
+        <li>Open the download. Android blocks apps that did not come from the Play Store until you allow them.</li>
+        <li>Allow install from unknown sources for your browser or file manager (Settings, then Apps, then Special app access, then Install unknown apps), then tap Install.</li>
+      </ol>
+    </section>
+  </header>
+  <main>
+    <div class="grid">
+      <article class="card">
+        <h2>AutoCare</h2>
+        <p class="version">v1.3</p>
+        <p class="desc">Personal vehicle maintenance tracker</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/autocare-v1.3/AutoCare-v1.3.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>BandFit</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Light cardio and resistance-band workouts</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/bandfit-v1.0/BandFit-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Checkers</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Checkers vs computer (3 levels) or pass-and-play</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/checkers-v1.0/Checkers-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Daily Mantra</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Daily money mantras and affirmations with reminders</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/daily-mantra-v1.0/DailyMantra-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>MedMinder</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Medication list with dose and refill reminders</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/medminder-v1.0/MedMinder-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Message Hub</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Unified inbox for Google Messages, Messenger, WhatsApp and X notifications</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/message-hub-v1.0/MessageHub-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Music Hub</h2>
+        <p class="version">v1.4.0</p>
+        <p class="desc">Music and podcast hub with latest/oldest feed sort</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Pokes Football</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Oklahoma State football 2026 schedule, rankings and stats</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/pokes-football-v1.0/PokesFootball-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>RigCare</h2>
+        <p class="version">v1.2</p>
+        <p class="desc">Truck maintenance tracker</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rigcare-v1.2/RigCare-v1.2.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>RigFuel</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Truck fuel log and tracker</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rigfuel-v1.0/RigFuel-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Rig Hub</h2>
+        <p class="version">v1.3</p>
+        <p class="desc">Rig Nav, Trip Logger and Weather in one app</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Rune Lore</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Learn the 24 Elder Futhark runes with flashcards and quiz</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rune-lore-v1.0/RuneLore-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Solitaire</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Classic solitaire card game</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/solitaire-v1.0/Solitaire-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>StormTrack</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Location-following weather, severe alerts and live radar</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/stormtrack-v1.0/StormTrack-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Truck Cab Nutrition</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Nutrition tracker for life in the truck cab</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-cab-nutrition-v1.0/TruckCabNutrition-v1.0.apk">Download APK</a>
+      </article>
+      <article class="card">
+        <h2>Truck Health</h2>
+        <p class="version">v1.0</p>
+        <p class="desc">Nutrition, water, meds and workouts in one app</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-health-v1.0/TruckHealth-v1.0.apk">Download APK</a>
+      </article>
+    </div>
+  </main>
+</body>
+</html>
