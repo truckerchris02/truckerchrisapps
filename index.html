@@ -105,7 +105,8 @@
     </section>
   </header>
   <main>
-    <div class="grid">
+    <div class="grid" id="app-list">
+      <!-- Add each new app as an article.card anywhere in this list. The script sorts cards A to Z by the name in h2. -->
       <article class="card">
         <h2>AutoCare</h2>
         <p class="version">v1.3</p>
@@ -155,6 +156,12 @@
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/pokes-football-v1.0/PokesFootball-v1.0.apk">Download APK</a>
       </article>
       <article class="card">
+        <h2>Rig Hub</h2>
+        <p class="version">v1.3</p>
+        <p class="desc">Rig Nav, Trip Logger and Weather in one app</p>
+        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk">Download APK</a>
+      </article>
+      <article class="card">
         <h2>RigCare</h2>
         <p class="version">v1.2</p>
         <p class="desc">Truck maintenance tracker</p>
@@ -165,12 +172,6 @@
         <p class="version">v1.0</p>
         <p class="desc">Truck fuel log and tracker</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rigfuel-v1.0/RigFuel-v1.0.apk">Download APK</a>
-      </article>
-      <article class="card">
-        <h2>Rig Hub</h2>
-        <p class="version">v1.3</p>
-        <p class="desc">Rig Nav, Trip Logger and Weather in one app</p>
-        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk">Download APK</a>
       </article>
       <article class="card">
         <h2>Rune Lore</h2>
@@ -204,5 +205,22 @@
       </article>
     </div>
   </main>
+  <script>
+    (function () {
+      var list = document.getElementById("app-list");
+      if (!list) return;
+      var cards = Array.prototype.filter.call(list.children, function (el) {
+        return el.classList && el.classList.contains("card");
+      });
+      cards.sort(function (a, b) {
+        var nameA = (a.querySelector("h2") || { textContent: "" }).textContent.trim();
+        var nameB = (b.querySelector("h2") || { textContent: "" }).textContent.trim();
+        return nameA.localeCompare(nameB, "en", { sensitivity: "base" });
+      });
+      cards.forEach(function (card) {
+        list.appendChild(card);
+      });
+    })();
+  </script>
 </body>
 </html>
