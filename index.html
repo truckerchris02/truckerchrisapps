@@ -46,12 +46,22 @@
     .note h2 { font-size: 1.05rem; margin: 0 0 8px; }
     .note ol { margin: 0; padding-left: 1.2rem; color: var(--muted); }
     .note li { margin: 6px 0; }
+    .app-section { margin: 0; }
+    .section-heading {
+      font-size: 1.35rem;
+      line-height: 1.2;
+      margin: 4px 0 12px;
+      letter-spacing: -0.02em;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 14px;
-      padding-bottom: 40px;
+      padding-bottom: 28px;
     }
+    .app-section:last-child .grid { padding-bottom: 40px; }
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -61,7 +71,7 @@
       flex-direction: column;
       gap: 8px;
     }
-    .card h2 { font-size: 1.15rem; margin: 0; }
+    .card h3 { font-size: 1.15rem; margin: 0; font-weight: 700; }
     .version {
       margin: 0;
       width: fit-content;
@@ -105,127 +115,139 @@
     </section>
   </header>
   <main>
-    <div class="grid" id="app-list">
-      <!-- Add each new app as an article.card anywhere in this list. The script sorts cards A to Z by the name in h2. -->
-      <article class="card">
-        <h2>AutoCare</h2>
+    <section class="app-section" data-section="all-in-one" aria-labelledby="all-in-one-heading">
+      <h2 id="all-in-one-heading" class="section-heading">All-in-One Hub Apps</h2>
+      <!-- Apps that combine several tools. Add a new card anywhere in this list. -->
+      <div class="grid" data-app-list>
+        <article class="card" data-section="all-in-one">
+          <h3>Rig Hub</h3>
+          <p class="version">v1.3</p>
+          <p class="desc">Rig Nav, Trip Logger and Weather in one app</p>
+          <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk">Download APK</a>
+        </article>
+        <article class="card" data-section="all-in-one">
+          <h3>Music Hub</h3>
+          <p class="version">v1.4.0</p>
+          <p class="desc">Music and podcast hub with latest/oldest feed sort</p>
+          <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk">Download APK</a>
+        </article>
+      </div>
+    </section>
+    <section class="app-section" data-section="single" aria-labelledby="single-apps-heading">
+      <h2 id="single-apps-heading" class="section-heading">Single Apps</h2>
+      <!-- Every other app. Add a new card anywhere in this list. Each list sorts A to Z on load. -->
+      <div class="grid" data-app-list>
+      <article class="card" data-section="single">
+        <h3>AutoCare</h3>
         <p class="version">v1.3</p>
         <p class="desc">Personal vehicle maintenance tracker</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/autocare-v1.3/AutoCare-v1.3.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>BandFit</h2>
+      <article class="card" data-section="single">
+        <h3>BandFit</h3>
         <p class="version">v1.0</p>
         <p class="desc">Light cardio and resistance-band workouts</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/bandfit-v1.0/BandFit-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Checkers</h2>
+      <article class="card" data-section="single">
+        <h3>Checkers</h3>
         <p class="version">v1.0</p>
         <p class="desc">Checkers vs computer (3 levels) or pass-and-play</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/checkers-v1.0/Checkers-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Daily Mantra</h2>
+      <article class="card" data-section="single">
+        <h3>Daily Mantra</h3>
         <p class="version">v1.0</p>
         <p class="desc">Daily money mantras and affirmations with reminders</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/daily-mantra-v1.0/DailyMantra-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Hazmat Helper</h2>
+      <article class="card" data-section="single">
+        <h3>Hazmat Helper</h3>
         <p class="version">v1.0</p>
         <p class="desc">Hazmat lookup (DOT 172.101 table, ERG 2024 guides), placard rules, and load segregation checker. Reference only, not legal advice.</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.apk">Download APK</a>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.flatpak">Download Flatpak</a>
       </article>
-      <article class="card">
-        <h2>MedMinder</h2>
+      <article class="card" data-section="single">
+        <h3>MedMinder</h3>
         <p class="version">v1.0</p>
         <p class="desc">Medication list with dose and refill reminders</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/medminder-v1.0/MedMinder-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Message Hub</h2>
+      <article class="card" data-section="single">
+        <h3>Message Hub</h3>
         <p class="version">v1.0</p>
         <p class="desc">Unified inbox for Google Messages, Messenger, WhatsApp and X notifications</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/message-hub-v1.0/MessageHub-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Music Hub</h2>
-        <p class="version">v1.4.0</p>
-        <p class="desc">Music and podcast hub with latest/oldest feed sort</p>
-        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk">Download APK</a>
-      </article>
-      <article class="card">
-        <h2>Pokes Football</h2>
+      <article class="card" data-section="single">
+        <h3>Pokes Football</h3>
         <p class="version">v1.0</p>
         <p class="desc">Oklahoma State football 2026 schedule, rankings and stats</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/pokes-football-v1.0/PokesFootball-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Rig Hub</h2>
-        <p class="version">v1.3</p>
-        <p class="desc">Rig Nav, Trip Logger and Weather in one app</p>
-        <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk">Download APK</a>
-      </article>
-      <article class="card">
-        <h2>RigCare</h2>
+      <article class="card" data-section="single">
+        <h3>RigCare</h3>
         <p class="version">v1.2</p>
         <p class="desc">Truck maintenance tracker</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rigcare-v1.2/RigCare-v1.2.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>RigFuel</h2>
+      <article class="card" data-section="single">
+        <h3>RigFuel</h3>
         <p class="version">v1.0</p>
         <p class="desc">Truck fuel log and tracker</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rigfuel-v1.0/RigFuel-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Rune Lore</h2>
+      <article class="card" data-section="single">
+        <h3>Rune Lore</h3>
         <p class="version">v1.0</p>
         <p class="desc">Learn the 24 Elder Futhark runes with flashcards and quiz</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/rune-lore-v1.0/RuneLore-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Solitaire</h2>
+      <article class="card" data-section="single">
+        <h3>Solitaire</h3>
         <p class="version">v1.0</p>
         <p class="desc">Classic solitaire card game</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/solitaire-v1.0/Solitaire-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>StormTrack</h2>
+      <article class="card" data-section="single">
+        <h3>StormTrack</h3>
         <p class="version">v1.0</p>
         <p class="desc">Location-following weather, severe alerts and live radar</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/stormtrack-v1.0/StormTrack-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Truck Cab Nutrition</h2>
+      <article class="card" data-section="single">
+        <h3>Truck Cab Nutrition</h3>
         <p class="version">v1.0</p>
         <p class="desc">Nutrition tracker for life in the truck cab</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-cab-nutrition-v1.0/TruckCabNutrition-v1.0.apk">Download APK</a>
       </article>
-      <article class="card">
-        <h2>Truck Health</h2>
+      <article class="card" data-section="single">
+        <h3>Truck Health</h3>
         <p class="version">v1.0</p>
         <p class="desc">Nutrition, water, meds and workouts in one app</p>
         <a class="download" href="https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-health-v1.0/TruckHealth-v1.0.apk">Download APK</a>
       </article>
-    </div>
+      </div>
+    </section>
   </main>
   <script>
     (function () {
-      var list = document.getElementById("app-list");
-      if (!list) return;
-      var cards = Array.prototype.filter.call(list.children, function (el) {
-        return el.classList && el.classList.contains("card");
-      });
-      cards.sort(function (a, b) {
-        var nameA = (a.querySelector("h2") || { textContent: "" }).textContent.trim();
-        var nameB = (b.querySelector("h2") || { textContent: "" }).textContent.trim();
-        return nameA.localeCompare(nameB, "en", { sensitivity: "base" });
-      });
-      cards.forEach(function (card) {
-        list.appendChild(card);
+      function cardName(card) {
+        var heading = card.querySelector("h2, h3");
+        return (heading || { textContent: "" }).textContent.trim();
+      }
+      var lists = document.querySelectorAll("[data-app-list]");
+      Array.prototype.forEach.call(lists, function (list) {
+        var cards = Array.prototype.filter.call(list.children, function (el) {
+          return el.classList && el.classList.contains("card");
+        });
+        cards.sort(function (a, b) {
+          return cardName(a).localeCompare(cardName(b), "en", { sensitivity: "base" });
+        });
+        cards.forEach(function (card) {
+          list.appendChild(card);
+        });
       });
     })();
   </script>

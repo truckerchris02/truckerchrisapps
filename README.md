@@ -8,7 +8,18 @@ APK and Flatpak files are published as GitHub Release assets. They are not store
 
 ## Apps
 
-Listed A to Z by app name, matching the download page. On that page, new cards can be added anywhere in `index.html`; the page sorts them by name.
+The download page has two sections. All-in-One Hub Apps come first, then Single Apps. Within each section, apps are listed A to Z. On the page, put a new card in that section’s container (`data-section="all-in-one"` or `data-section="single"`); each container is sorted by app name when the page loads.
+
+### All-in-One Hub Apps
+
+Apps that combine several tools.
+
+| App | Version | Package | Description | Release asset |
+| --- | --- | --- | --- | --- |
+| Music Hub | 1.4.0 | `com.truckerchris.musichub` | Music and podcast hub with latest/oldest feed sort | [MusicHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk) |
+| Rig Hub | 1.3 | `com.truckerchris.righub` | Rig Nav, Trip Logger and Weather in one app | [RigHub-v1.3.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk) |
+
+### Single Apps
 
 | App | Version | Package | Description | Release asset |
 | --- | --- | --- | --- | --- |
@@ -19,9 +30,7 @@ Listed A to Z by app name, matching the download page. On that page, new cards c
 | Hazmat Helper | 1.0 | `com.truckerchris.hazmathelper` | Hazmat lookup (DOT 172.101 table, ERG 2024 guides), placard rules, and load segregation checker. Reference only, not legal advice. | [HazmatHelper-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.apk), [HazmatHelper-v1.0.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.flatpak) |
 | MedMinder | 1.0 | `com.trucker.medminder` | Medication list with dose and refill reminders | [MedMinder-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/medminder-v1.0/MedMinder-v1.0.apk) |
 | Message Hub | 1.0 | `com.truckerchris.messagehub` | Unified inbox for Google Messages, Messenger, WhatsApp and X notifications | [MessageHub-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/message-hub-v1.0/MessageHub-v1.0.apk) |
-| Music Hub | 1.4.0 | `com.truckerchris.musichub` | Music and podcast hub with latest/oldest feed sort | [MusicHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk) |
 | Pokes Football | 1.0 | `com.trucker.pokesfootball` | Oklahoma State football 2026 schedule, rankings and stats | [PokesFootball-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/pokes-football-v1.0/PokesFootball-v1.0.apk) |
-| Rig Hub | 1.3 | `com.truckerchris.righub` | Rig Nav, Trip Logger and Weather in one app | [RigHub-v1.3.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.3/RigHub-v1.3.apk) |
 | RigCare | 1.2 | `com.trucker.rigcare` | Truck maintenance tracker | [RigCare-v1.2.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rigcare-v1.2/RigCare-v1.2.apk) |
 | RigFuel | 1.0 | `com.trucker.rigfuel` | Truck fuel log and tracker | [RigFuel-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rigfuel-v1.0/RigFuel-v1.0.apk) |
 | Rune Lore | 1.0 | `com.truckerchris.runelore` | Learn the 24 Elder Futhark runes with flashcards and quiz | [RuneLore-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rune-lore-v1.0/RuneLore-v1.0.apk) |
