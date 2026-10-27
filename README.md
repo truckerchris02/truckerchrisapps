@@ -4,7 +4,7 @@ Download hub for TruckerChris Android apps.
 
 Live page: https://truckerchris02.github.io/truckerchrisapps/
 
-APK files are published as GitHub Release assets. They are not stored in this repository.
+APK and Flatpak files are published as GitHub Release assets. They are not stored in this repository.
 
 ## Apps
 
@@ -16,6 +16,7 @@ Listed A to Z by app name, matching the download page. On that page, new cards c
 | BandFit | 1.0 | `com.trucker.bandfit` | Light cardio and resistance-band workouts | [BandFit-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/bandfit-v1.0/BandFit-v1.0.apk) |
 | Checkers | 1.0 | `com.truckerchris.checkers` | Checkers vs computer (3 levels) or pass-and-play | [Checkers-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/checkers-v1.0/Checkers-v1.0.apk) |
 | Daily Mantra | 1.0 | `com.truckerchris.dailymantra` | Daily money mantras and affirmations with reminders | [DailyMantra-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/daily-mantra-v1.0/DailyMantra-v1.0.apk) |
+| Hazmat Helper | 1.0 | `com.truckerchris.hazmathelper` | Hazmat lookup (DOT 172.101 table, ERG 2024 guides), placard rules, and load segregation checker. Reference only, not legal advice. | [HazmatHelper-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.apk), [HazmatHelper-v1.0.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/hazmat-helper-v1.0/HazmatHelper-v1.0.flatpak) |
 | MedMinder | 1.0 | `com.trucker.medminder` | Medication list with dose and refill reminders | [MedMinder-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/medminder-v1.0/MedMinder-v1.0.apk) |
 | Message Hub | 1.0 | `com.truckerchris.messagehub` | Unified inbox for Google Messages, Messenger, WhatsApp and X notifications | [MessageHub-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/message-hub-v1.0/MessageHub-v1.0.apk) |
 | Music Hub | 1.4.0 | `com.truckerchris.musichub` | Music and podcast hub with latest/oldest feed sort | [MusicHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk) |
