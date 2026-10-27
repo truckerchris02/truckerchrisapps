@@ -17,7 +17,7 @@ Apps that combine several tools.
 | App | Version | Package | Description | Release asset |
 | --- | --- | --- | --- | --- |
 | Music Hub | 1.4.0 | `com.truckerchris.musichub` | Music and podcast hub with latest/oldest feed sort | [MusicHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk) |
-| Rig Hub | 1.4 | `com.truckerchris.righub` | Rig Nav, Trip Logger and Weather in one app | [RigHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.4/RigHub-v1.4.apk) |
+| Rig Hub | 1.5 | `com.truckerchris.righub` | Rig Nav, Trip Logger and Weather in one app | [RigHub-v1.5.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.5/RigHub-v1.5.apk), [RigHub-v1.5.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.5/RigHub-v1.5.flatpak) |
 
 ### Single Apps
 
@@ -37,7 +37,7 @@ Apps that combine several tools.
 | Solitaire | 1.0 | `com.trucker.solitaire` | Classic solitaire card game | [Solitaire-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/solitaire-v1.0/Solitaire-v1.0.apk) |
 | StormTrack | 1.0 | `com.trucker.stormtrack` | Location-following weather, severe alerts and live radar | [StormTrack-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/stormtrack-v1.0/StormTrack-v1.0.apk) |
 | Tandem Slide | 1.0 | `com.truckerchris.tandemslide` | Tandem axle slide calculator from CAT scale weights | [TandemSlide-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/tandem-slide-v1.0/TandemSlide-v1.0.apk), [TandemSlide-v1.0.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/tandem-slide-v1.0/TandemSlide-v1.0.flatpak) |
-| Trip Logger | 1.3.5 | `com.truckerchris.triplogger` | Standalone GPS trip and mileage logger for drivers (also included inside Rig Hub). Had v1.0 from this page? Back up in the app, uninstall, install v1.3.5, then Restore. | [TripLogger-v1.3.5.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/trip-logger-v1.3.5/TripLogger-v1.3.5.apk), [TripLogger-v1.3.5.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/trip-logger-v1.3.5/TripLogger-v1.3.5.flatpak) |
+| Trip Logger | 1.3.6 | `com.truckerchris.triplogger` | Standalone GPS trip and mileage logger for drivers (also included inside Rig Hub). Had v1.0 from this page? Back up in the app, uninstall, install v1.3.6, then Restore. | [TripLogger-v1.3.6.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/trip-logger-v1.3.6/TripLogger-v1.3.6.apk), [TripLogger-v1.3.6.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/trip-logger-v1.3.6/TripLogger-v1.3.6.flatpak) |
 | Truck Cab Nutrition | 1.0 | `com.truckcab.nutrition` | Nutrition tracker for life in the truck cab | [TruckCabNutrition-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-cab-nutrition-v1.0/TruckCabNutrition-v1.0.apk) |
 | Truck Health | 1.0 | `com.trucker.truckhealth` | Nutrition, water, meds and workouts in one app | [TruckHealth-v1.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/truck-health-v1.0/TruckHealth-v1.0.apk) |
 
