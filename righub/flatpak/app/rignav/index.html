@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="theme-color" content="#e07f2e">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rig Hub">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="icon" href="../icons/icon-192.png">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Rig Nav</title>
+<link rel="stylesheet" href="leaflet.css">
+<style>
+:root{--bg:#0b0e12;--panel:#151a21;--panel2:#1e252e;--line:#2c3540;--text:#f4f6f8;--dim:#a9b4c0;--accent:#ffb000;--go:#1fbf5f;--bad:#ff3b30;--warn:#ffcc00;--blue:#2f8cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;font-size:18px;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{min-height:56px;border:0;border-radius:14px;background:var(--panel2);padding:0 18px;font-weight:700;letter-spacing:.2px}
+button:active{filter:brightness(1.3)}
+button.primary{background:var(--accent);color:#111}
+button.go{background:var(--go);color:#04140a}
+button.danger{background:var(--bad);color:#fff}
+button.ghost{background:transparent;border:2px solid var(--line)}
+input,select{width:100%;min-height:56px;background:#0f1318;border:2px solid var(--line);border-radius:12px;padding:0 14px;font-size:20px}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+label{display:block;color:var(--dim);font-size:15px;margin:14px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.hidden{display:none!important}
+#mapwrap{position:fixed;inset:0;overflow:hidden;background:#20262d}
+#map{position:absolute;left:50%;top:50%;transform-origin:50% 50%;background:#20262d}
+.leaflet-container{background:#20262d;font:inherit}
+.leaflet-control-attribution{font-size:11px;background:rgba(0,0,0,.55)!important;color:#ccc}
+.leaflet-control-attribution a{color:#ddd}
+/* top search */
+#top{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:1000;display:flex;gap:8px}
+#q{flex:1;font-size:20px;background:rgba(21,26,33,.96);border-color:#3a4552}
+#btnSettings{width:60px;padding:0;font-size:26px;background:rgba(21,26,33,.96)}
+#sugg{position:fixed;left:10px;right:10px;top:calc(76px + env(safe-area-inset-top));z-index:1001;background:var(--panel);border:2px solid var(--line);border-radius:14px;max-height:55vh;overflow:auto}
+#sugg div{padding:14px 16px;border-bottom:1px solid var(--line);min-height:60px}
+#sugg div:last-child{border-bottom:0}
+#sugg b{display:block;font-size:19px}
+#sugg small{color:var(--dim);font-size:15px}
+/* side buttons */
+#side{position:fixed;right:10px;bottom:calc(200px + env(safe-area-inset-bottom));z-index:1000;display:flex;flex-direction:column;gap:10px}
+#side button{width:64px;height:64px;padding:0;font-size:24px;background:rgba(21,26,33,.96);border:2px solid var(--line)}
+/* bottom sheet */
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--panel);border-top:2px solid var(--line);border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));max-height:62vh;overflow:auto}
+.status{color:var(--dim);font-size:16px;margin-bottom:8px}
+.dest{font-size:21px;font-weight:800;margin:2px 0 10px}
+.alts{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.alt{border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;min-height:64px}
+.alt.sel{border-color:var(--blue);background:#132238}
+.alt .t{font-size:24px;font-weight:800}
+.alt .d{color:var(--dim);font-size:17px}
+.tag{display:inline-block;font-size:13px;font-weight:800;padding:3px 8px;border-radius:8px;margin-left:6px;vertical-align:middle}
+.tag.bad{background:var(--bad);color:#fff}.tag.warn{background:var(--warn);color:#111}.tag.ok{background:#1b3d27;color:#7ef0a8}
+.notices{margin:8px 0}
+.notice{background:#3a0d0b;border:2px solid var(--bad);color:#ffd7d4;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-weight:700;font-size:17px}
+.notice.info{background:#2e2a0b;border-color:var(--warn);color:#fff3b0}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.prof{color:var(--dim);font-size:15px;margin:6px 0 10px}
+/* nav HUD */
+#hud{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:1002;background:#0d3b1f;border:2px solid #1d6b3b;border-radius:18px;padding:12px 14px;display:flex;gap:14px;align-items:center}
+#hud.offroute{background:#4a1210;border-color:var(--bad)}
+#arrow{width:84px;height:84px;flex:none;display:flex;align-items:center;justify-content:center}
+#arrow svg{width:84px;height:84px}
+#mdist{font-size:40px;font-weight:900;line-height:1}
+#mtext{font-size:21px;font-weight:700;margin-top:4px;line-height:1.2;max-height:2.5em;overflow:hidden}
+#thenrow{font-size:15px;color:#bfe9cf;margin-top:4px}
+#navbar{position:fixed;left:0;right:0;bottom:0;z-index:1002;background:var(--panel);border-top:2px solid var(--line);padding:10px 10px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px}
+.stat{flex:1;text-align:center}
+.stat .v{font-size:28px;font-weight:900}
+.stat .l{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+#speedbox{position:fixed;left:10px;bottom:calc(110px + env(safe-area-inset-bottom));z-index:1002;display:flex;gap:8px;align-items:flex-end}
+#speed{background:rgba(21,26,33,.96);border:2px solid var(--line);border-radius:16px;padding:6px 12px;text-align:center;min-width:90px}
+#speed .v{font-size:38px;font-weight:900;line-height:1}
+#speed .l{font-size:12px;color:var(--dim)}
+#limit{background:#fff;color:#000;border:3px solid #000;border-radius:8px;padding:4px 8px;text-align:center;min-width:64px}
+#limit .l{font-size:10px;font-weight:800;line-height:1.1}
+#limit .v{font-size:30px;font-weight:900;line-height:1}
+#navside{position:fixed;right:10px;bottom:calc(110px + env(safe-area-inset-bottom));z-index:1002;display:flex;flex-direction:column;gap:10px}
+#navside button{width:64px;height:64px;padding:0;font-size:22px;background:rgba(21,26,33,.96);border:2px solid var(--line)}
+#navwarn{position:fixed;left:8px;right:8px;z-index:1002;top:calc(130px + env(safe-area-inset-top));}
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:2000;background:var(--bg);overflow:auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+.overlay h1{font-size:28px;margin:6px 0 4px}
+.overlay h2{font-size:20px;margin:26px 0 4px;color:var(--accent)}
+.overlay p{color:var(--dim);line-height:1.45;margin:8px 0}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin:12px 0}
+.warnbox{background:#2a1a00;border:2px solid var(--accent);border-radius:16px;padding:16px;margin:16px 0}
+.warnbox li{margin:8px 0;line-height:1.4;font-size:18px}
+#testres{margin-top:10px;font-weight:800;font-size:18px;min-height:24px}
+.ok{color:#5be08f}.err{color:#ff6b62}
+.check{display:flex;align-items:center;gap:12px;min-height:56px;font-size:18px}
+.check input{width:32px;height:32px;min-height:32px;flex:none}
+.inline{display:flex;gap:8px;align-items:center}
+.inline input{flex:1}
+.inline span{color:var(--dim);font-size:16px;min-width:22px}
+.footer-btns{display:flex;gap:10px;margin-top:24px;position:sticky;bottom:0;background:var(--bg);padding:10px 0}
+.footer-btns button{flex:1}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(30% + env(safe-area-inset-bottom));z-index:3000;background:#000c;border:2px solid var(--line);padding:12px 18px;border-radius:14px;font-weight:700;max-width:90vw;text-align:center}
+.truckIcon{width:46px;height:46px}
+.destIcon{width:36px;height:36px}
+/* stops panel */
+#stopsPanel{position:fixed;left:0;right:0;bottom:0;z-index:2500;background:var(--panel);border-top:2px solid var(--line);border-radius:18px 18px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));max-height:72vh;display:flex;flex-direction:column}
+#stopsPanel .tabs{display:flex;gap:8px;margin-bottom:8px}
+#stopsPanel .tabs button{flex:1;min-height:52px}
+#stopsPanel .tabs button.sel{background:var(--accent);color:#111}
+#stopsHead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+#stopsHead .status{flex:1;margin:0}
+#stopsHead button{min-height:48px;padding:0 12px;font-size:16px}
+#stopsList{overflow:auto;flex:1;min-height:80px}
+.stop{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.stop.sel{border-color:var(--blue);background:#132238}
+.stop .nm{font-size:19px;font-weight:800}
+.stop .mt{color:var(--dim);font-size:15px;margin-top:2px}
+.stop .mi{float:right;font-size:22px;font-weight:900;margin-left:10px}
+.stop .acts{display:flex;gap:8px;margin-top:10px}
+.stop .acts button{flex:1;min-height:50px;font-size:16px;padding:0 8px}
+.poiIcon{width:34px;height:34px}
+#side button.lbl,#navside button.lbl{font-size:13px;line-height:1.1}
+button.gatehere{border-color:#2fbf5b !important;color:#7dff9c}
+/* favorites & recents (1.2) */
+.destrow{display:flex;gap:10px;align-items:flex-start}
+.destrow .dest{flex:1;min-width:0}
+#btnFav{flex:none;min-height:48px;max-width:46%;padding:0 14px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#btnFav.saved{background:#3a2e00;color:var(--accent);border:2px solid var(--accent)}
+#sugg .sec{padding:10px 12px 8px 16px;min-height:0;font-size:13px;font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#11161c}
+#sugg .sec button{min-height:42px;font-size:14px;padding:0 12px;text-transform:none;letter-spacing:0}
+#sugg .fav,#sugg .rec{display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#sugg .fav .fi,#sugg .rec .fi{flex:1;min-width:0;padding:0;border:0;min-height:0}
+#sugg .fi b,#sugg .fi small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+#sugg .star{font-size:26px;color:var(--accent);flex:none}
+#sugg .clock{font-size:22px;color:var(--dim);flex:none}
+#sugg .ed{flex:none;width:52px;min-height:52px;padding:0;font-size:22px;background:transparent;border:2px solid var(--line)}
+#sugg .empty{color:var(--dim);font-size:16px;min-height:0}
+#favDlg{position:fixed;inset:0;z-index:2700;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px}
+#favDlg .box{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:480px}
+#favDlg h2{margin:0 0 4px;font-size:22px;color:var(--accent)}
+#favDlgAddr{word-break:break-word}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.chips button{min-height:44px;font-size:16px;padding:0 14px}
+#favErr{min-height:24px;font-weight:700;font-size:16px;margin:4px 0 8px}
+/* truck entrances (1.4) */
+#btnGate{width:100%;min-height:50px;margin:8px 0 2px;font-size:17px}
+#btnGate.set{background:#10301c;color:#7dff9c;border:2px solid #2fbf5b}
+#gateBar{position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:2600;background:#10301c;border:2px solid #2fbf5b;border-radius:16px;padding:12px;color:#fff;font-size:18px;font-weight:700;display:flex;gap:10px;align-items:center}
+#gateBar span{flex:1}
+#gateBar button{min-height:48px;font-size:16px;padding:0 14px}
+.gaterow{display:flex;gap:8px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
+.gaterow div{flex:1;min-width:0;font-size:16px;word-break:break-word}
+.gaterow button{min-height:44px;font-size:15px;padding:0 12px}
+/* manual reroute (1.4.2) */
+#rrPanel{position:fixed;left:0;right:0;bottom:0;z-index:2550;background:var(--panel);border-top:2px solid var(--line);border-radius:18px 18px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));max-height:70vh;overflow:auto}
+#rrPanel h3{margin:2px 0 8px;font-size:20px;color:var(--accent)}
+.rrOpt{display:block;width:100%;text-align:left;min-height:64px;margin-bottom:8px;font-size:18px;border:2px solid var(--line)}
+.rrOpt.best{border-color:#2fbf5b}
+.rrOpt small{display:block;font-size:14px;color:var(--dim);font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="mapwrap"><div id="map"></div></div>
+
+<!-- Browse mode UI -->
+<div id="browse">
+  <div id="top">
+    <input id="q" type="search" placeholder="Where to? (address, business, city)" autocomplete="off" enterkeyhint="search">
+    <button id="btnSettings" aria-label="Settings">⚙</button>
+  </div>
+  <div id="sugg" class="hidden"></div>
+  <div id="side">
+    <button id="btnStops" class="lbl" aria-label="Truck stops and weigh stations">⛽<br>Stops</button>
+    <button id="btnGateHere" class="lbl gatehere" aria-label="Save truck entrance at my spot">🚚<br>Gate</button>
+    <button id="btnLocate" aria-label="My location">◎</button>
+  </div>
+  <div id="sheet">
+    <div class="status" id="status">Waiting for GPS…</div>
+    <div id="routePanel" class="hidden">
+      <div class="destrow"><div class="dest" id="destName"></div><button class="ghost" id="btnFav" aria-label="Save as favorite">☆ Save</button></div>
+      <button class="ghost" id="btnGate">🚚 Wrong entrance? Set truck entrance</button>
+      <div class="gateUndo row hidden" id="gateUndoRow" style="margin-top:4px"><button class="ghost" id="btnGateUndo" style="width:100%;min-height:44px;font-size:15px">↺ Go back to the map's original address point</button></div>
+      <div class="prof" id="profLine"></div>
+      <div class="notices" id="notices"></div>
+      <div class="alts" id="alts"></div>
+      <div id="trafficList"></div>
+      <div class="row">
+        <button class="ghost" id="btnClear">Clear</button>
+        <button class="go" id="btnStart">▶ Start</button>
+      </div>
+    </div>
+    <div id="idleHint" class="prof">Search a destination, or long-press the map to drop a pin. Truck routing only.</div>
+  </div>
+</div>
+
+<!-- Navigation mode UI -->
+<div id="nav" class="hidden">
+  <div id="hud">
+    <div id="arrow"></div>
+    <div style="flex:1;min-width:0">
+      <div id="mdist">—</div>
+      <div id="mtext">Starting…</div>
+      <div id="thenrow"></div>
+    </div>
+  </div>
+  <div id="navwarn"></div>
+  <div id="speedbox">
+    <div id="speed"><div class="v" id="spd">0</div><div class="l">MPH</div></div>
+    <div id="limit" class="hidden"><div class="l">SPEED<br>LIMIT</div><div class="v" id="lim">—</div></div>
+  </div>
+  <div id="navside">
+    <button id="btnReroute" class="lbl" aria-label="Reroute">🔄<br>Reroute</button>
+    <button id="btnNavGateHere" class="lbl gatehere" aria-label="Save truck entrance at my spot">🚚<br>Gate</button>
+    <button id="btnNavStops" class="lbl" aria-label="Truck stops and weigh stations">⛽<br>Stops</button>
+    <button id="btnMute" aria-label="Mute">🔊</button>
+    <button id="btnOrient" aria-label="Orientation">⬆</button>
+    <button id="btnOverview" aria-label="Overview">⤢</button>
+  </div>
+  <div id="navbar">
+    <div class="stat"><div class="v" id="eta">--:--</div><div class="l">Arrive</div></div>
+    <div class="stat"><div class="v" id="rmi">--</div><div class="l">Miles</div></div>
+    <div class="stat"><div class="v" id="rtime">--</div><div class="l">Time</div></div>
+    <button class="danger" id="btnEnd" style="flex:none;width:96px">End</button>
+  </div>
+</div>
+
+<!-- Disclaimer -->
+<div id="disclaimer" class="overlay hidden">
+  <h1>🚛 Rig Nav</h1>
+  <p>Truck-only navigation built on HERE truck routing.</p>
+  <div class="warnbox">
+    <b style="font-size:20px;color:var(--accent)">Before you drive</b>
+    <ul>
+      <li><b>Always obey posted signs</b>, road restrictions, and law enforcement. Signs override this app.</li>
+      <li><b>Verify bridge clearances, weight limits, and hazmat rules yourself.</b> Map data can be wrong or out of date.</li>
+      <li>Routes depend on the truck profile you enter. A wrong height or weight means a wrong route.</li>
+      <li><b>This is not a replacement for a certified commercial truck GPS</b> or your company's routing.</li>
+      <li>Do not type or tap the screen while the truck is moving.</li>
+    </ul>
+  </div>
+  <button class="primary" id="btnAgree" style="width:100%">I understand — continue</button>
+</div>
+
+<!-- Settings -->
+<div id="settings" class="overlay hidden">
+  <h1>Settings</h1>
+  <h2>HERE API key</h2>
+  <p>Get a free key at platform.here.com (Access Manager → Apps → API keys). The key is stored only on this computer.</p>
+  <label for="apiKey">API key</label>
+  <input id="apiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your HERE API key">
+  <div class="row" style="margin-top:10px">
+    <button class="ghost" id="btnShowKey">Show</button>
+    <button class="primary" id="btnTestKey">Test key</button>
+  </div>
+  <div id="testres"></div>
+
+  <h2>Truck profile</h2>
+  <p>Defaults: 53' trailer, 5 axles, 80,000 lb. Enter what you are actually pulling.</p>
+  <label>Height</label>
+  <div class="row">
+    <div class="inline"><input id="hFt" type="number" inputmode="numeric" min="0"><span>ft</span></div>
+    <div class="inline"><input id="hIn" type="number" inputmode="numeric" min="0" max="11"><span>in</span></div>
+  </div>
+  <label for="wLb">Gross weight (lb)</label>
+  <input id="wLb" type="number" inputmode="numeric" min="0">
+  <label>Total length (tractor + trailer)</label>
+  <div class="row">
+    <div class="inline"><input id="lFt" type="number" inputmode="numeric" min="0"><span>ft</span></div>
+    <div class="inline"><input id="lIn" type="number" inputmode="numeric" min="0" max="11"><span>in</span></div>
+  </div>
+  <label>Width</label>
+  <div class="row">
+    <div class="inline"><input id="wdFt" type="number" inputmode="numeric" min="0"><span>ft</span></div>
+    <div class="inline"><input id="wdIn" type="number" inputmode="numeric" min="0" max="11"><span>in</span></div>
+  </div>
+  <div class="row">
+    <div><label for="axles">Axles</label><input id="axles" type="number" inputmode="numeric" min="2" max="12"></div>
+    <div><label for="trailers">Trailers</label><input id="trailers" type="number" inputmode="numeric" min="0" max="4"></div>
+  </div>
+  <label for="axleLb">Weight per axle (lb, optional)</label>
+  <input id="axleLb" type="number" inputmode="numeric" min="0" placeholder="Leave blank if unknown">
+  <label for="hazmat">Hazmat</label>
+  <select id="hazmat">
+    <option value="">None</option>
+    <option value="explosive">Class 1 — Explosives</option>
+    <option value="gas">Class 2 — Gases</option>
+    <option value="flammable">Class 3 — Flammable liquids</option>
+    <option value="combustible">Class 4 — Flammable solids / combustible</option>
+    <option value="organic">Class 5 — Oxidizers / organic peroxides</option>
+    <option value="poison">Class 6 — Poison / toxic</option>
+    <option value="radioactive">Class 7 — Radioactive</option>
+    <option value="corrosive">Class 8 — Corrosive</option>
+    <option value="other">Class 9 — Miscellaneous</option>
+    <option value="poisonousInhalation">Poison inhalation hazard (PIH/TIH)</option>
+    <option value="harmfulToWater">Harmful to water / marine pollutant</option>
+  </select>
+  <label for="tunnel">Tunnel category (ADR)</label>
+  <select id="tunnel">
+    <option value="">None</option>
+    <option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+  </select>
+  <button class="ghost" id="btnDefaults" style="width:100%;margin-top:14px">Reset to 53' / 80,000 lb defaults</button>
+
+  <h2>Route options</h2>
+  <div class="check"><input type="checkbox" id="avoidTolls"><label for="avoidTolls" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Avoid tolls</label></div>
+  <div class="check"><input type="checkbox" id="avoidFerries"><label for="avoidFerries" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Avoid ferries</label></div>
+
+  <h2>Map &amp; voice</h2>
+  <label for="mapStyle">Map style</label>
+  <select id="mapStyle">
+    <option value="explore.day">Day</option>
+    <option value="explore.night">Night</option>
+    <option value="logistics.day">Logistics day (HERE Advanced plan)</option>
+    <option value="logistics.night">Logistics night (HERE Advanced plan)</option>
+    <option value="auto">Auto day/night by clock</option>
+  </select>
+  <div class="check"><input type="checkbox" id="truckLayer"><label for="truckLayer" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Show truck restriction signs on map (HERE Advanced plan)</label></div>
+  <div class="check"><input type="checkbox" id="trafficOn"><label for="trafficOn" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Live traffic (flow colors on map, incidents &amp; delays on route)</label></div>
+  <div class="check"><input type="checkbox" id="stoplightsOn"><label for="stoplightsOn" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Stoplights on route (🚦 icons from OpenStreetMap, no HERE traffic plan needed)</label></div>
+  <div class="check"><input type="checkbox" id="voiceOn"><label for="voiceOn" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Voice prompts</label></div>
+  <div class="check"><input type="checkbox" id="weighAlert"><label for="weighAlert" style="margin:0;text-transform:none;font-size:18px;color:var(--text)">Voice heads-up: "Weigh station in 2 miles" (DOT/state stations only, not CAT scales; open/closed status unknown)</label></div>
+  <button class="ghost" id="btnVoiceTest" style="width:100%;margin-top:6px">Test voice</button>
+  <h2>Saved truck entrances</h2>
+  <p style="font-size:15px">When the map sends you to the wrong entrance, tap "Set truck entrance" on the route card. Rig Nav remembers it for that address.</p>
+  <div id="gateList"></div>
+  <button class="ghost" id="btnShowDisclaimer" style="width:100%;margin-top:10px">Show safety notice</button>
+  <p style="font-size:14px">Rig Nav v1.5.0 · <a href="../index.html" style="color:#ffb000">Rig Hub v1.6.0</a> · Maps &amp; routing © HERE</p>
+  <p style="font-size:12px;opacity:.7">1.0.0 truck routing · 1.1.0 truck stops, weigh stations · 1.2.0 favorites, recents · 1.2.x traffic, closures, stoplights, quick buttons · 1.3.0 closure-distance, stoplight and reroute fixes · 1.4.0 saved truck entrances · 1.4.1 CAT scales split from DOT weigh stations · 1.4.2 Reroute button · 1.5.0 one-tap 🚚 Gate button saves the entrance where you're parked</p>
+
+  <div class="footer-btns">
+    <button class="ghost" id="btnCancelSettings">Cancel</button>
+    <button class="primary" id="btnSaveSettings">Save</button>
+  </div>
+</div>
+
+<!-- Stops panel -->
+<div id="stopsPanel" class="hidden">
+  <div class="tabs">
+    <button id="tabTruck" class="sel">⛽ Truck Stops</button>
+    <button id="tabWeigh">⚖ Weigh Stations</button>
+  </div>
+  <div id="stopsHead">
+    <div class="status" id="stopsStatus"></div>
+    <button class="ghost" id="btnStopIcons">Map icons: OFF</button>
+    <button class="ghost" id="btnStopsClose">✕</button>
+  </div>
+  <div id="stopsList"></div>
+</div>
+
+<!-- Favorite save / edit dialog -->
+<div id="favDlg" class="hidden" role="dialog" aria-modal="true">
+  <div class="box">
+    <h2 id="favDlgTitle">Save favorite</h2>
+    <div class="prof" id="favDlgAddr"></div>
+    <label for="favName">Name</label>
+    <input id="favName" maxlength="40" autocomplete="off" placeholder="e.g. Home, Ochelata DC, Yard" enterkeyhint="done">
+    <div class="chips" id="favChips"><button data-n="Home">Home</button><button data-n="Yard">Yard</button><button data-n="DC">DC</button><button data-n="Shop">Shop</button><button data-n="Shipper">Shipper</button></div>
+    <div id="favErr" class="err"></div>
+    <div class="row">
+      <button class="danger hidden" id="btnFavDel">Delete</button>
+      <button class="ghost" id="btnFavCancel">Cancel</button>
+      <button class="primary" id="btnFavSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="gateBar" class="hidden"><span>Tap the map at the correct truck entrance or gate. Zoom in first.</span><button class="ghost" id="btnGateCancel">Cancel</button></div>
+
+<div id="rrPanel" class="hidden"><h3>🔄 Reroute</h3><div id="rrBody"></div><button class="ghost" id="btnRrKeep" style="width:100%;min-height:56px">Keep current route</button></div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="leaflet.js"></script>
+<script>
+"use strict";
+/* ================= Utilities ================= */
+var $ = function (id) { return document.getElementById(id); };
+var LS = window.localStorage;
+var M_PER_MI = 1609.344, M_PER_FT = 0.3048, KG_PER_LB = 0.45359237;
+
+function toast(msg, ms) {
+  var t = $("toast"); t.textContent = msg; t.classList.remove("hidden");
+  clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.add("hidden"); }, ms || 3000);
+}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+function fmtDist(m) {
+  if (m == null || isNaN(m)) return "—";
+  var ft = m / M_PER_FT;
+  if (ft < 1000) return (Math.max(0, Math.round(ft / 50) * 50)) + " ft";
+  var mi = m / M_PER_MI;
+  if (mi < 10) return (Math.round(mi * 10) / 10).toFixed(1) + " mi";
+  return Math.round(mi) + " mi";
+}
+function fmtMiles(m) { var mi = m / M_PER_MI; return mi < 10 ? mi.toFixed(1) : String(Math.round(mi)); }
+function fmtDur(s) {
+  s = Math.max(0, Math.round(s)); var h = Math.floor(s / 3600), mn = Math.round((s % 3600) / 60);
+  if (mn === 60) { h++; mn = 0; }
+  return h ? h + " h " + mn + " m" : mn + " min";
+}
+function fmtClock(d) {
+  var h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  return h + ":" + (m < 10 ? "0" : "") + m + " " + ap;
+}
+function fmtFtIn(cm) { var inch = Math.round(cm / 2.54); return Math.floor(inch / 12) + "'" + (inch % 12) + '"'; }
+function fmtLb(kg) { return Math.round(kg / KG_PER_LB).toLocaleString("en-US") + " lb"; }
+
+/* Geo math (meters) */
+var R_EARTH = 6371008.8;
+function toRad(d) { return d * Math.PI / 180; }
+function haversine(a, b) {
+  var dLat = toRad(b[0] - a[0]), dLng = toRad(b[1] - a[1]);
+  var s = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * R_EARTH * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+function bearingDeg(a, b) {
+  var y = Math.sin(toRad(b[1] - a[1])) * Math.cos(toRad(b[0]));
+  var x = Math.cos(toRad(a[0])) * Math.sin(toRad(b[0])) - Math.sin(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.cos(toRad(b[1] - a[1]));
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+/* project point p onto segment a-b in a local equirectangular frame; returns {d, t} */
+function projSeg(p, a, b) {
+  var kx = Math.cos(toRad(p[0])) * 111320, ky = 110540;
+  var ax = (a[1] - p[1]) * kx, ay = (a[0] - p[0]) * ky, bx = (b[1] - p[1]) * kx, by = (b[0] - p[0]) * ky;
+  var dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy, t = 0;
+  if (L2 > 0) t = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / L2));
+  var cx = ax + t * dx, cy = ay + t * dy;
+  return { d: Math.sqrt(cx * cx + cy * cy), t: t };
+}
+
+/* ================= HERE Flexible Polyline decoder =================
+   Port of https://github.com/heremaps/flexible-polyline (MIT). Uses Number arithmetic (safe to 2^53). */
+var FP = (function () {
+  var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var TABLE = {}; for (var i = 0; i < CHARS.length; i++) TABLE[CHARS.charAt(i)] = i;
+  function decodeUnsigned(enc) {
+    var out = [], result = 0, mult = 1;
+    for (var i = 0; i < enc.length; i++) {
+      var v = TABLE[enc.charAt(i)];
+      if (v === undefined) throw new Error("Invalid polyline character: " + enc.charAt(i));
+      result += (v & 0x1f) * mult;
+      if (v & 0x20) { mult *= 32; }
+      else { out.push(result); result = 0; mult = 1; }
+    }
+    if (mult !== 1) throw new Error("Truncated polyline");
+    return out;
+  }
+  function zz(u) { return (u % 2) ? -(u + 1) / 2 : u / 2; }
+  function decode(enc) {
+    var vals = decodeUnsigned(enc);
+    if (vals[0] !== 1) throw new Error("Unsupported polyline version " + vals[0]);
+    var h = vals[1];
+    var precision = h & 15, thirdDim = Math.floor(h / 16) & 7, thirdDimPrecision = Math.floor(h / 128) & 15;
+    var f = Math.pow(10, precision), fz = Math.pow(10, thirdDimPrecision);
+    var lat = 0, lng = 0, z = 0, pts = [], step = thirdDim ? 3 : 2;
+    for (var i = 2; i + step - 1 < vals.length; i += step) {
+      lat += zz(vals[i]); lng += zz(vals[i + 1]);
+      if (thirdDim) { z += zz(vals[i + 2]); pts.push([lat / f, lng / f, z / fz]); }
+      else pts.push([lat / f, lng / f]);
+    }
+    return { precision: precision, thirdDim: thirdDim, thirdDimPrecision: thirdDimPrecision, polyline: pts };
+  }
+  return { decode: decode };
+})();
+window.FP = FP;
+
+/* ================= Settings ================= */
+var DEFAULT_PROFILE = { heightCm: 411, weightKg: 36287, lengthCm: 2195, widthCm: 259, axles: 5, trailers: 1, axleKg: null, hazmat: "", tunnel: "" };
+function loadJSON(k, d) { try { var v = JSON.parse(LS.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+var cfg = {
+  key: LS.getItem("rn_key") || "",
+  profile: Object.assign({}, DEFAULT_PROFILE, loadJSON("rn_profile", {})),
+  avoidTolls: loadJSON("rn_avoidTolls", false),
+  avoidFerries: loadJSON("rn_avoidFerries", false),
+  mapStyle: LS.getItem("rn_style") || "explore.day",
+  truckLayer: loadJSON("rn_truckLayer", false),
+  voice: loadJSON("rn_voice", true),
+  weighAlert: loadJSON("rn_weighAlert", true),
+  stopIcons: loadJSON("rn_stopIcons", false),
+  traffic: loadJSON("rn_traffic", true),
+  stoplights: loadJSON("rn_stoplights", true)
+};
+function saveCfg() {
+  LS.setItem("rn_key", cfg.key);
+  LS.setItem("rn_profile", JSON.stringify(cfg.profile));
+  LS.setItem("rn_avoidTolls", JSON.stringify(cfg.avoidTolls));
+  LS.setItem("rn_avoidFerries", JSON.stringify(cfg.avoidFerries));
+  LS.setItem("rn_style", cfg.mapStyle);
+  LS.setItem("rn_truckLayer", JSON.stringify(cfg.truckLayer));
+  LS.setItem("rn_voice", JSON.stringify(cfg.voice));
+  LS.setItem("rn_weighAlert", JSON.stringify(cfg.weighAlert));
+  LS.setItem("rn_stopIcons", JSON.stringify(cfg.stopIcons));
+  LS.setItem("rn_traffic", JSON.stringify(cfg.traffic));
+  LS.setItem("rn_stoplights", JSON.stringify(cfg.stoplights));
+}
+function cmToFtIn(cm) { var inch = Math.round(cm / 2.54); return [Math.floor(inch / 12), inch % 12]; }
+function ftInToCm(ft, inch) { return Math.round(((+ft || 0) * 12 + (+inch || 0)) * 2.54); }
+
+function fillSettings(p) {
+  var h = cmToFtIn(p.heightCm), l = cmToFtIn(p.lengthCm), w = cmToFtIn(p.widthCm);
+  $("hFt").value = h[0]; $("hIn").value = h[1];
+  $("lFt").value = l[0]; $("lIn").value = l[1];
+  $("wdFt").value = w[0]; $("wdIn").value = w[1];
+  $("wLb").value = Math.round(p.weightKg / KG_PER_LB);
+  $("axles").value = p.axles; $("trailers").value = p.trailers;
+  $("axleLb").value = p.axleKg ? Math.round(p.axleKg / KG_PER_LB) : "";
+  $("hazmat").value = p.hazmat || ""; $("tunnel").value = p.tunnel || "";
+}
+function openSettings() {
+  $("apiKey").value = cfg.key; $("apiKey").type = "password"; $("btnShowKey").textContent = "Show";
+  fillSettings(cfg.profile);
+  $("avoidTolls").checked = cfg.avoidTolls; $("avoidFerries").checked = cfg.avoidFerries;
+  $("mapStyle").value = cfg.mapStyle; $("truckLayer").checked = cfg.truckLayer; $("trafficOn").checked = cfg.traffic; $("stoplightsOn").checked = cfg.stoplights; $("voiceOn").checked = cfg.voice; $("weighAlert").checked = cfg.weighAlert;
+  $("testres").textContent = ""; $("testres").className = "";
+  renderGateList();
+  $("btnCancelSettings").classList.toggle("hidden", !cfg.key);
+  showOverlay("settings");
+}
+function readProfileFromForm() {
+  var axleLb = parseFloat($("axleLb").value);
+  return {
+    heightCm: ftInToCm($("hFt").value, $("hIn").value),
+    weightKg: Math.round((parseFloat($("wLb").value) || 0) * KG_PER_LB),
+    lengthCm: ftInToCm($("lFt").value, $("lIn").value),
+    widthCm: ftInToCm($("wdFt").value, $("wdIn").value),
+    axles: Math.max(2, parseInt($("axles").value, 10) || 5),
+    trailers: Math.max(0, parseInt($("trailers").value, 10) || 0),
+    axleKg: axleLb > 0 ? Math.round(axleLb * KG_PER_LB) : null,
+    hazmat: $("hazmat").value, tunnel: $("tunnel").value
+  };
+}
+function validateProfile(p) {
+  if (p.heightCm < 200 || p.heightCm > 500) return "Height looks wrong (expected 6'6\" to 16'5\").";
+  if (p.weightKg < 1000 || p.weightKg > 90000) return "Gross weight looks wrong.";
+  if (p.lengthCm < 500 || p.lengthCm > 3000) return "Length looks wrong (expected 16 to 98 ft).";
+  if (p.widthCm < 150 || p.widthCm > 500) return "Width looks wrong.";
+  return null;
+}
+function profileSummary(p) {
+  var s = fmtFtIn(p.heightCm) + " tall · " + fmtLb(p.weightKg) + " · " + fmtFtIn(p.lengthCm) + " long · " + fmtFtIn(p.widthCm) + " wide · " + p.axles + " axles";
+  if (p.hazmat) s += " · HAZMAT: " + $("hazmat").querySelector('option[value="' + p.hazmat + '"]').textContent;
+  if (p.tunnel) s += " · Tunnel " + p.tunnel;
+  return s;
+}
+
+/* ================= HTTP (native bridge avoids WebView CORS on file://) ================= */
+var httpSeq = 0, httpPending = {};
+window.onNativeHttp = function (id, status, body) {
+  var cb = httpPending[id]; if (!cb) return; delete httpPending[id];
+  var json = null; try { json = JSON.parse(body); } catch (e) { }
+  cb({ status: status, json: json, text: body });
+};
+function httpGet(url) {
+  return new Promise(function (resolve) {
+    if (window.RigNative && window.RigNative.httpGet) {
+      var id = "h" + (++httpSeq); httpPending[id] = resolve;
+      window.RigNative.httpGet(id, url);
+    } else {
+      fetch(url).then(function (r) {
+        return r.text().then(function (t) { var j = null; try { j = JSON.parse(t); } catch (e) { } resolve({ status: r.status, json: j, text: t }); });
+      }).catch(function (e) { resolve({ status: 0, json: null, text: String(e) }); });
+    }
+  });
+}
+function qs(params) {
+  return Object.keys(params).filter(function (k) { return params[k] !== undefined && params[k] !== null && params[k] !== ""; })
+    .map(function (k) { return encodeURIComponent(k).replace(/%5B/g, "[").replace(/%5D/g, "]") + "=" + encodeURIComponent(params[k]).replace(/%2C/g, ",").replace(/%3B/g, ";").replace(/%3D/g, "="); }).join("&");
+}
+function apiErrorText(res) {
+  var j = res.json || {};
+  var msg = j.title || j.error_description || j.message || j.error || "";
+  if (j.cause) msg += " — " + j.cause;
+  if (res.status === 0) return "No connection to HERE (" + (msg || "network error") + ")";
+  if (res.status === 401) return "401 Unauthorized: the API key is invalid or mistyped. " + msg;
+  if (res.status === 403) return "403 Forbidden: this key is not allowed to use this HERE service (check the app's enabled services / plan). " + msg;
+  if (res.status === 429) return "429 Too many requests: HERE rate limit or quota reached.";
+  return "HTTP " + res.status + ": " + (msg || "request failed");
+}
+
+/* ================= Map ================= */
+var map, tileLayer, trafficTileLayer = null, truckMarker, destMarker, routeLines = [];
+var browseMode = true;
+function effectiveStyle() {
+  if (cfg.mapStyle !== "auto") return cfg.mapStyle;
+  var h = new Date().getHours(); return (h >= 19 || h < 7) ? "explore.night" : "explore.day";
+}
+function tileUrl() {
+  var u = "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png8?size=512&lang=en&style=" + encodeURIComponent(effectiveStyle());
+  if (cfg.truckLayer) u += "&features=vehicle_restrictions:active_and_inactive";
+  return u + "&apiKey=" + encodeURIComponent(cfg.key);
+}
+function setTiles() {
+  if (tileLayer) { map.removeLayer(tileLayer); tileLayer = null; }
+  if (!cfg.key) { if (trafficTileLayer) { map.removeLayer(trafficTileLayer); trafficTileLayer = null; } return; }
+  tileLayer = L.tileLayer(tileUrl(), { tileSize: 512, zoomOffset: -1, maxZoom: 20, minZoom: 3, attribution: "© HERE " + new Date().getFullYear(), keepBuffer: 4, updateWhenIdle: false, crossOrigin: false }).addTo(map);
+  var errs = 0;
+  tileLayer.on("tileerror", function () { if (++errs === 6) toast("Map tiles failing. Check the API key, plan (Advanced styles/overlay need it), or signal.", 5000); });
+  var dark = /night/.test(effectiveStyle());
+  document.querySelector(".leaflet-container").style.background = dark ? "#1a1f26" : "#dfe3e6";
+  setTrafficTiles();
+}
+/* Live traffic flow overlay (HERE Traffic Raster Tile API, transparent PNG over the base map) */
+function trafficTileUrl() {
+  return "https://traffic.maps.hereapi.com/v3/flow/mc/{z}/{x}/{y}/png?size=256&style=" + encodeURIComponent(effectiveStyle()) + "&apiKey=" + encodeURIComponent(cfg.key);
+}
+var trafficTileErrs = 0, trafficToastShown = false;
+function setTrafficTiles() {
+  if (trafficTileLayer) { map.removeLayer(trafficTileLayer); trafficTileLayer = null; }
+  if (!cfg.traffic || !cfg.key || !map) return;
+  trafficTileLayer = L.tileLayer(trafficTileUrl(), { tileSize: 256, maxZoom: 20, minZoom: 8, zIndex: 6, opacity: 1, crossOrigin: false }).addTo(map);
+  trafficTileLayer.on("tileerror", function () { if (++trafficTileErrs === 8 && !trafficToastShown) { trafficToastShown = true; toast("Live traffic layer unavailable — your HERE key or plan may not include the Traffic service.", 6000); } });
+}
+var truckSvg = function (color) {
+  return '<svg class="truckIcon" viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" fill="rgba(47,140,255,.18)"/><path d="M23 4 L37 38 L23 30 L9 38 Z" fill="' + color + '" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';
+};
+function initMap() {
+  map = L.map("map", { zoomControl: false, attributionControl: true, zoomSnap: 0.25, inertia: true, tap: true }).setView([36.03, -95.69], 11);
+  sizeMapForRotation(false);
+  setTiles();
+  truckMarker = L.marker([36.03, -95.69], { icon: L.divIcon({ className: "", html: '<div id="truckRot" style="transform-origin:50% 50%">' + truckSvg("#2f8cff") + "</div>", iconSize: [46, 46], iconAnchor: [23, 23] }), interactive: false, zIndexOffset: 1000 });
+  map.on("contextmenu", function (e) { if (gatePicking) { pickGate(e.latlng); return; } if (browseMode) setDestination(e.latlng.lat, e.latlng.lng, "Dropped pin (" + e.latlng.lat.toFixed(5) + ", " + e.latlng.lng.toFixed(5) + ")"); });
+  map.on("click", function (e) { if (gatePicking) pickGate(e.latlng); });
+  map.on("dragstart", function () { followBrowse = false; });
+}
+/* For heading-up, the map element is a square as large as the screen diagonal and rotated with CSS. */
+var mapRotated = false;
+function sizeMapForRotation(rot) {
+  var w = window.innerWidth, h = window.innerHeight, el = $("map");
+  if (rot) { var d = Math.ceil(Math.sqrt(w * w + h * h)); el.style.width = d + "px"; el.style.height = d + "px"; el.style.marginLeft = (-d / 2) + "px"; el.style.marginTop = (-d / 2) + "px"; }
+  else { el.style.width = w + "px"; el.style.height = h + "px"; el.style.marginLeft = (-w / 2) + "px"; el.style.marginTop = (-h / 2) + "px"; el.style.transform = ""; }
+  mapRotated = rot;
+  if (map) map.invalidateSize(false);
+}
+window.addEventListener("resize", function () { sizeMapForRotation(mapRotated); });
+
+/* ================= Location ================= */
+var pos = null; /* {lat,lng,acc,speed,bearing,time,src} */
+var lastGpsTime = 0, followBrowse = true, firstFix = true;
+function handleFix(lat, lng, acc, speed, bearing, time, src) {
+  var now = Date.now();
+  if (src === "network" && now - lastGpsTime < 10000) return; /* prefer GPS */
+  if (src === "gps" || src === "fused" || src === "web") lastGpsTime = now;
+  var prev = pos;
+  pos = { lat: lat, lng: lng, acc: acc, speed: speed, bearing: bearing, time: time || now, src: src };
+  if ((pos.bearing == null || pos.bearing < 0) && prev) {
+    var dd = haversine([prev.lat, prev.lng], [lat, lng]);
+    pos.bearing = dd > 8 ? bearingDeg([prev.lat, prev.lng], [lat, lng]) : (prev.bearing != null ? prev.bearing : -1);
+  }
+  if (pos.speed == null || pos.speed < 0) {
+    pos.speed = (prev && pos.time > prev.time) ? haversine([prev.lat, prev.lng], [lat, lng]) / ((pos.time - prev.time) / 1000) : 0;
+  }
+  truckMarker.setLatLng([lat, lng]); if (!map.hasLayer(truckMarker)) truckMarker.addTo(map);
+  if (browseMode) {
+    $("status").textContent = "GPS ±" + Math.round((acc > 0 ? acc : 0) / M_PER_FT) + " ft";
+    if (firstFix || followBrowse) { map.setView([lat, lng], firstFix ? 14 : map.getZoom(), { animate: !firstFix }); }
+    firstFix = false;
+    setTruckRot(pos.bearing >= 0 ? pos.bearing : 0);
+  } else onNavFix();
+}
+window.onNativeLocation = function (lat, lng, acc, speed, bearing, time, prov) { handleFix(lat, lng, acc, speed, bearing, time, prov); };
+window.onNativePermission = function (ok) { if (!ok) $("status").textContent = "Location permission denied. On iPhone, allow Location for Safari or the Home Screen app, then try again."; };
+var webWatch = null;
+function startLocation() {
+  if (window.RigNative && window.RigNative.startLocation) { window.RigNative.startLocation(); return; }
+  if (!navigator.geolocation) { $("status").textContent = "No GPS available."; return; }
+  if (webWatch != null) return;
+  webWatch = navigator.geolocation.watchPosition(function (p) {
+    var c = p.coords; handleFix(c.latitude, c.longitude, c.accuracy, c.speed == null ? -1 : c.speed, c.heading == null || isNaN(c.heading) ? -1 : c.heading, p.timestamp, "web");
+  }, function (e) { $("status").textContent = "GPS error: " + e.message; }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 });
+}
+function setTruckRot(b) { var el = $("truckRot"); if (el) el.style.transform = "rotate(" + b + "deg)"; }
+
+/* ================= Search ================= */
+var suggTimer = null, suggSeq = 0;
+function atParam() { return pos ? pos.lat.toFixed(5) + "," + pos.lng.toFixed(5) : (map ? map.getCenter().lat.toFixed(5) + "," + map.getCenter().lng.toFixed(5) : "36.03,-95.69"); }
+function onSearchInput() {
+  var q = $("q").value.trim();
+  clearTimeout(suggTimer);
+  if (!q.length) { suggSeq++; renderQuickList(); return; }
+  if (q.length < 3) { suggSeq++; var fh = favMatchHtml(q); if (fh) { $("sugg").innerHTML = fh; $("sugg").classList.remove("hidden"); } else $("sugg").classList.add("hidden"); return; }
+  suggTimer = setTimeout(function () { autosuggest(q); }, 350);
+}
+function autosuggest(q) {
+  if (!cfg.key) { openSettings(); return; }
+  var my = ++suggSeq;
+  httpGet("https://autosuggest.search.hereapi.com/v1/autosuggest?" + qs({ q: q, at: atParam(), limit: 7, lang: "en-US", apiKey: cfg.key })).then(function (res) {
+    if (my !== suggSeq) return;
+    if (res.status !== 200) { renderSugg([], apiErrorText(res)); return; }
+    var items = ((res.json && res.json.items) || []).filter(function (it) { return it.position; });
+    renderSugg(items.map(function (it) {
+      return { title: it.title, sub: (it.address && it.address.label) || "", dist: it.distance, lat: it.position.lat, lng: it.position.lng };
+    }));
+  });
+}
+function geocode(q) {
+  var m = q.match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
+  if (m) { setDestination(+m[1], +m[3], q); return; }
+  if (!cfg.key) { openSettings(); return; }
+  $("status").textContent = "Searching…";
+  httpGet("https://geocode.search.hereapi.com/v1/geocode?" + qs({ q: q, at: atParam(), limit: 7, lang: "en-US", apiKey: cfg.key })).then(function (res) {
+    if (res.status !== 200) { renderSugg([], apiErrorText(res)); $("status").textContent = "Search failed"; return; }
+    var items = (res.json && res.json.items) || [];
+    $("status").textContent = items.length ? "Pick a result" : "No results";
+    if (items.length === 1) { var it = items[0]; setDestination(it.position.lat, it.position.lng, it.address && it.address.label || it.title); return; }
+    renderSugg(items.map(function (it) { return { title: it.title, sub: (it.address && it.address.label) || "", dist: it.distance, lat: it.position.lat, lng: it.position.lng }; }));
+  });
+}
+var suggItems = [];
+function renderSugg(items, err) {
+  var box = $("sugg"); suggItems = items;
+  var fh = favMatchHtml($("q").value);
+  if (err) { box.innerHTML = fh + '<div class="err"><b>' + esc(err) + "</b></div>"; box.classList.remove("hidden"); return; }
+  if (!items.length) { box.innerHTML = fh + "<div><small>No matches</small></div>"; box.classList.remove("hidden"); return; }
+  box.innerHTML = fh + items.map(function (it, i) {
+    var d = it.dist != null ? " · " + fmtDist(it.dist) : "";
+    return '<div data-i="' + i + '"><b>' + esc(it.title) + "</b><small>" + esc(it.sub !== it.title ? it.sub : "") + d + "</small></div>";
+  }).join("");
+  box.classList.remove("hidden");
+}
+$("sugg").addEventListener("click", function (e) {
+  if (favLongPressFired && Date.now() - favLongPressFired < 900) { favLongPressFired = 0; return; }
+  if (handleQuickClick(e)) return;
+  var el = e.target.closest("[data-i]"); if (!el) return;
+  var it = suggItems[+el.getAttribute("data-i")];
+  $("sugg").classList.add("hidden"); $("q").blur();
+  setDestination(it.lat, it.lng, it.title + (it.sub && it.sub !== it.title ? " — " + it.sub : ""));
+});
+
+/* ================= Routing (truck only) ================= */
+var dest = null, via = null, routes = [], selRoute = 0; /* via: optional single added stop {lat,lng,name} */
+function truckParams(p) {
+  var o = {
+    transportMode: "truck",
+    "vehicle[height]": p.heightCm,
+    "vehicle[grossWeight]": p.weightKg,
+    "vehicle[length]": p.lengthCm,
+    "vehicle[width]": p.widthCm,
+    "vehicle[axleCount]": p.axles,
+    "vehicle[trailerCount]": p.trailers
+  };
+  if (p.axleKg) o["vehicle[weightPerAxle]"] = p.axleKg;
+  if (p.hazmat) o["vehicle[shippedHazardousGoods]"] = p.hazmat;
+  if (p.tunnel) o["vehicle[tunnelCategory]"] = p.tunnel;
+  return o;
+}
+function buildRouteUrl(from, to, opts, minimal) {
+  var p = truckParams(cfg.profile);
+  var origin = from[0].toFixed(6) + "," + from[1].toFixed(6);
+  if (opts.course != null && opts.course >= 0) origin += ";course=" + Math.round(opts.course);
+  p.origin = origin;
+  p.destination = to[0].toFixed(6) + "," + to[1].toFixed(6);
+  if (opts.via) p.via = opts.via[0].toFixed(6) + "," + opts.via[1].toFixed(6);
+  p["return"] = minimal ? "polyline,summary,actions,instructions" : "polyline,summary,actions,instructions,turnByTurnActions";
+  if (!minimal) p.spans = "names,speedLimit,length";
+  p.units = "imperial"; p.lang = "en-US";
+  if (opts.alternatives && !opts.via) p.alternatives = opts.alternatives; /* HERE: no alternatives with via waypoints */
+  var av = []; if (cfg.avoidTolls) av.push("tollRoad"); if (cfg.avoidFerries) av.push("ferry");
+  if (av.length) p["avoid[features]"] = av.join(",");
+  p.apiKey = cfg.key;
+  return "https://router.hereapi.com/v8/routes?" + qs(p);
+}
+function requestTruckRoute(from, to, opts) {
+  return httpGet(buildRouteUrl(from, to, opts, false)).then(function (res) {
+    if (res.status === 400) return httpGet(buildRouteUrl(from, to, opts, true)); /* retry without optional spans/turnByTurn */
+    return res;
+  });
+}
+function parseRoute(r) {
+  var pts = [], actions = [], spans = [], notices = [], length = 0, duration = 0, base = 0, tolls = false;
+  var nSec = (r.sections || []).length;
+  (r.sections || []).forEach(function (sec, si) {
+    var poly = FP.decode(sec.polyline).polyline.map(function (q) { return [q[0], q[1]]; });
+    var offset = pts.length ? pts.length - 1 : 0;
+    if (pts.length) poly = poly.slice(1);
+    pts = pts.concat(poly);
+    var tbt = sec.turnByTurnActions || [];
+    (sec.actions || []).forEach(function (a, i) {
+      var t = tbt[i] && tbt[i].offset === a.offset ? tbt[i] : null;
+      actions.push({ action: a.action, direction: a.direction, severity: a.severity, offset: (a.offset || 0) + offset, length: a.length || 0, duration: a.duration || 0, instruction: a.instruction || "", exit: a.exit, nextRoad: (t && t.nextRoad) || a.nextRoad || null, signpost: (t && t.signpost) || null, exitSign: t && t.exitSign, viaStop: a.action === "arrive" && si < nSec - 1 });
+    });
+    (sec.spans || []).forEach(function (s) { spans.push({ offset: (s.offset || 0) + offset, speedLimit: s.speedLimit, names: s.names }); });
+    (sec.notices || []).forEach(function (n) { notices.push(n); });
+    if (sec.summary) { length += sec.summary.length || 0; duration += sec.summary.duration || 0; base += sec.summary.baseDuration || 0; }
+    if (sec.tolls && sec.tolls.length) tolls = true;
+    if (sec.type === "ferry" || (sec.transport && sec.transport.mode === "ferry")) notices.push({ code: "ferry", title: "Route includes a ferry crossing", severity: "info" });
+  });
+  var cum = [0];
+  for (var i = 1; i < pts.length; i++) cum.push(cum[i - 1] + haversine(pts[i - 1], pts[i]));
+  if (!length) length = cum[cum.length - 1];
+  return { pts: pts, cum: cum, actions: actions, spans: spans, notices: notices, length: length, duration: duration, base: base, tolls: tolls, raw: r };
+}
+var CRITICAL_CODES = /violat|restriction|noRouteFound|couldNotMatch|hazard|tunnel|weight|height|length|width|axle|truck/i;
+function noticeIsCritical(n) { return n.severity === "critical" || CRITICAL_CODES.test(n.code || ""); }
+function routeNoticeHtml(list) {
+  return list.map(function (n) {
+    var crit = noticeIsCritical(n);
+    var title = n.title || n.code;
+    if (/violatedVehicleRestriction/i.test(n.code || "")) title = "⚠ This route VIOLATES a truck restriction that could not be avoided. " + (n.title || "") + " Check signs and clearances before you go.";
+    return '<div class="notice' + (crit ? "" : " info") + '">' + (crit ? "⛔ " : "ⓘ ") + esc(title) + (n.code && n.title ? ' <span style="opacity:.7;font-weight:500">(' + esc(n.code) + ")</span>" : "") + "</div>";
+  }).join("");
+}
+function setDestination(lat, lng, name, opts) {
+  opts = opts || {};
+  var orig = { lat: lat, lng: lng }, g = opts.noGate ? null : gateFor(lat, lng);
+  if (g && haversine([g.lat, g.lng], [lat, lng]) > 3) { lat = g.lat; lng = g.lng; orig = { lat: g.olat, lng: g.olng }; if (!opts.quietGate) toast("🚚 Using your saved truck entrance", 3000); }
+  else if (g) orig = { lat: g.olat, lng: g.olng };
+  dest = { lat: lat, lng: lng, name: name, favId: opts.favId || null, orig: orig, gateId: g ? g.id : null };
+  cancelGatePick();
+  planRoute.autoStart = !!opts.autoStart;
+  if (destMarker) map.removeLayer(destMarker);
+  destMarker = L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<svg class="destIcon" viewBox="0 0 36 36"><path d="M18 2C11 2 6 7.3 6 14c0 9 12 20 12 20s12-11 12-20C30 7.3 25 2 18 2z" fill="#ff3b30" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="14" r="4.5" fill="#fff"/></svg>', iconSize: [36, 36], iconAnchor: [18, 34] }) }).addTo(map);
+  $("q").value = name;
+  planRoute();
+}
+function planRoute() {
+  if (!dest) return;
+  if (!cfg.key) { openSettings(); return; }
+  if (!pos) { $("status").textContent = "Waiting for GPS before routing…"; toast("Waiting for a GPS fix — route will be calculated when it arrives."); planRoute.pending = true; return; }
+  planRoute.pending = false;
+  $("status").textContent = "Calculating truck route…";
+  $("routePanel").classList.remove("hidden"); $("idleHint").classList.add("hidden");
+  $("destName").textContent = dest.name + (via ? "  (via " + via.name + ")" : ""); $("profLine").textContent = "🚛 " + profileSummary(cfg.profile);
+  $("alts").innerHTML = ""; $("notices").innerHTML = ""; $("btnStart").disabled = true;
+  setViaMarker(via); updateFavBtn(); updateGateBtn();
+  var my = ++planSeq;
+  requestTruckRoute([pos.lat, pos.lng], [dest.lat, dest.lng], { alternatives: 2, via: via ? [via.lat, via.lng] : null }).then(function (res) {
+    if (my !== planSeq || nav) return; /* superseded by a newer destination, a clear, or navigation */
+    var auto = planRoute.autoStart; planRoute.autoStart = false;
+    if (res.status !== 200 || !res.json) { $("status").textContent = "Routing failed"; $("notices").innerHTML = '<div class="notice">' + esc(apiErrorText(res)) + "</div>"; return; }
+    var top = res.json.notices || [];
+    var rs = res.json.routes || [];
+    if (!rs.length) { $("status").textContent = "No truck route found"; $("notices").innerHTML = routeNoticeHtml(top.length ? top : [{ code: "noRouteFound", title: "HERE found no legal truck route for this profile." }]); return; }
+    try { routes = rs.map(parseRoute); } catch (e) { $("status").textContent = "Could not read route"; $("notices").innerHTML = '<div class="notice">' + esc(e.message) + "</div>"; return; }
+    routes.topNotices = top;
+    selRoute = 0; $("status").textContent = routes.length + (routes.length > 1 ? " truck routes" : " truck route");
+    renderRoutes(true);
+    if (auto) {
+      var crit = routes[0].notices.some(noticeIsCritical) || top.some(noticeIsCritical);
+      if (crit) { toast("Not auto-starting: this truck route has a restriction notice. Review it, then tap Start.", 7000); speak("This route has a truck restriction notice. Review it before starting."); }
+      else startNav();
+    }
+  });
+}
+var planSeq = 0;
+function drawRoutes() {
+  routeLines.forEach(function (l) { map.removeLayer(l); }); routeLines = [];
+  routes.forEach(function (r, i) {
+    if (i === selRoute) return;
+    routeLines.push(L.polyline(r.pts, { color: "#7d8a99", weight: 7, opacity: .85 }).addTo(map).on("click", function () { selRoute = i; renderRoutes(false); }));
+  });
+  var s = routes[selRoute];
+  if (s) {
+    routeLines.push(L.polyline(s.pts, { color: "#0b2d5c", weight: 12, opacity: .9, interactive: false }).addTo(map));
+    routeLines.push(L.polyline(s.pts, { color: s.notices.some(noticeIsCritical) ? "#ff3b30" : "#2f8cff", weight: 7, opacity: 1, interactive: false }).addTo(map));
+  }
+}
+function renderRoutes(fit) {
+  drawRoutes();
+  delete stopsCache["truck:plan"]; delete stopsCache["weigh:plan"];
+  if (cfg.stopIcons && !nav) refreshStopIcons();
+  var s = routes[selRoute];
+  $("alts").innerHTML = routes.map(function (r, i) {
+    var crit = r.notices.some(noticeIsCritical);
+    var tags = crit ? '<span class="tag bad">RESTRICTION</span>' : '<span class="tag ok">TRUCK OK</span>';
+    if (r.tolls) tags += '<span class="tag warn">TOLLS</span>';
+    var tdelay = (r.duration || 0) - (r.base || 0);
+    if (cfg.traffic && tdelay >= 180) tags += '<span class="tag warn">+' + fmtDur(tdelay) + " TRAFFIC</span>";
+    return '<div class="alt' + (i === selRoute ? " sel" : "") + '" data-r="' + i + '"><div><div class="t">' + fmtDur(r.duration) + "</div><div class=\"d\">" + fmtMiles(r.length) + " mi · " + (i === 0 ? "Recommended" : "Alternative " + i) + "</div></div><div>" + tags + "</div></div>";
+  }).join("");
+  $("notices").innerHTML = routeNoticeHtml((routes.topNotices || []).concat(s.notices));
+  $("btnStart").disabled = false;
+  if (fit) { followBrowse = false; map.fitBounds(L.latLngBounds(s.pts), { paddingTopLeft: [30, 90], paddingBottomRight: [30, $("sheet").offsetHeight + 20] }); }
+  refreshTrafficIncidents(false);
+  refreshStoplights();
+}
+/* ================= Stoplights on route (OpenStreetMap via Overpass - free, no key, no HERE traffic plan needed) ================= */
+var stoplightMarkers = [], stoplightSeq = 0;
+function clearStoplightMarkers() { stoplightMarkers.forEach(function (m) { map.removeLayer(m); }); stoplightMarkers = []; }
+function stoplightAlong(pt, r) {
+  var best = -1, bestD = 1e12;
+  for (var i = 0; i < r.pts.length; i += 2) { var dd = haversine(pt, r.pts[i]); if (dd < bestD) { bestD = dd; best = i; } }
+  return { along: best >= 0 ? (r.cum[Math.min(best, r.cum.length - 1)] || 0) : 0, dist: bestD };
+}
+function refreshStoplights() {
+  if (!cfg.stoplights || typeof routes === "undefined" || !routes.length) { stoplightSeq++; clearStoplightMarkers(); return; }
+  var r = routes[selRoute]; if (!r || !r.pts || r.pts.length < 2) return;
+  var my = ++stoplightSeq;
+  var pts = [], last = null;
+  r.pts.forEach(function (p) { if (!last || haversine(p, last) >= 30) { pts.push(p); last = p; } });
+  var endPt = r.pts[r.pts.length - 1];
+  if (pts.length && pts[pts.length - 1] !== endPt) pts.push(endPt);
+  while (pts.length > 600) { var np = []; for (var i = 0; i < pts.length; i += 2) np.push(pts[i]); if (np[np.length - 1] !== endPt) np.push(endPt); pts = np; }
+  var chunks = [];
+  for (var s = 0; s < pts.length; s += 80) chunks.push(pts.slice(s, s + 80));
+  if (!chunks.length) return;
+  var hosts = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+  function fetchChunk(bb, hostIdx) {
+    var q = '[out:json][timeout:25];node[highway="traffic_signals"](' + bb + ');out;';
+    return httpGet(hosts[hostIdx] + "?data=" + encodeURIComponent(q)).then(function (res) {
+      if (res.status === 200 && res.json && res.json.elements) return res.json.elements;
+      if (hostIdx + 1 < hosts.length) return fetchChunk(bb, hostIdx + 1);
+      return [];
+    });
+  }
+  var bbs = chunks.map(function (ch) {
+    var mnLat = 90, mxLat = -90, mnLng = 180, mxLng = -180;
+    ch.forEach(function (p) { if (p[0] < mnLat) mnLat = p[0]; if (p[0] > mxLat) mxLat = p[0]; if (p[1] < mnLng) mnLng = p[1]; if (p[1] > mxLng) mxLng = p[1]; });
+    var pad = 0.0025;
+    return (mnLat - pad).toFixed(5) + "," + (mnLng - pad).toFixed(5) + "," + (mxLat + pad).toFixed(5) + "," + (mxLng + pad).toFixed(5);
+  });
+  /* 1.3 fix: ask the free Overpass server one piece at a time (with a short pause) instead of all at once, so long routes don't get rate-limited */
+  var lists = [];
+  var jobs = bbs.reduce(function (chain, bb) {
+    return chain.then(function () {
+      if (my !== stoplightSeq) return;
+      return fetchChunk(bb, 0).catch(function () { return []; }).then(function (l) { lists.push(l); return new Promise(function (ok) { setTimeout(ok, 1200); }); });
+    });
+  }, Promise.resolve()).then(function () { return lists; });
+  jobs.then(function (lists) {
+    if (my !== stoplightSeq) return;
+    var raw = [];
+    lists.forEach(function (l) { (l || []).forEach(function (e) { if (e && typeof e.lat === "number" && typeof e.lon === "number") raw.push([e.lat, e.lon]); }); });
+    var kept = [];
+    raw.forEach(function (p) { for (var i = 0; i < kept.length; i++) { if (haversine(p, kept[i]) < 40) return; } kept.push(p); });
+    var items = [];
+    kept.forEach(function (p) { var a = stoplightAlong(p, r); if (a.dist < 150) items.push({ pt: p, along: a.along }); });
+    items.sort(function (a, b) { return a.along - b.along; });
+    items = items.slice(0, 400);
+    clearStoplightMarkers();
+    items.forEach(function (f) {
+      var m = L.marker(f.pt, { icon: L.divIcon({ className: "", html: '<div style="font-size:20px;line-height:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))">\uD83D\uDEA6</div>', iconSize: [20, 20], iconAnchor: [10, 10] }), zIndexOffset: 850 }).addTo(map);
+      m.bindPopup("<b>\uD83D\uDEA6 Traffic light</b><br>" + fmtMiles(f.along) + " mi into trip");
+      stoplightMarkers.push(m);
+    });
+  });
+}
+/* ================= Live traffic incidents on route (HERE Traffic API v7) ================= */
+var trafficMarkers = [], trafficSeen = {}, trafficSeq = 0;
+function clearTrafficMarkers() { trafficMarkers.forEach(function (m) { map.removeLayer(m); }); trafficMarkers = []; }
+function incidentPoint(it) {
+  try {
+    var links = it.location.shape.links;
+    for (var i = 0; i < links.length; i++) { if (links[i].points && links[i].points.length) return [links[i].points[0].lat, links[i].points[0].lng]; }
+  } catch (e) { }
+  return null;
+}
+function refreshTrafficIncidents(keepQuiet) {
+  var listEl = $("trafficList"); if (!listEl) return;
+  if (!cfg.traffic || !cfg.key || typeof routes === "undefined" || !routes.length) { listEl.innerHTML = ""; clearTrafficMarkers(); return; }
+  var r = routes[selRoute]; if (!r || !r.pts || !r.pts.length) return;
+  var my = ++trafficSeq;
+  var minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+  r.pts.forEach(function (p) { if (p[0] < minLat) minLat = p[0]; if (p[0] > maxLat) maxLat = p[0]; if (p[1] < minLng) minLng = p[1]; if (p[1] > maxLng) maxLng = p[1]; });
+  var pad = 0.06;
+  var url = "https://data.traffic.hereapi.com/v7/incidents?" + qs({ locationReferencing: "shape", "in": "bbox:" + (minLng - pad).toFixed(5) + "," + (minLat - pad).toFixed(5) + "," + (maxLng + pad).toFixed(5) + "," + (maxLat + pad).toFixed(5), lang: "en-US", apiKey: cfg.key });
+  httpGet(url).then(function (res) {
+    if (my !== trafficSeq) return;
+    if (res.status !== 200 || !res.json || !res.json.results) { if (!keepQuiet) { listEl.innerHTML = ""; clearTrafficMarkers(); } return; }
+    var found = [];
+    res.json.results.forEach(function (it) {
+      var d = it.incidentDetails || {}; var pt = incidentPoint(it); if (!pt) return;
+      var best = -1, bestD = 1e12;
+      for (var i = 0; i < r.pts.length; i += 3) { var dd = haversine(pt, r.pts[i]); if (dd < bestD) { bestD = dd; best = i; } }
+      if (best < 0 || bestD > 800) return;
+      var along = r.cum[Math.min(best, r.cum.length - 1)] || 0;
+      found.push({ pt: pt, along: along, type: d.type || "incident", closed: !!d.roadClosed, text: (d.summary && d.summary.value) || (d.description && d.description.value) || d.type || "Traffic incident", id: d.originalId || d.id || "" });
+    });
+    found.sort(function (a, b) { return a.along - b.along; });
+    clearTrafficMarkers();
+    found.forEach(function (f) {
+      var m = L.marker(f.pt, { icon: L.divIcon({ className: "", html: '<div style="font-size:26px;line-height:26px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))">\u26A0\uFE0F</div>', iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 900 }).addTo(map);
+      m.bindPopup("<b>" + esc(f.closed ? "ROAD CLOSED \u2014 " : "") + esc(f.type) + "</b><br>" + esc(f.text) + "<br>" + fmtMiles(f.along) + " mi into trip");
+      trafficMarkers.push(m);
+      if (f.closed && f.id && !trafficSeen[f.id] && typeof nav !== "undefined" && nav) {
+        /* 1.3 fix: measure from where the truck is now, not from the trip start; skip closures already behind us */
+        var aheadM = f.along - (nav.s || 0);
+        if (aheadM > -100) {
+          trafficSeen[f.id] = 1;
+          var aheadMi = Math.max(0, aheadM) / M_PER_MI;
+          var aheadTxt = aheadMi < 0.5 ? "just ahead" : "about " + Math.max(1, Math.round(aheadMi)) + (Math.round(aheadMi) === 1 ? " mile ahead" : " miles ahead");
+          toast("\u26A0 Road closed on your route, " + (aheadMi < 0.5 ? "just ahead" : fmtMiles(Math.max(0, aheadM)) + " mi ahead"), 6000);
+          speak("Warning: road closed on your route, " + aheadTxt + ". " + f.text);
+        }
+      }
+    });
+    if (!found.length) { listEl.innerHTML = ""; return; }
+    listEl.innerHTML = '<div style="font-weight:800;margin:8px 0 4px">\uD83D\uDEA6 Traffic on this route</div>' + found.map(function (f) {
+      return '<div class="notice' + (f.closed ? "" : " info") + '">' + (f.closed ? "\u26D4 ROAD CLOSED \u00B7 " : "\u26A0 ") + esc(fmtMiles(f.along) + " mi \u00B7 " + f.text) + "</div>";
+    }).join("");
+  });
+}
+$("alts").addEventListener("click", function (e) { var el = e.target.closest("[data-r]"); if (!el) return; selRoute = +el.getAttribute("data-r"); renderRoutes(false); });
+function clearRoute() {
+  cancelGatePick();
+  planSeq++; planRoute.autoStart = false;
+  dest = null; via = null; clearStopsCache(); clearViaMarker(); routes = []; routeLines.forEach(function (l) { map.removeLayer(l); }); routeLines = [];
+  if (destMarker) { map.removeLayer(destMarker); destMarker = null; }
+  $("routePanel").classList.add("hidden"); $("idleHint").classList.remove("hidden"); $("q").value = "";
+  $("status").textContent = pos ? "Ready" : "Waiting for GPS…"; followBrowse = true;
+  if (hiMarker) { map.removeLayer(hiMarker); hiMarker = null; }
+  trafficSeq++; clearTrafficMarkers(); stoplightSeq++; clearStoplightMarkers(); if ($("trafficList")) $("trafficList").innerHTML = "";
+  if (cfg.stopIcons) refreshStopIcons();
+}
+
+/* ================= Voice ================= */
+var muted = false;
+var lastSpeak = 0;
+function speak(text) {
+  if (!cfg.voice || muted || !text) return;
+  lastSpeak = pos && pos.time ? pos.time : Date.now();
+  try {
+    if (window.RigNative && window.RigNative.ttsReady && window.RigNative.ttsReady()) { window.RigNative.speak(text); return; }
+  } catch (e) { }
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 1; speechSynthesis.speak(u); } catch (e) { } }
+}
+function lc(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+function spokenInstr(a) {
+  var t = (a.instruction || "").replace(/\s*Go for .*$/i, "").replace(/\bmi\b\.?/g, "miles").trim();
+  if (!t) {
+    var dir = a.direction ? a.direction + " " : "";
+    t = (a.action === "arrive" ? "Arrive at your destination" : (dir + (a.action || "continue")).replace(/([A-Z])/g, " $1"));
+    if (a.nextRoad && a.nextRoad.name && a.nextRoad.name[0]) t += " onto " + a.nextRoad.name[0].value;
+  }
+  return t.replace(/\.$/, "");
+}
+
+/* ================= Navigation ================= */
+var nav = null; /* active route state */
+var headingUp = true;
+function startNav() {
+  cancelGatePick();
+  var r = routes[selRoute]; if (!r) return;
+  nav = { r: r, idx: 0, s: 0, nextA: 1, said: {}, off: 0, lastReroute: 0, rerouting: false, overview: false, smoothBearing: null, via: via, viaPassed: false, weighSaid: {} };
+  browseMode = false;
+  $("browse").classList.add("hidden"); $("nav").classList.remove("hidden"); $("sugg").classList.add("hidden");
+  map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable(); map.scrollWheelZoom.disable();
+  if (window.RigNative && window.RigNative.keepScreenOn) window.RigNative.keepScreenOn(true);
+  history.pushState({ nav: 1 }, "");
+  routeLines.forEach(function (l) { map.removeLayer(l); }); routeLines = [];
+  nav.lineCase = L.polyline(r.pts, { color: "#0b2d5c", weight: 14, opacity: .9, interactive: false }).addTo(map);
+  nav.line = L.polyline(r.pts, { color: r.notices.some(noticeIsCritical) ? "#ff3b30" : "#2f8cff", weight: 9, interactive: false }).addTo(map);
+  $("navwarn").innerHTML = r.notices.some(noticeIsCritical) ? routeNoticeHtml(r.notices.filter(noticeIsCritical).slice(0, 1)) : "";
+  setTimeout(function () { $("navwarn").innerHTML = ""; }, 15000);
+  headingUp = true; $("btnOrient").textContent = "⬆";
+  sizeMapForRotation(true);
+  map.setZoom(16.5);
+  var first = r.actions[0];
+  addRecent(dest);
+  var fv = dest && dest.favId ? favById(dest.favId) : null;
+  speak("Starting truck route" + (fv ? " to " + fv.name : "") + ". " + (first ? spokenInstr(first) : "") + ". Obey all posted truck restrictions.");
+  clearStopsCache(); navStopsSetup();
+  if (pos) onNavFix();
+}
+function endNav(silent) {
+  if (!nav) return;
+  [nav.line, nav.lineCase].forEach(function (l) { if (l) map.removeLayer(l); });
+  nav = null; browseMode = true; clearStopsCache(); hideStopsPanel(); $("rrPanel").classList.add("hidden");
+  $("nav").classList.add("hidden"); $("browse").classList.remove("hidden");
+  map.dragging.enable(); map.touchZoom.enable(); map.doubleClickZoom.enable(); map.scrollWheelZoom.enable();
+  if (window.RigNative && window.RigNative.keepScreenOn) window.RigNative.keepScreenOn(false);
+  if (window.RigNative && window.RigNative.stopSpeaking) window.RigNative.stopSpeaking();
+  sizeMapForRotation(false); setTruckRot(pos && pos.bearing >= 0 ? pos.bearing : 0);
+  if (!silent && routes.length) renderRoutes(true);
+  if (cfg.stopIcons) refreshStopIcons();
+}
+/* Locate position on the route: search a window ahead of the last index (and full route when lost). */
+function snap(r, p, fromIdx, full) {
+  var best = { d: Infinity, i: 0, t: 0 };
+  var a = full ? 0 : Math.max(0, fromIdx - 5), b = full ? r.pts.length - 1 : Math.min(r.pts.length - 1, fromIdx + 400);
+  for (var i = a; i < b; i++) {
+    var q = projSeg(p, r.pts[i], r.pts[i + 1]);
+    if (q.d < best.d) best = { d: q.d, i: i, t: q.t };
+  }
+  if (r.pts.length === 1) best = { d: haversine(p, r.pts[0]), i: 0, t: 0 };
+  var segLen = r.cum[best.i + 1] != null ? r.cum[best.i + 1] - r.cum[best.i] : 0;
+  best.s = r.cum[best.i] + best.t * segLen;
+  return best;
+}
+function remainingTime(r, s) {
+  var acts = r.actions, total = 0;
+  for (var k = 0; k < acts.length; k++) {
+    var st = r.cum[acts[k].offset] || 0, en = k + 1 < acts.length ? (r.cum[acts[k + 1].offset] || st) : r.cum[r.cum.length - 1];
+    if (en <= s) continue;
+    var len = Math.max(1, en - st), d = acts[k].duration || 0;
+    total += s > st ? d * (en - s) / len : d;
+  }
+  if (!total && r.length) total = r.duration * Math.max(0, r.length - s) / r.length;
+  return total;
+}
+function arrowSvg(a) {
+  var dir = (a && a.direction) || "", act = (a && a.action) || "";
+  var rot = 0, uturn = /uTurn/i.test(act), arrive = act === "arrive";
+  if (/left/i.test(dir)) rot = /sharp/i.test(a.severity || "") ? -135 : (/light/i.test(a.severity || "") ? -45 : -90);
+  if (/right/i.test(dir)) rot = /sharp/i.test(a.severity || "") ? 135 : (/light/i.test(a.severity || "") ? 45 : 90);
+  if (/middle|straight/i.test(dir) || act === "continue" || act === "depart") rot = 0;
+  if (/keep|ramp|exit/i.test(act) && rot) rot = rot > 0 ? 45 : -45;
+  if (arrive) return '<svg viewBox="0 0 84 84"><path d="M42 8C29 8 20 18 20 30c0 17 22 42 22 42s22-25 22-42C64 18 55 8 42 8z" fill="#fff"/><circle cx="42" cy="30" r="8" fill="#0d3b1f"/></svg>';
+  if (uturn) return '<svg viewBox="0 0 84 84"><path d="M56 74V34a16 16 0 0 0-32 0v14" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M10 44l14 18 14-18z" fill="#fff"/></svg>';
+  if (/roundabout/i.test(act)) return '<svg viewBox="0 0 84 84"><circle cx="42" cy="44" r="16" fill="none" stroke="#fff" stroke-width="8"/><path d="M42 78V60M42 28V8" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M28 14l14-12 14 12z" fill="#fff"/></svg>';
+  return '<svg viewBox="0 0 84 84"><g transform="rotate(' + rot + ' 42 50)"><path d="M42 80V30" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M20 36L42 8l22 28z" fill="#fff"/></g></svg>';
+}
+function onNavFix() {
+  if (!nav || !pos) return;
+  var r = nav.r, p = [pos.lat, pos.lng];
+  var sp = snap(r, p, nav.idx, false);
+  if (sp.d > 100) { var spf = snap(r, p, 0, true); if (spf.d < sp.d) sp = spf; }
+  var accOk = !(pos.acc > 0) || pos.acc < 80;
+  /* off-route: > 150 m for 4 consecutive good fixes */
+  if (sp.d > 150 && accOk) nav.off++; else if (sp.d < 60) nav.off = 0;
+  $("hud").classList.toggle("offroute", nav.off >= 2);
+  if (nav.off >= 4) { reroute(); }
+  else if (sp.s >= nav.s - 30 || sp.d < 30) { nav.idx = sp.i; nav.s = Math.max(sp.s, nav.s - 30); }
+
+  var s = nav.s, remain = Math.max(0, r.length - s);
+  /* next maneuver */
+  var acts = r.actions, k = nav.nextA;
+  while (k < acts.length && (r.cum[acts[k].offset] || 0) <= s + 5) k++;
+  if (k >= acts.length) k = acts.length - 1;
+  nav.nextA = Math.max(nav.nextA, k);
+  var a = acts[k], aDist = a ? Math.max(0, (r.cum[a.offset] || 0) - s) : remain;
+  /* bearing for display */
+  var b = (pos.bearing >= 0 && pos.speed > 2) ? pos.bearing : bearingDeg(r.pts[nav.idx], r.pts[Math.min(nav.idx + 1, r.pts.length - 1)]);
+  if (nav.smoothBearing == null) nav.smoothBearing = b;
+  var diff = ((b - nav.smoothBearing + 540) % 360) - 180; nav.smoothBearing = (nav.smoothBearing + diff * 0.5 + 360) % 360;
+  var hb = nav.smoothBearing;
+
+  /* HUD */
+  if (nav.off >= 2) { $("mdist").textContent = "Off route"; $("mtext").textContent = nav.rerouting ? "Finding a new truck route…" : "Return to the blue line"; $("arrow").innerHTML = ""; }
+  else {
+    $("mdist").textContent = a && a.action === "arrive" && aDist < 30 ? (a.viaStop ? "At stop" : "Arrived") : fmtDist(aDist);
+    $("mtext").textContent = a ? (a.instruction || spokenInstr(a)).replace(/\s*Go for .*$/i, "") : "";
+    $("arrow").innerHTML = arrowSvg(a);
+    var then = acts[k + 1];
+    $("thenrow").textContent = then && then.offset != null && ((r.cum[then.offset] || 0) - (r.cum[a.offset] || 0)) < 400 ? "Then: " + spokenInstr(then) : "";
+  }
+  var rt = remainingTime(r, s);
+  $("rmi").textContent = fmtMiles(remain); $("rtime").textContent = fmtDur(rt);
+  $("eta").textContent = fmtClock(new Date(Date.now() + rt * 1000)).replace(" ", "\u202f");
+  $("spd").textContent = Math.round((pos.speed > 0 ? pos.speed : 0) * 2.236936);
+  /* speed limit from spans */
+  var lim = null;
+  for (var j = r.spans.length - 1; j >= 0; j--) { if (r.spans[j].offset <= nav.idx) { lim = r.spans[j].speedLimit; break; } }
+  if (lim && lim > 0) { $("limit").classList.remove("hidden"); $("lim").textContent = Math.round(lim * 2.236936 / 5) * 5; } else $("limit").classList.add("hidden");
+
+  /* voice prompts: ~1 mi, ~0.25 mi, at the turn */
+  if (a && nav.off < 2) {
+    var said = nav.said[k] || (nav.said[k] = {});
+    var v = Math.max(pos.speed || 0, 0), instr = spokenInstr(a);
+    var turnAt = Math.max(50, v * 5);
+    if (a.action === "arrive" && a.viaStop) {
+      if (aDist < 1700 && aDist > 900 && !said.m1) { said.m1 = 1; speak("In 1 mile, your added stop."); }
+      if (aDist <= turnAt && !said.t) { said.t = 1; markViaPassed(); }
+    } else if (a.action === "arrive") {
+      if (aDist < 1700 && aDist > 900 && !said.m1) { said.m1 = 1; speak("In 1 mile, your destination."); }
+      if (aDist < 40 + v * 2 && !said.t) { said.t = 1; speak("You have arrived. " + "Check for posted truck entrance signs."); setTimeout(function () { if (nav && remainingTimeOk()) endNav(false); }, 8000); }
+    } else {
+      if (aDist <= 1700 && aDist > 1000 && !said.m1) { said.m1 = 1; speak("In 1 mile, " + lc(instr)); }
+      else if (aDist <= 460 && aDist > turnAt + 60 && !said.q) { said.q = 1; speak("In a quarter mile, " + lc(instr)); }
+      else if (aDist <= turnAt && !said.t) { said.t = 1; speak(instr); }
+    }
+  }
+  if (nav.via && !nav.viaPassed && haversine(p, [nav.via.lat, nav.via.lng]) < 60) markViaPassed();
+  checkWeighAhead();
+  maybeRefreshNavStops();
+  /* camera */
+  setTruckRot(hb);
+  if (!nav.overview) {
+    var z = map.getZoom(), tp = map.project(p, z);
+    var look = Math.min(window.innerHeight * 0.28, 220);
+    var rb = headingUp ? hb : 0;
+    var ctr = map.unproject(L.point(tp.x + Math.sin(toRad(rb)) * look, tp.y - Math.cos(toRad(rb)) * look), z);
+    map.setView(ctr, z, { animate: true, duration: 0.8, easeLinearity: 1, noMoveStart: true });
+    $("map").style.transform = headingUp ? "rotate(" + (-hb) + "deg)" : "";
+  }
+}
+function remainingTimeOk() { return true; }
+function reroute(force) {
+  if (!nav || nav.rerouting || !dest || !pos) return;
+  if (!force && Date.now() - nav.lastReroute < 20000) return;
+  nav.rerouting = true; nav.lastReroute = Date.now();
+  speak(force ? "Calculating new truck route." : "Off route. Recalculating truck route.");
+  var v = nav.via && !nav.viaPassed ? [nav.via.lat, nav.via.lng] : null;
+  requestTruckRoute([pos.lat, pos.lng], [dest.lat, dest.lng], { course: pos.speed > 2 ? pos.bearing : -1, via: v }).then(function (res) {
+    if (!nav) return;
+    nav.rerouting = false;
+    if (res.status !== 200 || !res.json || !(res.json.routes || []).length) { toast("Reroute failed: " + apiErrorText(res), 5000); return; }
+    var r;
+    try { r = parseRoute(res.json.routes[0]); } catch (e) { toast("Reroute failed: " + e.message); return; }
+    nav.r = r; nav.idx = 0; nav.s = 0; nav.nextA = 1; nav.said = {}; nav.off = 0;
+    nav.line.setLatLngs(r.pts); nav.lineCase.setLatLngs(r.pts);
+    var crit = r.notices.filter(noticeIsCritical).concat((res.json.notices || []));
+    nav.line.setStyle({ color: crit.length ? "#ff3b30" : "#2f8cff" });
+    if (crit.length) { $("navwarn").innerHTML = routeNoticeHtml(crit.slice(0, 2)); speak("Warning. The new route has a truck restriction notice. Check the screen when safely stopped."); setTimeout(function () { $("navwarn").innerHTML = ""; }, 20000); }
+    routes = [r]; selRoute = 0;
+    clearStopsCache(); navStopsSetup();
+    /* 1.3 fix: refresh traffic and stoplights for the new route right away */
+    try { refreshTrafficIncidents(true); refreshStoplights(); } catch (e) { }
+    var first = r.actions[1] || r.actions[0];
+    if (first) speak(first.viaStop ? "New truck route with your added stop." : "New truck route. " + spokenInstr(first));
+    onNavFix();
+  });
+}
+/* ---- 1.4.2 manual reroute: fresh truck routes from where you are, pick one or keep yours ---- */
+var rrOpts = [];
+function manualReroute() {
+  if (!nav || !dest) return;
+  if (!pos) { toast("Waiting for GPS…"); return; }
+  if (nav.rerouting) { toast("Already calculating…"); return; }
+  nav.rerouting = true;
+  $("rrBody").innerHTML = '<div class="prof">Checking truck routes from your current spot…</div>'; $("rrPanel").classList.remove("hidden");
+  var v = nav.via && !nav.viaPassed ? [nav.via.lat, nav.via.lng] : null;
+  var curLeft = remainingTime(nav.r, nav.s), curMi = Math.max(0, nav.r.length - nav.s);
+  requestTruckRoute([pos.lat, pos.lng], [dest.lat, dest.lng], { course: pos.speed > 2 ? pos.bearing : -1, via: v, alternatives: 2 }).then(function (res) {
+    if (!nav) return;
+    nav.rerouting = false; nav.lastReroute = Date.now();
+    if (res.status !== 200 || !res.json || !(res.json.routes || []).length) { $("rrBody").innerHTML = '<div class="notice">Reroute failed: ' + esc(apiErrorText(res)) + "</div>"; return; }
+    try { rrOpts = res.json.routes.map(parseRoute); } catch (e) { $("rrBody").innerHTML = '<div class="notice">Reroute failed: ' + esc(e.message) + "</div>"; return; }
+    rrOpts.topNotices = res.json.notices || [];
+    $("rrBody").innerHTML = '<div class="prof">Current route: ' + fmtDur(curLeft) + " · " + fmtMiles(curMi) + " mi left</div>" + rrOpts.map(function (r, i) {
+      var diff = Math.round((curLeft - r.duration) / 60), crit = r.notices.some(noticeIsCritical);
+      var tag = diff >= 2 ? "Saves about " + diff + " min" : diff <= -2 ? "About " + (-diff) + " min longer" : "About the same time";
+      return '<button class="rrOpt' + (i === 0 && diff >= 2 && !crit ? " best" : "") + '" data-rr="' + i + '">' + (i === 0 ? "Route A" : i === 1 ? "Route B" : "Route C") + ": " + fmtDur(r.duration) + " · " + fmtMiles(r.length) + " mi<small>" + esc(tag) + (crit ? " · ⛔ truck restriction notice" : "") + "</small></button>";
+    }).join("");
+    speak(rrOpts.length > 1 ? "Found " + rrOpts.length + " truck routes. Pick one when safely stopped." : "Truck route updated. Tap it to use it.");
+  });
+}
+function useRerouteOption(i) {
+  var r = rrOpts[i]; if (!r || !nav) return;
+  $("rrPanel").classList.add("hidden");
+  nav.r = r; nav.idx = 0; nav.s = 0; nav.nextA = 1; nav.said = {}; nav.off = 0; nav.lastReroute = Date.now();
+  nav.line.setLatLngs(r.pts); nav.lineCase.setLatLngs(r.pts);
+  var crit = r.notices.filter(noticeIsCritical).concat(rrOpts.topNotices || []);
+  nav.line.setStyle({ color: crit.length ? "#ff3b30" : "#2f8cff" });
+  if (crit.length) { $("navwarn").innerHTML = routeNoticeHtml(crit.slice(0, 2)); setTimeout(function () { $("navwarn").innerHTML = ""; }, 20000); }
+  routes = [r]; selRoute = 0;
+  clearStopsCache(); navStopsSetup();
+  try { refreshTrafficIncidents(true); refreshStoplights(); } catch (e) { }
+  var first = r.actions[1] || r.actions[0];
+  speak("New truck route." + (first ? " " + spokenInstr(first) : ""));
+  onNavFix();
+}
+$("btnReroute").onclick = manualReroute;
+$("rrBody").addEventListener("click", function (e) { var b = e.target.closest("[data-rr]"); if (b) useRerouteOption(+b.getAttribute("data-rr")); });
+$("btnRrKeep").onclick = function () { $("rrPanel").classList.add("hidden"); };
+
+function toggleOverview() {
+  if (!nav) return;
+  nav.overview = !nav.overview;
+  if (nav.overview) {
+    $("map").style.transform = ""; sizeMapForRotation(false);
+    map.dragging.enable(); map.touchZoom.enable();
+    map.fitBounds(nav.line.getBounds(), { paddingTopLeft: [30, 140], paddingBottomRight: [90, 120] });
+    $("btnOverview").textContent = "◎";
+  } else {
+    map.dragging.disable(); map.touchZoom.disable();
+    sizeMapForRotation(true); map.setZoom(16.5); $("btnOverview").textContent = "⤢"; onNavFix();
+  }
+}
+
+/* ================= Truck stops & weigh stations (HERE Browse/Discover v1) ================= */
+/* HERE place categories (Places category system): 700-7900-0132 Truck Stop-Plaza, 400-4200-0048 Weigh Station. */
+var STOP_TYPES = {
+  truck: { cat: "700-7900-0132", q: "truck stop", label: "truck stops", match: /truck|travel (center|centre|stop|plaza)|pilot|flying j|love'?s|petro|\bta\b|kwik trip|sapp bros|road ranger|bosselman|iowa 80|town pump|ambest|kenly 84/i },
+  weigh: { cat: "400-4200-0048", q: "weigh station", label: "weigh stations", match: /weigh|scale|port of entry|inspection station|enforcement/i }
+};
+var BRANDS = [[/flying\s*j/i, "Flying J"], [/pilot/i, "Pilot"], [/love'?s/i, "Love's"], [/petro\b/i, "Petro"], [/\bTA\b|travelcenters?|travel centers? of america/i, "TA"], [/kwik trip|kwik star/i, "Kwik Trip"], [/sapp bros/i, "Sapp Bros"], [/road ranger/i, "Road Ranger"], [/bosselman|boss shop/i, "Bosselman"], [/iowa 80/i, "Iowa 80"], [/town pump/i, "Town Pump"], [/ambest/i, "AmBest"], [/speedway/i, "Speedway"], [/buc-?ee'?s/i, "Buc-ee's"], [/sinclair/i, "Sinclair"], [/cat scale/i, "CAT Scale"]];
+var CORRIDOR_W = 1700;          /* m, ~1 mi each side of the route */
+var CORRIDOR_AHEAD = 400000;    /* m, ~250 mi of route per corridor request */
+var stopsCache = {};            /* type -> {items, at, s0, r} */
+var stopsTab = "truck", stopsSelId = null, stopMarkers = [], viaMarker = null, hiMarker = null;
+
+/* Flexible polyline encoder (precision 5, 2D) */
+function fpEncode(pts) {
+  var CH = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  function u(v) { var s = ""; while (v > 31) { s += CH.charAt((v & 31) | 32); v = Math.floor(v / 32); } return s + CH.charAt(v); }
+  function sg(v) { return u(v < 0 ? -v * 2 - 1 : v * 2); }
+  var out = u(1) + u(5), la = 0, ln = 0;
+  for (var i = 0; i < pts.length; i++) { var A = Math.round(pts[i][0] * 1e5), B = Math.round(pts[i][1] * 1e5); out += sg(A - la) + sg(B - ln); la = A; ln = B; }
+  return out;
+}
+window.fpEncode = fpEncode;
+/* Remaining route from s0 for up to `ahead` m, thinned to <= maxPts points (corridor is 1 mi wide so small deviations are fine). */
+function routeSlice(r, s0, ahead, maxPts) {
+  var i0 = 0; while (i0 < r.cum.length - 1 && r.cum[i0 + 1] < s0) i0++;
+  var i1 = i0; while (i1 < r.cum.length - 1 && r.cum[i1] < s0 + ahead) i1++;
+  var span = r.cum[i1] - r.cum[i0], tol = Math.max(60, span / maxPts), out = [r.pts[i0]], lastS = r.cum[i0];
+  for (var i = i0 + 1; i < i1; i++) { if (r.cum[i] - lastS >= tol) { out.push(r.pts[i]); lastS = r.cum[i]; } }
+  if (i1 > i0) out.push(r.pts[i1]); else out.push(r.pts[Math.min(i0 + 1, r.pts.length - 1)]);
+  if (out.length > maxPts) { var st = Math.ceil(out.length / maxPts), o2 = []; for (var k = 0; k < out.length; k += st) o2.push(out[k]); o2.push(out[out.length - 1]); out = o2; }
+  return out;
+}
+function brandOf(it) {
+  if (it.chains && it.chains.length && it.chains[0].name) return it.chains[0].name;
+  var t = (it.title || "") + " " + ((it.address && it.address.label) || "");
+  for (var i = 0; i < BRANDS.length; i++) if (BRANDS[i][0].test(t)) return BRANDS[i][1];
+  return "";
+}
+function exitOf(it) { var m = ((it.title || "") + " " + ((it.address && it.address.label) || "")).match(/\bexit\s*#?\s*(\d+[A-Z]?)\b/i); return m ? "Exit " + m[1] : ""; }
+function normItems(list, type) {
+  var seen = {};
+  return (list || []).filter(function (it) {
+    if (!it.position) return false;
+    var key = it.id || (it.title + it.position.lat.toFixed(4) + it.position.lng.toFixed(4));
+    if (seen[key]) return false; seen[key] = 1; return true;
+  }).map(function (it) {
+    var acc = it.access && it.access[0];
+    return { id: it.id || (it.title + "@" + it.position.lat + "," + it.position.lng), type: type, name: it.title || "(unnamed)", brand: brandOf(it), exit: exitOf(it),
+      addr: (it.address && it.address.label) || "", lat: it.position.lat, lng: it.position.lng, snapPt: acc ? [acc.lat, acc.lng] : [it.position.lat, it.position.lng],
+      cats: (it.categories || []).map(function (c) { return c.id; }) };
+  });
+}
+/* Attach route-relative info: s (m along route), lateral (m), side. */
+function placeOnRoute(r, items, fromIdx) {
+  items.forEach(function (it) {
+    var best = { d: Infinity, i: 0, t: 0 };
+    for (var i = Math.max(0, fromIdx - 2); i < r.pts.length - 1; i++) { var q = projSeg(it.snapPt, r.pts[i], r.pts[i + 1]); if (q.d < best.d) best = { d: q.d, i: i, t: q.t }; }
+    var a = r.pts[best.i], b = r.pts[best.i + 1] || a;
+    it.s = r.cum[best.i] + best.t * ((r.cum[best.i + 1] || r.cum[best.i]) - r.cum[best.i]);
+    it.lateral = best.d;
+    var kx = Math.cos(toRad(a[0])), cross = (b[1] - a[1]) * kx * (it.snapPt[0] - a[0]) - (b[0] - a[0]) * (it.snapPt[1] - a[1]) * kx;
+    it.side = best.d < 25 ? "" : (cross > 0 ? "left" : "right");
+  });
+  return items;
+}
+function browseUrl(type, params) {
+  var o = Object.assign({ categories: STOP_TYPES[type].cat, lang: "en-US", apiKey: cfg.key }, params);
+  return "https://browse.search.hereapi.com/v1/browse?" + qs(o);
+}
+function discoverUrl(type, params) {
+  var o = Object.assign({ q: STOP_TYPES[type].q, lang: "en-US", apiKey: cfg.key }, params);
+  return "https://discover.search.hereapi.com/v1/discover?" + qs(o);
+}
+/* Category browse; if HERE returns nothing, fall back to a text discover query and keep only matching places. */
+function searchPlaces(type, params) {
+  return httpGet(browseUrl(type, params)).then(function (res) {
+    if (res.status !== 200) return { status: res.status, res: res, items: [] };
+    var items = (res.json && res.json.items) || [];
+    if (items.length) return { status: 200, items: items, via: "browse" };
+    var dp = Object.assign({}, params); delete dp.categories;
+    return httpGet(discoverUrl(type, dp)).then(function (r2) {
+      if (r2.status !== 200) return { status: 200, items: [], via: "browse" };
+      var T = STOP_TYPES[type];
+      var f = ((r2.json && r2.json.items) || []).filter(function (it) {
+        return (it.categories || []).some(function (c) { return c.id === T.cat; }) || T.match.test(it.title || "");
+      });
+      return { status: 200, items: f, via: "discover" };
+    });
+  });
+}
+/* Route corridor search ahead of s0; if the corridor request is rejected (e.g. URL too long), sample points along the route instead. */
+function searchAlongRoute(type, r, s0) {
+  var at = pos ? pos.lat.toFixed(5) + "," + pos.lng.toFixed(5) : r.pts[0][0].toFixed(5) + "," + r.pts[0][1].toFixed(5);
+  var poly = routeSlice(r, s0, CORRIDOR_AHEAD, 500);
+  return searchPlaces(type, { at: at, route: fpEncode(poly) + ";w=" + CORRIDOR_W, limit: 100 }).then(function (out) {
+    if (out.status === 200) return out;
+    if (out.status === 401 || out.status === 403 || out.status === 429 || out.status === 0) return out;
+    /* fallback: up to 6 sample points every ~25 mi over the next ~150 mi */
+    var pts = [], end = Math.min(r.length, s0 + 241000);
+    for (var s = s0; s <= end && pts.length < 6; s += 40000) { var i = 0; while (i < r.cum.length - 1 && r.cum[i] < s) i++; pts.push(r.pts[i]); }
+    return Promise.all(pts.map(function (p) { return searchPlaces(type, { at: p[0].toFixed(5) + "," + p[1].toFixed(5), limit: 30 }); })).then(function (all) {
+      var items = []; all.forEach(function (a) { items = items.concat(a.items || []); });
+      var ok = all.some(function (a) { return a.status === 200; });
+      return ok ? { status: 200, items: items, via: "sampled" } : all[0] || out;
+    });
+  });
+}
+function clearStopsCache() { stopsCache = {}; }
+function clearViaMarker() { if (viaMarker) { map.removeLayer(viaMarker); viaMarker = null; } }
+/* ---- 1.4.1: CAT scales / private truck-stop scales are NOT DOT weigh stations ---- */
+var SCALE_PRIVATE = /\bcat\b|cat ?scale|certified automated|weigh my truck|certified (truck )?scale|public (truck )?scale|truck stop scale/i;
+var SCALE_OFFICIAL = /weigh station|port of entry|inspection|enforcement|\bdot\b|department of transportation|highway patrol|state police|motor carrier|\bpoe\b|weigh.in.motion|scale house|state scale/i;
+var SCALE_NEAR_STOP_M = 250;
+function isPrivateScale(w, trucks) {
+  var txt = w.name + " " + (w.brand || "");
+  if (SCALE_PRIVATE.test(txt)) return true;
+  if ((w.cats || []).indexOf(STOP_TYPES.truck.cat) >= 0) return true;
+  if (w.brand && !/cat scale/i.test(w.brand) && STOP_TYPES.truck.match.test(w.brand)) return true;
+  if (SCALE_OFFICIAL.test(txt)) return false;
+  for (var i = 0; i < trucks.length; i++) if (haversine([trucks[i].lat, trucks[i].lng], [w.lat, w.lng]) < SCALE_NEAR_STOP_M) return true;
+  return false;
+}
+function getStops(type, mode) {
+  var other = type === "weigh" ? "truck" : "weigh";
+  return Promise.all([getStopsRaw(type, mode), getStopsRaw(other, mode).catch(function () { return { items: [] }; })]).then(function (a) {
+    var main = a[0], trucks = type === "truck" ? (main.items || []) : (a[1].items || []), weighs = type === "weigh" ? (main.items || []) : (a[1].items || []);
+    if (main.err) return main;
+    var official = [], priv = [];
+    weighs.forEach(function (w) { (isPrivateScale(w, trucks) ? priv : official).push(w); });
+    if (type === "weigh") return { items: official, mode: main.mode, via: main.via, hidden: priv.length };
+    var out = trucks.map(function (t) { var c = Object.assign({}, t); c.catScale = priv.some(function (w) { return haversine([w.lat, w.lng], [t.lat, t.lng]) < SCALE_NEAR_STOP_M; }); return c; });
+    priv.forEach(function (w) {
+      if (out.some(function (t) { return haversine([w.lat, w.lng], [t.lat, t.lng]) < SCALE_NEAR_STOP_M; })) return;
+      var c = Object.assign({}, w); c.type = "scale"; out.push(c);
+    });
+    return { items: out, mode: main.mode, via: main.via };
+  });
+}
+/* Returns Promise<{items, err, mode}> for the given tab, using the cache when possible. */
+function getStopsRaw(type, mode) {
+  var c = stopsCache[type + ":" + mode];
+  if (c && c.pending) return c.pending;
+  if (c && c.done && (mode !== "near" || (Date.now() - c.at < 300000 && pos && c.p && haversine(c.p, [pos.lat, pos.lng]) < 8000))) return Promise.resolve(c.done);
+  var r = mode === "nav" ? nav.r : mode === "plan" ? routes[selRoute] : null, s0 = mode === "nav" ? nav.s : 0;
+  var pr;
+  if (r) pr = searchAlongRoute(type, r, s0);
+  else if (pos) pr = searchPlaces(type, { at: pos.lat.toFixed(5) + "," + pos.lng.toFixed(5), limit: 50 });
+  else return Promise.resolve({ items: [], err: "Waiting for GPS…" });
+  var entry = { at: Date.now(), p: pos ? [pos.lat, pos.lng] : null, r: r, s0: s0 };
+  stopsCache[type + ":" + mode] = entry;
+  entry.pending = pr.then(function (out) {
+    delete entry.pending;
+    if (out.status !== 200) { delete stopsCache[type + ":" + mode]; return { items: [], err: apiErrorText(out.res || { status: out.status, json: null }) }; }
+    var items = normItems(out.items, type);
+    if (r) {
+      placeOnRoute(r, items, mode === "nav" ? nav.idx : 0);
+      items = items.filter(function (it) { return it.lateral <= CORRIDOR_W && it.s >= s0 - 150; });
+    }
+    entry.done = { items: items, mode: mode, via: out.via };
+    return entry.done;
+  });
+  return entry.pending;
+}
+function curMode() { return nav ? "nav" : "near"; }
+/* ---- list panel ---- */
+function showStopsPanel() { $("stopsPanel").classList.remove("hidden"); $("sugg").classList.add("hidden"); renderStopsList(); }
+function hideStopsPanel() { $("stopsPanel").classList.add("hidden"); }
+function setStopsTab(t) { stopsTab = t; stopsSelId = null; $("tabTruck").classList.toggle("sel", t === "truck"); $("tabWeigh").classList.toggle("sel", t === "weigh"); renderStopsList(); }
+function itemDistance(it) {
+  if (nav && it.s != null) return it.s - nav.s;
+  return pos ? haversine([pos.lat, pos.lng], [it.lat, it.lng]) : null;
+}
+var stopsShown = [];
+function renderStopsList() {
+  if (!cfg.key) { openSettings(); return; }
+  var type = stopsTab, mode = curMode(), list = $("stopsList");
+  $("btnStopIcons").textContent = "Map icons: " + (cfg.stopIcons ? "ON" : "OFF");
+  $("stopsStatus").textContent = "Searching " + STOP_TYPES[type].label + (mode === "nav" ? " along your route…" : " near you…");
+  list.innerHTML = "";
+  getStops(type, mode).then(function (out) {
+    if (type !== stopsTab || mode !== curMode()) return;
+    if (out.err) { $("stopsStatus").textContent = ""; list.innerHTML = '<div class="notice">' + esc(out.err) + "</div>"; return; }
+    var items = out.items.slice();
+    items.forEach(function (it) { it.dist = itemDistance(it); });
+    if (mode === "nav") items = items.filter(function (it) { return it.dist >= -150; });
+    items.sort(function (a, b) { return (a.dist == null ? 1e12 : a.dist) - (b.dist == null ? 1e12 : b.dist); });
+    items = items.slice(0, 40); stopsShown = items;
+    $("stopsStatus").textContent = items.length + " " + STOP_TYPES[type].label + (mode === "nav" ? " within ~1 mi of route, by miles ahead" : " by distance from you");
+    if (!items.length) { list.innerHTML = '<div class="prof">None found' + (mode === "nav" ? " within about 1 mile of the next ~250 miles of route." : " nearby.") + "</div>"; return; }
+    var note = type === "weigh" ? '<div class="notice info">DOT/state weigh stations only. CAT scales at truck stops are listed under Truck Stops. Open/closed status is not known; follow roadside signs and bypass rules.</div>' : "";
+    list.innerHTML = note + items.map(function (it, i) {
+      var meta = [];
+      if (it.brand && it.brand.toLowerCase() !== it.name.toLowerCase()) meta.push(it.brand);
+      if (it.catScale) meta.unshift("⚖ CAT Scale on site");
+      if (it.type === "scale") meta.unshift("Truck stop / CAT scale, not a DOT weigh station");
+      if (mode === "nav") { if (it.side) meta.push(it.side + " side of route"); if (it.lateral > 400) meta.push(fmtDist(it.lateral) + " off route"); }
+      if (it.exit) meta.push(it.exit);
+      if (it.addr) meta.push(it.addr.replace(/, United States$/, ""));
+      var d = it.dist == null ? "" : (mode === "nav" ? fmtMiles(Math.max(0, it.dist)) + " mi ahead" : fmtMiles(it.dist) + " mi");
+      var sel = it.id === stopsSelId;
+      var acts = sel ? '<div class="acts"><button data-act="show" data-i="' + i + '">🗺 Show</button>' + (dest ? '<button data-act="via" data-i="' + i + '">＋ Add as stop</button>' : "") + '<button class="go" data-act="go" data-i="' + i + '">Route here</button></div>' : "";
+      return '<div class="stop' + (sel ? " sel" : "") + '" data-i="' + i + '"><span class="mi">' + esc(d) + '</span><div class="nm">' + (type === "weigh" || it.type === "scale" ? "⚖ " : "⛽ ") + esc(it.name) + '</div><div class="mt">' + esc(meta.join(" · ")) + "</div>" + acts + "</div>";
+    }).join("");
+  });
+}
+$("stopsList").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-act]");
+  if (b) { e.stopPropagation(); var it = stopsShown[+b.getAttribute("data-i")]; if (!it) return; var act = b.getAttribute("data-act");
+    if (act === "show") showStopOnMap(it); else if (act === "via") addStopVia(it); else routeToStop(it); return; }
+  var el = e.target.closest(".stop[data-i]"); if (!el) return;
+  var it2 = stopsShown[+el.getAttribute("data-i")]; stopsSelId = stopsSelId === it2.id ? null : it2.id;
+  if (stopsSelId) showStopOnMap(it2, true); renderStopsList();
+});
+function poiSvg(type) {
+  if (type === "scale") return '<svg class="poiIcon" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#e8730c" stroke="#fff" stroke-width="2.5"/><path d="M17 8v17M11 25h12M9 12h16" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M9 12l-3 7h6zM25 12l-3 7h6z" fill="#fff"/></svg>';
+  if (type === "weigh") return '<svg class="poiIcon" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#7b3fe4" stroke="#fff" stroke-width="2.5"/><path d="M17 8v17M11 25h12M9 12h16" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M9 12l-3 7h6zM25 12l-3 7h6z" fill="#fff"/></svg>';
+  return '<svg class="poiIcon" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#e8730c" stroke="#fff" stroke-width="2.5"/><rect x="10" y="9" width="9" height="16" rx="1.5" fill="#fff"/><rect x="12" y="11" width="5" height="4" fill="#e8730c"/><path d="M19 13h3l2 3v6a1.5 1.5 0 0 1-3 0v-4h-2" fill="none" stroke="#fff" stroke-width="2"/></svg>';
+}
+function poiMarker(it, hi) {
+  return L.marker([it.lat, it.lng], { icon: L.divIcon({ className: "", html: poiSvg(it.type), iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: hi ? 900 : 500 })
+    .bindPopup("<b>" + esc(it.name) + "</b>" + (it.brand ? "<br>" + esc(it.brand) : "") + (it.exit ? "<br>" + esc(it.exit) : "") + (it.type === "weigh" ? "<br><i>DOT weigh station · open/closed status unknown</i>" : "") + (it.catScale ? "<br>⚖ CAT Scale on site" : "") + (it.type === "scale" ? "<br><i>Truck stop / CAT scale, not a DOT weigh station</i>" : ""));
+}
+function showStopOnMap(it, keepPanel) {
+  if (hiMarker) { map.removeLayer(hiMarker); hiMarker = null; }
+  hiMarker = poiMarker(it, true).addTo(map);
+  if (!keepPanel) hideStopsPanel();
+  if (nav && !nav.overview) toggleOverview();
+  followBrowse = false;
+  var pts = [[it.lat, it.lng]]; if (pos) pts.push([pos.lat, pos.lng]);
+  map.fitBounds(L.latLngBounds(pts), { padding: [70, 70], maxZoom: 15, paddingBottomRight: [70, keepPanel ? Math.round(window.innerHeight * 0.55) : 140] });
+  if (!keepPanel) hiMarker.openPopup();
+}
+function setViaMarker(v) {
+  clearViaMarker();
+  if (v) viaMarker = L.marker([v.lat, v.lng], { icon: L.divIcon({ className: "", html: '<svg class="destIcon" viewBox="0 0 36 36"><path d="M18 2C11 2 6 7.3 6 14c0 9 12 20 12 20s12-11 12-20C30 7.3 25 2 18 2z" fill="#ffb000" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="14" r="4.5" fill="#111"/></svg>', iconSize: [36, 36], iconAnchor: [18, 34] }) }).addTo(map);
+}
+function addStopVia(it) {
+  if (!dest) { routeToStop(it); return; }
+  via = { lat: it.lat, lng: it.lng, name: it.name };
+  setViaMarker(via); hideStopsPanel();
+  if (nav) { nav.via = via; nav.viaPassed = false; if (nav.overview) toggleOverview(); reroute(true); }
+  else planRoute();
+  toast("Added stop: " + it.name);
+}
+function routeToStop(it) {
+  hideStopsPanel(); via = null; clearViaMarker();
+  if (nav) {
+    dest = { lat: it.lat, lng: it.lng, name: it.name };
+    if (destMarker) destMarker.setLatLng([it.lat, it.lng]);
+    addRecent(dest);
+    nav.via = null; if (nav.overview) toggleOverview(); reroute(true);
+  } else setDestination(it.lat, it.lng, it.name + (it.addr ? " — " + it.addr : ""));
+}
+function markViaPassed() { if (nav && nav.via && !nav.viaPassed) { nav.viaPassed = true; speak("You have reached your added stop."); via = null; clearViaMarker(); } }
+/* ---- map icons ---- */
+function clearStopIcons() { stopMarkers.forEach(function (m) { map.removeLayer(m); }); stopMarkers = []; }
+function refreshStopIcons() {
+  clearStopIcons();
+  if (!cfg.stopIcons || !cfg.key) return;
+  var mode = nav ? "nav" : (routes[selRoute] && dest ? "plan" : "near");
+  ["truck", "weigh"].forEach(function (t) {
+    getStops(t, mode).then(function (out) {
+      if (!cfg.stopIcons) return;
+      (out.items || []).forEach(function (it) { stopMarkers.push(poiMarker(it, false).addTo(map)); });
+    });
+  });
+}
+/* ---- during navigation ---- */
+function navStopsSetup() {
+  if (!nav) return;
+  nav.stopsS0 = nav.s; nav.weigh = null;
+  if (cfg.weighAlert) getStops("weigh", "nav").then(function (out) { if (nav) nav.weigh = out.items || []; });
+  if (cfg.stopIcons) refreshStopIcons();
+  if (!$("stopsPanel").classList.contains("hidden")) renderStopsList();
+}
+function maybeRefreshNavStops() {
+  /* corridor covers ~250 mi; refresh after ~200 mi driven on the same route */
+  if (nav && nav.stopsS0 != null && nav.s - nav.stopsS0 > 320000) { clearStopsCache(); navStopsSetup(); }
+}
+function checkWeighAhead() {
+  if (!nav || !cfg.weighAlert || !nav.weigh || nav.off >= 2) return;
+  for (var i = 0; i < nav.weigh.length; i++) {
+    var w = nav.weigh[i];
+    if (nav.weighSaid[w.id] || w.lateral > 500) continue;
+    var ahead = w.s - nav.s;
+    if (ahead > 3400 || ahead < 250) continue;
+    if ((pos && pos.time ? pos.time : Date.now()) - lastSpeak < 4000) return; /* don't cut off a turn prompt; try on the next fix */
+    nav.weighSaid[w.id] = 1;
+    var mi = ahead / M_PER_MI, txt = mi >= 1.5 ? "Weigh station in 2 miles" : mi >= 0.75 ? "Weigh station in 1 mile" : "Weigh station ahead";
+    if (w.side) txt += ", on the " + w.side;
+    speak(txt + ".");
+    $("navwarn").innerHTML = '<div class="notice info">⚖ ' + esc(txt) + ": " + esc(w.name) + " · status unknown, follow signs</div>";
+    setTimeout(function () { if (/⚖/.test($("navwarn").textContent)) $("navwarn").innerHTML = ""; }, 15000);
+    return;
+  }
+}
+$("btnStops").onclick = showStopsPanel;
+$("btnNavStops").onclick = showStopsPanel;
+$("btnStopsClose").onclick = hideStopsPanel;
+$("tabTruck").onclick = function () { setStopsTab("truck"); };
+$("tabWeigh").onclick = function () { setStopsTab("weigh"); };
+$("btnStopIcons").onclick = function () { cfg.stopIcons = !cfg.stopIcons; saveCfg(); this.textContent = "Map icons: " + (cfg.stopIcons ? "ON" : "OFF"); refreshStopIcons(); };
+
+/* ================= Favorites & recent destinations (1.2) ================= */
+/* Stored in localStorage: rn_favs = [{id,name,lat,lng,addr,created}], rn_recents = [{name,lat,lng,t}] (newest first). */
+var FAV_MAX = 50, REC_SHOW = 5, REC_KEEP = 12, SAME_SPOT_M = 40, REC_SAME_M = 100;
+function loadPlaces(k) {
+  var v = loadJSON(k, []);
+  if (!Array.isArray(v)) return [];
+  return v.filter(function (f) { return f && typeof f.lat === "number" && typeof f.lng === "number" && isFinite(f.lat) && isFinite(f.lng) && Math.abs(f.lat) <= 90 && Math.abs(f.lng) <= 180; })
+    .map(function (f) { f.name = String(f.name || "Unnamed").slice(0, 40); f.addr = f.addr ? String(f.addr) : ""; return f; });
+}
+var favs = loadPlaces("rn_favs"), recents = loadPlaces("rn_recents");
+favs.forEach(function (f, i) { if (!f.id) f.id = "f" + i + "_" + Math.round(f.lat * 1e5); });
+function saveFavs() { try { LS.setItem("rn_favs", JSON.stringify(favs)); } catch (e) { toast("Could not save favorites: " + e.message); } }
+function saveRecents() { try { LS.setItem("rn_recents", JSON.stringify(recents)); } catch (e) { } }
+function favById(id) { for (var i = 0; i < favs.length; i++) if (favs[i].id === id) return favs[i]; return null; }
+function favAt(lat, lng) {
+  var best = null, bd = SAME_SPOT_M;
+  favs.forEach(function (f) { var d = haversine([f.lat, f.lng], [lat, lng]); if (d < bd) { bd = d; best = f; } });
+  return best;
+}
+function suggestName(n) { n = String(n || ""); if (/^Dropped pin|^-?\d+(\.\d+)?\s*,/.test(n)) return ""; return n.split(" — ")[0].trim().slice(0, 40); }
+function addRecent(d) {
+  if (!d || !isFinite(d.lat)) return;
+  recents = recents.filter(function (r) { return haversine([r.lat, r.lng], [d.lat, d.lng]) >= REC_SAME_M; });
+  recents.unshift({ name: String(d.name || "Destination"), lat: d.lat, lng: d.lng, t: Date.now() });
+  recents = recents.slice(0, REC_KEEP); saveRecents();
+}
+function favLabel(f) { return f.name + (f.addr && f.addr !== f.name ? " — " + f.addr : ""); }
+function distTxt(lat, lng) { return pos ? fmtMiles(haversine([pos.lat, pos.lng], [lat, lng])) + " mi" : ""; }
+function favRowHtml(f) {
+  var i = favs.indexOf(f), sub = [f.addr, distTxt(f.lat, f.lng)].filter(Boolean).join(" · ");
+  return '<div class="fav" data-fav="' + i + '"><span class="star">★</span><div class="fi"><b>' + esc(f.name) + "</b><small>" + esc(sub) + '</small></div><button class="ed" data-edit="' + i + '" aria-label="Rename or delete ' + esc(f.name) + '">✎</button></div>';
+}
+function favMatchHtml(q) {
+  q = String(q || "").trim().toLowerCase(); if (!q) return "";
+  var m = favs.filter(function (f) { return f.name.toLowerCase().indexOf(q) >= 0 || (f.addr || "").toLowerCase().indexOf(q) >= 0; }).slice(0, 5);
+  return m.length ? '<div class="sec"><span>★ Favorites</span></div>' + m.map(favRowHtml).join("") : "";
+}
+var recShown = [];
+function renderQuickList() {
+  var box = $("sugg");
+  recShown = recents.filter(function (r) { return !favAt(r.lat, r.lng); }).slice(0, REC_SHOW);
+  var h = '<div class="sec"><span>★ Favorites</span><button class="ghost" data-act="savehere">＋ Save my location</button></div>';
+  if (!favs.length) h += '<div class="empty">No favorites yet. Pick a destination or long-press the map, then tap ☆ Save on the destination card.</div>';
+  else h += favs.map(favRowHtml).join("");
+  if (recShown.length) {
+    h += '<div class="sec"><span>🕘 Recent</span><button class="ghost" data-act="clearrec">Clear</button></div>';
+    h += recShown.map(function (r, i) {
+      return '<div class="rec" data-rec="' + i + '"><span class="clock">🕘</span><div class="fi"><b>' + esc(r.name.split(" — ")[0]) + "</b><small>" + esc([r.name.split(" — ").slice(1).join(" — "), distTxt(r.lat, r.lng)].filter(Boolean).join(" · ")) + '</small></div><button class="ed" data-recsave="' + i + '" aria-label="Save as favorite">☆</button></div>';
+    }).join("");
+  }
+  box.innerHTML = h; box.classList.remove("hidden");
+}
+function quickListOpen() { return !$("sugg").classList.contains("hidden") && !!$("sugg").querySelector(".sec"); }
+function refreshQuick() { if (quickListOpen()) { if (!$("q").value.trim()) renderQuickList(); else onSearchInput(); } }
+/* Returns true when the click was on a favorites/recents element. */
+function handleQuickClick(e) {
+  var t = e.target, el;
+  if ((el = t.closest("[data-act]"))) {
+    var act = el.getAttribute("data-act");
+    if (act === "savehere") {
+      if (!pos) { toast("No GPS fix yet. Wait for GPS, then try again."); return true; }
+      openFavNew(pos.lat, pos.lng, "GPS position " + pos.lat.toFixed(5) + ", " + pos.lng.toFixed(5), "");
+    } else if (act === "clearrec") { recents = []; saveRecents(); renderQuickList(); }
+    return true;
+  }
+  if ((el = t.closest("[data-edit]"))) { var f = favs[+el.getAttribute("data-edit")]; if (f) openFavEdit(f); return true; }
+  if ((el = t.closest("[data-recsave]"))) { var r0 = recShown[+el.getAttribute("data-recsave")]; if (r0) openFavNew(r0.lat, r0.lng, r0.name, suggestName(r0.name)); return true; }
+  if ((el = t.closest("[data-fav]"))) { var f2 = favs[+el.getAttribute("data-fav")]; if (f2) goFavorite(f2); return true; }
+  if ((el = t.closest("[data-rec]"))) {
+    var r = recShown[+el.getAttribute("data-rec")]; if (!r) return true;
+    $("sugg").classList.add("hidden"); $("q").blur(); via = null; clearViaMarker();
+    setDestination(r.lat, r.lng, r.name); return true;
+  }
+  return false;
+}
+/* One tap on a favorite: truck route to it and start navigation as soon as the route is in (not if HERE flags a restriction). */
+function goFavorite(f) {
+  if (nav) return;
+  $("sugg").classList.add("hidden"); $("q").blur(); hideStopsPanel();
+  via = null; clearViaMarker();
+  toast("★ " + f.name + ": calculating truck route…", 2500);
+  setDestination(f.lat, f.lng, favLabel(f), { favId: f.id, autoStart: true });
+}
+/* long-press on a favorite row = edit */
+var favLongPressTimer = null, favLongPressFired = 0; /* time of the last long-press, so the click that follows it is ignored */
+$("sugg").addEventListener("touchstart", function (e) {
+  favLongPressFired = 0;
+  var el = e.target.closest("[data-fav]"); if (!el || e.target.closest("[data-edit]")) return;
+  clearTimeout(favLongPressTimer);
+  favLongPressTimer = setTimeout(function () { var f = favs[+el.getAttribute("data-fav")]; if (f) { favLongPressFired = Date.now(); openFavEdit(f); } }, 550);
+}, { passive: true });
+["touchend", "touchmove", "touchcancel"].forEach(function (ev) { $("sugg").addEventListener(ev, function () { clearTimeout(favLongPressTimer); }, { passive: true }); });
+$("sugg").addEventListener("contextmenu", function (e) {
+  var el = e.target.closest("[data-fav]"); if (!el) return;
+  e.preventDefault(); var f = favs[+el.getAttribute("data-fav")]; if (f) { favLongPressFired = Date.now(); openFavEdit(f); }
+});
+/* ---- dialog ---- */
+var favDlg = null; /* {mode:'new'|'edit', id, lat, lng, addr, delArmed} */
+function openFavDlg(state, name) {
+  favDlg = state;
+  $("favDlgTitle").textContent = state.mode === "edit" ? "Edit favorite" : "Save favorite";
+  $("favDlgAddr").textContent = state.addr || (state.lat.toFixed(5) + ", " + state.lng.toFixed(5));
+  $("favName").value = name || ""; $("favErr").textContent = "";
+  $("btnFavDel").classList.toggle("hidden", state.mode !== "edit"); $("btnFavDel").textContent = "Delete";
+  $("favDlg").classList.remove("hidden");
+  setTimeout(function () { try { $("favName").focus(); $("favName").select(); } catch (e) { } }, 50);
+}
+function openFavNew(lat, lng, addr, suggested) {
+  var ex = favAt(lat, lng);
+  if (ex) { openFavEdit(ex); toast("Already saved as ★ " + ex.name + ". Rename it here."); return; }
+  if (favs.length >= FAV_MAX) { toast("Favorites are full (" + FAV_MAX + "). Delete one first."); return; }
+  openFavDlg({ mode: "new", lat: lat, lng: lng, addr: addr || "" }, suggested);
+}
+function openFavEdit(f) {
+  if (favDlg && favDlg.mode === "edit" && favDlg.id === f.id && !$("favDlg").classList.contains("hidden")) return;
+  openFavDlg({ mode: "edit", id: f.id, lat: f.lat, lng: f.lng, addr: f.addr }, f.name);
+}
+function closeFavDlg() { $("favDlg").classList.add("hidden"); favDlg = null; try { $("favName").blur(); } catch (e) { } }
+function saveFavDlg() {
+  if (!favDlg) return;
+  var name = $("favName").value.replace(/\s+/g, " ").trim().slice(0, 40);
+  if (!name) { $("favErr").textContent = "Enter a name, like Home or Yard."; return; }
+  var dup = favs.filter(function (f) { return f.name.toLowerCase() === name.toLowerCase() && f.id !== favDlg.id; })[0];
+  if (dup) { $("favErr").textContent = "You already have a favorite named \"" + dup.name + "\"."; return; }
+  if (favDlg.mode === "edit") { var f = favById(favDlg.id); if (f) f.name = name; }
+  else favs.push({ id: "f" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: name, lat: favDlg.lat, lng: favDlg.lng, addr: favDlg.addr || "", created: Date.now() });
+  saveFavs(); closeFavDlg(); updateFavBtn(); refreshQuick();
+  toast("★ Saved: " + name);
+}
+function deleteFavDlg() {
+  if (!favDlg || favDlg.mode !== "edit") return;
+  if (!favDlg.delArmed) { favDlg.delArmed = true; $("btnFavDel").textContent = "Tap again to delete"; return; }
+  var f = favById(favDlg.id);
+  favs = favs.filter(function (x) { return x.id !== favDlg.id; });
+  saveFavs(); closeFavDlg();
+  if (dest && f && dest.favId === f.id) dest.favId = null;
+  updateFavBtn(); refreshQuick();
+  if (f) toast("Deleted ★ " + f.name);
+}
+/* ================= Saved truck entrances (1.4) =================
+   rn_gates = [{id,name,olat,olng (map's address point),lat,lng (truck entrance),t}] */
+var GATE_MATCH_M = 150, GATE_MAX = 200;
+var gates = loadJSON("rn_gates", []); if (!Array.isArray(gates)) gates = [];
+var gatePicking = false;
+function saveGates() { try { LS.setItem("rn_gates", JSON.stringify(gates)); } catch (e) { toast("Could not save entrance: " + e.message); } }
+function gateFor(lat, lng) {
+  var best = null, bd = 1e9;
+  gates.forEach(function (g) {
+    var d1 = haversine([g.olat, g.olng], [lat, lng]), d2 = haversine([g.lat, g.lng], [lat, lng]);
+    var d = Math.min(d1, d2 * 4); /* a point right on a saved gate also counts */
+    if ((d1 < GATE_MATCH_M || d2 < 25) && d < bd) { bd = d; best = g; }
+  });
+  return best;
+}
+function updateGateBtn() {
+  var b = $("btnGate"); if (!b || !dest) return;
+  var g = dest.gateId && gates.filter(function (x) { return x.id === dest.gateId; })[0];
+  b.textContent = g ? "🚚 Truck entrance saved · tap to move it" : "🚚 Wrong entrance? Set truck entrance";
+  b.classList.toggle("set", !!g);
+  $("gateUndoRow").classList.toggle("hidden", !g);
+}
+function startGatePick() {
+  if (!dest || nav) return;
+  gatePicking = true;
+  $("gateBar").classList.remove("hidden");
+  $("sheet").classList.add("hidden");
+  map.setView([dest.lat, dest.lng], Math.max(map.getZoom(), 17));
+}
+function cancelGatePick() {
+  if (!gatePicking) return;
+  gatePicking = false;
+  $("gateBar").classList.add("hidden"); $("sheet").classList.remove("hidden");
+}
+function pickGate(ll) {
+  if (!gatePicking || !dest) return;
+  cancelGatePick();
+  var o = dest.orig || { lat: dest.lat, lng: dest.lng };
+  var g = dest.gateId && gates.filter(function (x) { return x.id === dest.gateId; })[0];
+  if (!g) {
+    g = { id: "g" + Date.now().toString(36), name: String(dest.name || "Destination").slice(0, 80), olat: o.lat, olng: o.lng, t: Date.now() };
+    gates.unshift(g); if (gates.length > GATE_MAX) gates.length = GATE_MAX;
+  }
+  var oldLat = dest.lat, oldLng = dest.lng;
+  g.lat = ll.lat; g.lng = ll.lng; g.t = Date.now();
+  saveGates();
+  /* move a favorite that pointed at the old spot so one-tap favorites use the entrance too */
+  var f = (dest.favId && favById(dest.favId)) || favAt(oldLat, oldLng);
+  if (f) { f.lat = ll.lat; f.lng = ll.lng; saveFavs(); }
+  speakOrToast("Truck entrance saved. Rig Nav will route here next time.");
+  setDestination(ll.lat, ll.lng, dest.name, { favId: f ? f.id : dest.favId, quietGate: true });
+  dest.orig = o; dest.gateId = g.id; updateGateBtn();
+}
+function speakOrToast(t) { toast("✅ " + t, 4000); }
+function undoGate() {
+  if (!dest || !dest.gateId) return;
+  var g = gates.filter(function (x) { return x.id === dest.gateId; })[0]; if (!g) return;
+  gates = gates.filter(function (x) { return x.id !== g.id; }); saveGates();
+  var f = (dest.favId && favById(dest.favId)) || favAt(dest.lat, dest.lng);
+  if (f) { f.lat = g.olat; f.lng = g.olng; saveFavs(); }
+  toast("Entrance removed. Routing to the map's address point.", 3500);
+  setDestination(g.olat, g.olng, dest.name, { favId: f ? f.id : dest.favId, noGate: true });
+}
+function renderGateList() {
+  var el = $("gateList"); if (!el) return;
+  if (!gates.length) { el.innerHTML = '<p style="font-size:15px;opacity:.75">None saved yet.</p>'; return; }
+  el.innerHTML = gates.map(function (g, i) {
+    return '<div class="gaterow"><div>🚚 ' + esc(g.name) + '</div><button class="danger" data-gdel="' + i + '">Delete</button></div>';
+  }).join("");
+}
+$("gateList").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-gdel]"); if (!b) return;
+  if (b.getAttribute("data-armed") !== "1") { b.setAttribute("data-armed", "1"); b.textContent = "Tap again"; return; }
+  var g = gates[+b.getAttribute("data-gdel")]; if (!g) return;
+  gates.splice(+b.getAttribute("data-gdel"), 1); saveGates();
+  favs.forEach(function (f) { if (haversine([f.lat, f.lng], [g.lat, g.lng]) < 5) { f.lat = g.olat; f.lng = g.olng; } }); saveFavs();
+  renderGateList();
+});
+$("btnGate").onclick = startGatePick;
+/* 1.5.0: one-tap "Gate" button — saves the truck entrance right where the truck is sitting.
+   Which place it belongs to: the current destination if it's within GATE_HERE_M of you, else the closest
+   recent destination or favorite within that distance. */
+var GATE_HERE_M = 3000, GATE_HERE_ACC = 60;
+function gateHere() {
+  if (!pos || !pos.time || Date.now() - pos.time > 30000) { toast("Waiting for GPS. Try again in a moment.", 3500); return; }
+  if (pos.acc && pos.acc > GATE_HERE_ACC) { toast("GPS is only accurate to about " + Math.round(pos.acc * 3.28) + " ft right now. Give it a few seconds and tap again.", 4500); return; }
+  var me = [pos.lat, pos.lng], ll = { lat: pos.lat, lng: pos.lng };
+  var target = null, bd = GATE_HERE_M;
+  if (dest) {
+    var o0 = dest.orig || { lat: dest.lat, lng: dest.lng };
+    var dd = Math.min(haversine([o0.lat, o0.lng], me), haversine([dest.lat, dest.lng], me));
+    if (dd < GATE_HERE_M) target = { name: dest.name, olat: o0.lat, olng: o0.lng, lat: dest.lat, lng: dest.lng, favId: dest.favId, isDest: true };
+  }
+  if (!target) {
+    recents.concat(favs).forEach(function (pl) {
+      var d = haversine([pl.lat, pl.lng], me);
+      if (d < bd) { bd = d; target = { name: pl.name, olat: pl.lat, olng: pl.lng, lat: pl.lat, lng: pl.lng, favId: pl.id || null }; }
+    });
+  }
+  if (!target) { toast("No destination near you. Search or pick the place first, then tap 🚚 Gate at the entrance.", 5000); return; }
+  /* reuse an entrance already saved for this place, otherwise make a new one */
+  var g = (target.isDest && dest.gateId && gates.filter(function (x) { return x.id === dest.gateId; })[0]) || gateFor(target.olat, target.olng);
+  if (g) { target.olat = g.olat; target.olng = g.olng; }
+  else {
+    g = { id: "g" + Date.now().toString(36), name: String(target.name || "Destination").slice(0, 80), olat: target.olat, olng: target.olng, t: Date.now() };
+    gates.unshift(g); if (gates.length > GATE_MAX) gates.length = GATE_MAX;
+  }
+  g.lat = ll.lat; g.lng = ll.lng; g.t = Date.now();
+  saveGates(); renderGateList();
+  /* point a matching favorite at the entrance so one-tap favorites use it */
+  var f = (target.favId && favById(target.favId)) || favAt(target.lat, target.lng) || favAt(target.olat, target.olng);
+  if (f) { f.lat = ll.lat; f.lng = ll.lng; saveFavs(); refreshQuick(); }
+  /* keep recents in step too */
+  recents.forEach(function (r) { if (haversine([r.lat, r.lng], [target.lat, target.lng]) < 30) { r.lat = ll.lat; r.lng = ll.lng; } }); saveRecents();
+  var msg = "Truck entrance saved for " + suggestName(g.name || "this stop") + ". Rig Nav will route here next time.";
+  toast("✅ " + msg, 5000); speak("Truck entrance saved.");
+  if (target.isDest && !nav) {
+    setDestination(ll.lat, ll.lng, dest.name, { favId: f ? f.id : dest.favId, quietGate: true });
+    dest.orig = { lat: g.olat, lng: g.olng }; dest.gateId = g.id; updateGateBtn();
+  } else if (target.isDest && nav) { dest.gateId = g.id; }
+  if (window.RigNative && window.RigNative.vibrate) { try { window.RigNative.vibrate(80); } catch (e) { } }
+  else if (navigator.vibrate) { try { navigator.vibrate(80); } catch (e) { } }
+}
+$("btnGateHere").onclick = gateHere;
+$("btnNavGateHere").onclick = gateHere;
+$("btnGateUndo").onclick = undoGate;
+$("btnGateCancel").onclick = cancelGatePick;
+
+function updateFavBtn() {
+  var b = $("btnFav"); if (!dest) return;
+  var f = favAt(dest.lat, dest.lng);
+  b.textContent = f ? "★ " + f.name : "☆ Save";
+  b.classList.toggle("saved", !!f);
+}
+$("btnFav").onclick = function () {
+  if (!dest) return;
+  var f = favAt(dest.lat, dest.lng);
+  if (f) openFavEdit(f); else openFavNew(dest.lat, dest.lng, dest.name, suggestName(dest.name));
+};
+$("btnFavSave").onclick = saveFavDlg;
+$("btnFavCancel").onclick = closeFavDlg;
+$("btnFavDel").onclick = deleteFavDlg;
+$("favName").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); saveFavDlg(); } });
+$("favName").addEventListener("input", function () { $("favErr").textContent = ""; });
+$("favChips").addEventListener("click", function (e) { var b = e.target.closest("[data-n]"); if (b) { $("favName").value = b.getAttribute("data-n"); $("favErr").textContent = ""; } });
+$("favDlg").addEventListener("click", function (e) { if (e.target === $("favDlg")) closeFavDlg(); });
+window.RN_fav = { list: function () { return favs; }, recents: function () { return recents; } };
+
+/* ================= Overlays / wiring ================= */
+function showOverlay(id) { $(id).classList.remove("hidden"); }
+function hideOverlay(id) { $(id).classList.add("hidden"); }
+$("btnAgree").onclick = function () { LS.setItem("rn_disclaimer", "1"); hideOverlay("disclaimer"); if (!cfg.key) openSettings(); };
+$("btnSettings").onclick = openSettings;
+$("btnShowDisclaimer").onclick = function () { showOverlay("disclaimer"); };
+$("btnShowKey").onclick = function () { var k = $("apiKey"); k.type = k.type === "password" ? "text" : "password"; this.textContent = k.type === "password" ? "Show" : "Hide"; };
+$("btnDefaults").onclick = function () { fillSettings(DEFAULT_PROFILE); };
+$("btnVoiceTest").onclick = function () { var was = cfg.voice; cfg.voice = true; speak("In a quarter mile, turn right onto East 71st Street South."); cfg.voice = was; };
+$("btnTestKey").onclick = function () {
+  var key = $("apiKey").value.trim(), out = $("testres");
+  if (!key) { out.className = "err"; out.textContent = "Enter a key first."; return; }
+  out.className = ""; out.textContent = "Testing truck routing…";
+  var p = truckParams(readProfileFromForm());
+  p.origin = "36.0526,-95.7908"; p.destination = "36.1540,-95.9928"; p["return"] = "summary"; p.apiKey = key;
+  httpGet("https://router.hereapi.com/v8/routes?" + qs(p)).then(function (res) {
+    if (res.status === 200 && res.json && res.json.routes && res.json.routes.length) {
+      var sm = res.json.routes[0].sections[0].summary || {};
+      out.className = "ok"; out.textContent = "✔ Key works. Truck route Broken Arrow → Tulsa: " + fmtMiles(sm.length || 0) + " mi, " + fmtDur(sm.duration || 0) + ".";
+      /* quick tile check */
+      var img = new Image(); img.onerror = function () { out.textContent += " (Map tiles failed for this style — try Day/Night if using Logistics.)"; };
+      img.src = "https://maps.hereapi.com/v3/base/mc/11/477/804/png8?style=" + encodeURIComponent($("mapStyle").value === "auto" ? "explore.day" : $("mapStyle").value) + "&apiKey=" + encodeURIComponent(key);
+    } else if (res.status === 200) { out.className = "err"; out.textContent = "Key accepted, but no route returned."; }
+    else { out.className = "err"; out.textContent = "✖ " + apiErrorText(res); }
+  });
+};
+$("btnSaveSettings").onclick = function () {
+  var key = $("apiKey").value.trim();
+  if (!key) { $("testres").className = "err"; $("testres").textContent = "A HERE API key is required."; return; }
+  var p = readProfileFromForm(), bad = validateProfile(p);
+  if (bad) { $("testres").className = "err"; $("testres").textContent = bad; return; }
+  var styleChanged = cfg.key !== key || cfg.mapStyle !== $("mapStyle").value || cfg.truckLayer !== $("truckLayer").checked || cfg.traffic !== $("trafficOn").checked;
+  var routeChanged = JSON.stringify(p) !== JSON.stringify(cfg.profile) || cfg.avoidTolls !== $("avoidTolls").checked || cfg.avoidFerries !== $("avoidFerries").checked;
+  cfg.key = key; cfg.profile = p; cfg.avoidTolls = $("avoidTolls").checked; cfg.avoidFerries = $("avoidFerries").checked;
+  cfg.mapStyle = $("mapStyle").value; cfg.truckLayer = $("truckLayer").checked; cfg.traffic = $("trafficOn").checked; cfg.stoplights = $("stoplightsOn").checked; cfg.voice = $("voiceOn").checked; cfg.weighAlert = $("weighAlert").checked;
+  saveCfg(); hideOverlay("settings");
+  if (styleChanged) setTiles();
+  refreshStoplights();
+  if (routeChanged && dest && !nav) planRoute();
+  toast("Saved");
+};
+$("btnCancelSettings").onclick = function () { hideOverlay("settings"); };
+$("q").addEventListener("input", onSearchInput);
+$("q").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); clearTimeout(suggTimer); suggSeq++; $("q").blur(); geocode($("q").value.trim()); } });
+$("q").addEventListener("focus", function () { if (!$("q").value.trim() && browseMode) { renderQuickList(); return; } if (suggItems.length && $("q").value.trim().length >= 3) $("sugg").classList.remove("hidden"); });
+$("map").addEventListener("touchstart", function () { $("sugg").classList.add("hidden"); $("q").blur(); }, { passive: true });
+$("btnLocate").onclick = function () { followBrowse = true; if (pos) map.setView([pos.lat, pos.lng], Math.max(map.getZoom(), 15)); else startLocation(); };
+$("btnClear").onclick = clearRoute;
+$("btnStart").onclick = startNav;
+$("btnEnd").onclick = function () { endNav(false); };
+$("btnMute").onclick = function () { muted = !muted; this.textContent = muted ? "🔇" : "🔊"; if (muted && window.RigNative && window.RigNative.stopSpeaking) window.RigNative.stopSpeaking(); };
+$("btnOrient").onclick = function () { headingUp = !headingUp; this.textContent = headingUp ? "⬆" : "N"; if (!headingUp) $("map").style.transform = ""; onNavFix(); };
+$("btnOverview").onclick = toggleOverview;
+window.onNativeBack = function () {
+  if (!$("favDlg").classList.contains("hidden")) { closeFavDlg(); return; }
+  if (!$("stopsPanel").classList.contains("hidden")) { hideStopsPanel(); return; }
+  if (!$("settings").classList.contains("hidden") && cfg.key) { hideOverlay("settings"); return; }
+  if (!$("sugg").classList.contains("hidden")) { $("sugg").classList.add("hidden"); return; }
+  if (nav) { if (confirm("End navigation?")) endNav(false); return; }
+  if (dest) { clearRoute(); return; }
+  if (window.RigNative && window.RigNative.exitApp) window.RigNative.exitApp();
+};
+window.addEventListener("popstate", function () { /* back handled natively */ });
+
+/* Auto night style refresh each 10 min */
+setInterval(function () { if (cfg.mapStyle === "auto" && tileLayer && tileLayer._url !== tileUrl()) setTiles(); }, 600000);
+
+/* Live traffic refresh every 5 min: redraw flow tiles and refetch route incidents */
+setInterval(function () {
+  if (!cfg.traffic || !cfg.key) return;
+  if (trafficTileLayer) trafficTileLayer.redraw();
+  if (typeof routes !== "undefined" && routes.length && !$("routePanel").classList.contains("hidden")) refreshTrafficIncidents(true);
+}, 300000);
+
+/* ================= Boot ================= */
+initMap();
+startLocation();
+var origHandle = handleFix;
+handleFix = function () { origHandle.apply(null, arguments); if (planRoute.pending && pos) planRoute(); if (cfg.stopIcons && !refreshStopIcons.booted && pos) { refreshStopIcons.booted = true; refreshStopIcons(); } };
+if (!LS.getItem("rn_disclaimer")) showOverlay("disclaimer");
+else if (!cfg.key) openSettings();
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});</script>
+</body>
+</html>

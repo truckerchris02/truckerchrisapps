@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="theme-color" content="#e07f2e">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rig Hub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rig Hub</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#14110e;color:#f4efe6;font:17px system-ui,sans-serif;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+h1{font-size:32px;margin:0}
+.ver{color:#c4b6a2;font-size:14px;margin:4px 0 12px}
+p{color:#d9cbb8;line-height:1.4}
+a.card{display:block;text-decoration:none;color:inherit;background:#231e18;border:1px solid #3a3228;border-radius:16px;padding:16px;margin:10px 0}
+a.card b{display:block;font-size:20px;margin-bottom:4px}
+a.card span{color:#c4b6a2;font-size:15px}
+.mark{width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;background:#e07f2e;color:#1b1208;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="mark">RH</div>
+<h1>Rig Hub</h1>
+<p class="ver">Rig Hub v1.6.0 desktop</p>
+<p>Rig Nav, Trip Logger, Weather, and Tandem Slide. Everything you save stays on this computer.</p>
+<a class="card" href="rignav/index.html"><b>Rig Nav</b><span>Truck routing with your own HERE key. GPS works while the map is open.</span></a>
+<a class="card" href="trip.html"><b>Trip Logger</b><span>Stops, pay, and shift miles. Miles count only while this page stays open.</span></a>
+<a class="card" href="weather.html"><b>Weather</b><span>Forecast for where you are, from the National Weather Service.</span></a>
+<a class="card" href="tandem/index.html"><b>Tandem Slide</b><span>CAT scale tandem calculator. Rule-of-thumb estimate. Always re-scale after pinning.</span></a>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Rig Hub
+Comment=Rig Nav, Trip Logger, Tandem Slide and Weather in one app
+Exec=righub
+Icon=com.truckerchris.RigHub
+Categories=Utility;Office;
+Keywords=truck;navigation;trip;mileage;weather;tandem;scale;trucking;
+Terminal=false

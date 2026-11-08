@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="en">
+  <head>
+<meta name="theme-color" content="#e07f2e">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rig Hub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Trip Logger</title>
+    <style>
+      :root{
+        --bg:#eef0ec;
+        --bg-panel:#ffffff;
+        --bg-panel-2:#f6f7f4;
+        --bg-inset:#e8eae4;
+        --ink:#1d211c;
+        --ink-soft:#4c534b;
+        --ink-faint:#7c847b;
+        --line:#d5d9d0;
+        --line-strong:#b9beb2;
+        --accent:#b34a08;
+        --accent-ink:#ffffff;
+        --accent-soft:#fbeedd;
+        --accent-soft-ink:#8a3a06;
+        --good:#2e6b34;
+        --good-soft:#e3efe1;
+        --danger:#b3261e;
+        --danger-soft:#fbe9e7;
+        --chip:#e8eae4;
+        --shadow:0 1px 2px rgba(20,24,18,.06),0 8px 24px rgba(20,24,18,.07);
+        --radius:14px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#131511;
+          --bg-panel:#1d201c;
+          --bg-panel-2:#232622;
+          --bg-inset:#2a2d28;
+          --ink:#eef0e9;
+          --ink-soft:#b9beb2;
+          --ink-faint:#8b9285;
+          --line:#343830;
+          --line-strong:#474c42;
+          --accent:#e07f2e;
+          --accent-ink:#1d1305;
+          --accent-soft:#3a2a17;
+          --accent-soft-ink:#f2b06a;
+          --good:#7fbf85;
+          --good-soft:#22351f;
+          --danger:#f0918a;
+          --danger-soft:#3d2321;
+          --chip:#2a2d28;
+          --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+        }
+      }
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      body{
+        margin:0;
+        background:var(--bg);
+        color:var(--ink);
+        font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:16px;
+        line-height:1.45;
+      }
+      .wrap{max-width:1180px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(64px + env(safe-area-inset-bottom))}
+      h1,h2,h3{font-family:"Barlow Condensed","Barlow",sans-serif;letter-spacing:.01em;margin:0}
+      button{font:inherit;cursor:pointer}
+      input,select,textarea{font:inherit;color:var(--ink)}
+      :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+      /* ---------- Top strip ---------- */
+      .topstrip{
+        display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;
+        padding:6px 2px 16px;border-bottom:3px solid var(--ink);margin-bottom:18px;
+      }
+      .topstrip .lede{max-width:560px}
+      .topstrip .lede p{margin:4px 0 0;color:var(--ink-soft);font-size:15px}
+      .topstrip h1{font-size:clamp(30px,5vw,44px);font-weight:700;text-transform:uppercase;line-height:1}
+      .topstrip h1 .thin{color:var(--accent)}
+      .scope-note{
+        font-size:13px;color:var(--ink-soft);background:var(--bg-panel);
+        border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;
+      }
+      .scope-note strong{color:var(--ink)}
+
+      /* ---------- Stats ---------- */
+      .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+      .stat.pay .num{color:var(--good)}
+      .stat{background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+      .stat .num{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:700;line-height:1}
+      .stat .lbl{font-size:12.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;font-weight:600}
+      @media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.stat.pay{grid-column:1/-1}}
+      .pay-total{margin-top:12px;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;background:var(--good-soft);color:var(--good);font-weight:700}
+      .pay-total .n{font-family:"Barlow Condensed",sans-serif;font-size:26px}
+      .chip.paychip{background:var(--good-soft);color:var(--good)}.chip.paychip b{color:var(--good)}
+      .week-days .wd .p{color:var(--good);font-weight:700;white-space:nowrap;margin-left:8px}
+      .rates-panel{margin-bottom:14px}.rate-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+      .rate-row:last-child{border-bottom:none}.rate-row .r-name{flex:1;font-weight:600;font-size:15px}
+      .rate-row .r-in{display:flex;align-items:center;gap:4px}.rate-row input{width:92px;text-align:right;font-size:16px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:9px;background:var(--bg-panel-2);color:var(--ink)}
+      .mile-panel{margin-bottom:18px}
+      .mile-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+      .mile-big{font-family:"Barlow Condensed",sans-serif;font-size:40px;font-weight:700;line-height:1}
+      .mile-big small{font-size:18px;font-weight:600}
+      .mile-sub{font-size:14px;color:var(--ink-soft);margin-top:4px}
+      .mile-btn{font-size:18px;font-weight:700;padding:14px 22px;border-radius:12px;border:none;cursor:pointer;background:var(--good);color:#fff;min-width:150px}
+      .mile-btn.stop{background:var(--danger)}
+      .mile-state{display:inline-block;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--ink-soft)}
+      .mile-state.on{background:var(--good-soft);color:var(--good)}
+      .mile-state.warn{background:var(--danger-soft);color:var(--danger)}
+      .rate-sub{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin:14px 0 2px}
+      .odo{margin-top:12px;border-top:1px solid var(--line);padding-top:4px}
+      .odo-row{display:flex;gap:10px;margin:6px 0}
+      .odo-row label{flex:1;font-size:13px;font-weight:700;color:var(--ink-soft);display:flex;flex-direction:column;gap:4px}
+      .odo-row input{font-size:17px;padding:10px;border-radius:10px;border:1px solid var(--line);width:100%;box-sizing:border-box;background:var(--card,#fff);color:inherit}
+      .mile-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+      .mile-btn.pause{background:#d97706;color:#fff;min-width:110px}
+      .ver{font-size:12px;color:var(--ink-faint);text-align:center;margin-top:6px}
+      .rates-body{display:none}.rates-panel.open .rates-body{display:block}
+
+      /* ---------- Layout ---------- */
+      .layout{display:grid;grid-template-columns:430px 1fr;gap:18px;align-items:start}
+      @media (max-width:920px){.layout{grid-template-columns:1fr}}
+
+      .panel{background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+      .panel-head{padding:16px 18px 0;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+      .panel-head h2{font-size:24px;font-weight:700;text-transform:uppercase}
+      .panel-head .hint{font-size:13px;color:var(--ink-faint)}
+      .panel-body{padding:14px 18px 18px}
+      @media (min-width:921px){.form-panel{position:sticky;top:16px}}
+
+      /* ---------- Form ---------- */
+      .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .field{margin-bottom:12px}
+      .field label{display:block;font-size:13px;font-weight:600;letter-spacing:.02em;margin-bottom:5px}
+      .field label .opt{font-weight:400;color:var(--ink-faint)}
+      .field input[type="text"],.field input[type="number"],.field input[type="date"],.field input[type="time"],.field select,.field textarea{
+        width:100%;padding:10px 11px;border:1px solid var(--line-strong);border-radius:9px;background:var(--bg-panel);font-size:16px;
+      }
+      .field textarea{resize:vertical;min-height:56px}
+      .field input::placeholder,.field textarea::placeholder{color:var(--ink-faint)}
+      .err{color:var(--danger);font-size:13.5px;font-weight:600;margin:2px 0 10px;display:none}
+      .err.show{display:block}
+
+      .stops-head{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
+      .stops-head h3{font-size:19px;font-weight:700;text-transform:uppercase}
+      .stops-head .count{font-size:13px;color:var(--ink-soft)}
+      .stop-row{
+        display:grid;grid-template-columns:26px 1fr 108px 34px;gap:8px;align-items:end;
+        background:var(--bg-panel-2);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px;
+      }
+      .stop-row .n{
+        font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:19px;color:var(--accent);
+        align-self:center;text-align:center;padding-bottom:8px;
+      }
+      .stop-row .sf label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+      .stop-row .sf input{width:100%;padding:8px 9px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg-panel);font-size:16px}
+      .stop-del{
+        border:1px solid var(--line-strong);background:var(--bg-panel);color:var(--ink-soft);
+        width:34px;height:38px;border-radius:8px;font-size:17px;line-height:1;
+      }
+      .stop-del:hover{color:var(--danger);border-color:var(--danger)}
+      .btn-add-stop{
+        width:100%;border:1.5px dashed var(--line-strong);background:transparent;color:var(--ink-soft);
+        border-radius:11px;padding:10px;font-weight:600;font-size:15px;
+      }
+      .btn-add-stop:hover{border-color:var(--accent);color:var(--accent)}
+
+      .route-total{
+        display:flex;justify-content:space-between;align-items:center;gap:10px;
+        background:var(--accent-soft);border:1px solid var(--accent);border-radius:11px;
+        padding:11px 14px;margin:14px 0 4px;
+      }
+      .route-total .t-lbl{font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-soft-ink)}
+      .route-total .t-lbl small{display:block;text-transform:none;letter-spacing:0;font-weight:500;font-size:12.5px;opacity:.85}
+      .route-total .t-num{font-family:"Barlow Condensed",sans-serif;font-size:32px;font-weight:700;color:var(--accent-soft-ink);white-space:nowrap}
+      .route-total .t-num small{font-size:16px;font-weight:600}
+
+      /* ---------- Activities ---------- */
+      .act-row{
+        display:flex;align-items:center;gap:10px;
+        background:var(--bg-panel-2);border:1px solid var(--line);border-radius:11px;padding:7px 10px;margin-bottom:8px;
+      }
+      .act-row .a-name{flex:1;font-weight:600;font-size:15px}
+      .act-row .a-count{min-width:36px;text-align:center;font-family:"Barlow Condensed",sans-serif;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+      .act-btn{
+        border:1px solid var(--line-strong);background:var(--bg-panel);color:var(--ink);
+        width:38px;height:38px;border-radius:8px;font-size:19px;line-height:1;font-weight:700;
+      }
+      .act-btn:hover{border-color:var(--accent);color:var(--accent)}
+      .week-panel{margin-bottom:14px}
+      .week-days{font-size:14.5px;color:var(--ink-soft)}
+      .week-days .wd{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)}
+      .week-days .wd:last-child{border-bottom:none}
+      .week-days .wd .d{font-weight:600;color:var(--ink);white-space:nowrap}
+      .week-days .wd.today .d{color:var(--accent)}
+      .week-days .wd .c{text-align:right}
+      .week-total{margin-top:9px;font-size:14.5px;color:var(--ink-soft)}
+      .week-total b{color:var(--ink)}
+
+      .form-actions{display:flex;gap:10px;margin-top:14px}
+      .btn{
+        border-radius:10px;padding:11px 16px;font-weight:700;font-size:15.5px;border:1px solid transparent;
+      }
+      .btn-primary{background:var(--accent);color:var(--accent-ink);flex:1}
+      .btn-primary:hover{filter:brightness(1.07)}
+      .btn-ghost{background:transparent;border-color:var(--line-strong);color:var(--ink-soft)}
+      .btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft)}
+
+      /* ---------- Trip list ---------- */
+      .list-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+      .search{flex:1;min-width:190px;position:relative}
+      .search input{
+        width:100%;padding:10px 12px 10px 36px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg-panel);font-size:16px;
+      }
+      .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
+      .tool-btns{display:flex;gap:8px;flex-wrap:wrap}
+      .btn-small{
+        background:var(--bg-panel);border:1px solid var(--line-strong);color:var(--ink);
+        border-radius:10px;padding:9px 13px;font-weight:600;font-size:14px;
+      }
+      .btn-small:hover{border-color:var(--accent);color:var(--accent)}
+      .btn-small.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+      .empty{
+        border:1.5px dashed var(--line-strong);border-radius:var(--radius);padding:34px 20px;text-align:center;color:var(--ink-soft);
+        background:var(--bg-panel);
+      }
+      .empty h3{font-size:22px;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+      .empty p{margin:0 auto;max-width:420px;font-size:15px}
+
+      .trip{
+        background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;
+      }
+      .trip-main{padding:14px 16px 12px}
+      .trip-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;justify-content:space-between}
+      .trip-id{font-family:"Barlow Condensed",sans-serif;font-size:25px;font-weight:700;line-height:1}
+      .trip-id span{color:var(--ink-faint);font-size:17px;font-weight:600}
+      .trip-total{text-align:right}
+      .trip-total .n{font-family:"Barlow Condensed",sans-serif;font-size:27px;font-weight:700;color:var(--accent);line-height:1}
+      .trip-total .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:600}
+      .trip-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+      .chip{
+        background:var(--chip);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;color:var(--ink-soft);
+      }
+      .chip b{color:var(--ink)}
+      .trip-notes{margin:9px 0 0;font-size:14.5px;color:var(--ink-soft);font-style:italic}
+      .trip-actions{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px}
+      .trip-actions .btn-small{padding:7px 12px;font-size:13.5px}
+      .trip-stops{border-top:1px solid var(--line);background:var(--bg-panel-2);padding:10px 16px 12px;display:none}
+      .trip.open .trip-stops{display:block}
+      .trip-stops table{width:100%;border-collapse:collapse;font-size:14.5px}
+      .trip-stops th{
+        text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);
+        padding:4px 6px;border-bottom:1px solid var(--line-strong);font-weight:700;
+      }
+      .trip-stops td{padding:6px;border-bottom:1px solid var(--line)}
+      .trip-stops tr:last-child td{border-bottom:none}
+      .trip-stops td.num,.trip-stops th.num{text-align:right;font-variant-numeric:tabular-nums}
+      .trip-stops .cum{color:var(--ink-faint)}
+      .toast{
+        position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+        background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:14.5px;
+        transition:opacity .25s,transform .25s;z-index:50;max-width:92vw;text-align:center;
+      }
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+      .foot{margin-top:22px;font-size:13px;color:var(--ink-faint);text-align:center}
+      @media (prefers-reduced-motion: reduce){.toast{transition:none}}
+      .week-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+      .saved-weeks{margin-top:12px;font-size:14px}
+      .saved-weeks .sw{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+      .saved-weeks .sw .b{display:flex;gap:6px}
+      #printArea{display:none}
+      @media print{
+        body.printing > *:not(#printArea){display:none !important}
+        body.printing #printArea{display:block;color:#000;background:#fff;font:13pt/1.4 -apple-system,Helvetica,Arial,sans-serif;padding:0}
+        #printArea h1{font-size:18pt;margin:0 0 2pt}
+        #printArea .sub{color:#444;margin:0 0 12pt}
+        #printArea table{width:100%;border-collapse:collapse;margin-bottom:12pt}
+        #printArea th,#printArea td{border-bottom:1px solid #999;padding:5pt 4pt;text-align:left;vertical-align:top}
+        #printArea td.n,#printArea th.n{text-align:right;white-space:nowrap}
+        #printArea .tot td{font-weight:700;border-top:2px solid #000}
+      }
+
+      /* ---------- Totals reset (v1.1) ---------- */
+      .totals-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+      .totals-bar .tb-l{font-size:13px;color:var(--ink-soft);font-weight:600}
+      .totals-bar .tb-l b{color:var(--accent)}
+      .totals-bar .tb-r{display:flex;gap:8px;flex-wrap:wrap}
+      .totals-bar .btn-small{padding:7px 12px;font-size:13.5px}
+      .tl-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+      .tl-modal.show{display:flex}
+      .tl-modal .box{background:var(--bg-panel);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:var(--shadow);max-width:420px;width:100%;padding:18px 18px 14px}
+      .tl-modal h3{font-size:24px;text-transform:uppercase;margin-bottom:6px}
+      .tl-modal p{margin:0 0 14px;color:var(--ink-soft);font-size:15px}
+      .tl-modal .acts{display:flex;gap:10px}
+      .tl-modal .btn-primary.danger{background:var(--danger);color:#fff}
+
+      /* ---------- Pay period (TL 1.3.6 / Rig Hub 1.5) ---------- */
+      .pp-line{margin:-2px 0 10px;font-size:13px;color:var(--ink-soft);line-height:1.45}
+      .pp-line b{color:var(--ink)}
+      .pp-line .pp-pay{color:var(--accent);font-weight:700}
+      .pp-line button{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+      .dt-row{display:flex;gap:8px}
+      .dt-row input{flex:1 1 0;min-width:0}
+      .tl-modal .pp-box{max-width:460px;max-height:92vh;overflow:auto}
+      .pp-f{margin:0 0 11px}
+      .pp-f label{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+      .pp-f select,.pp-f input{width:100%;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg-panel-2);color:var(--ink);font:inherit}
+      .pp-f .pp-sm{font-size:12px;color:var(--ink-soft);margin-top:4px}
+      .pp-on{display:flex;align-items:center;gap:8px;font-weight:600;margin:0 0 12px}
+      .pp-on input{width:20px;height:20px}
+      .pp-prev{background:var(--bg-panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 14px;color:var(--ink)}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topstrip">
+        <div class="lede">
+          <h1>Trip <span class="thin">Logger</span></h1>
+          <p>Log each run — trip number, trailer, and every stop with its store number and miles — and the route total adds itself up.</p>
+        </div>
+        <div class="scope-note">Trips are saved <strong>in this browser only</strong></div>
+      </div>
+
+      <div class="tl-modal" id="ppModal" role="dialog" aria-modal="true" aria-labelledby="ppModalTitle">
+      <div class="box pp-box">
+        <h3 id="ppModalTitle">Pay period</h3>
+        <p>Totals at the top show only the current pay period and start over by themselves when a period ends. Trips count by their own date and time. Nothing is deleted.</p>
+        <label class="pp-on"><input type="checkbox" id="ppOn" /> Use pay periods for the totals</label>
+        <div class="pp-f"><label for="ppFreq">How often you're paid</label>
+          <select id="ppFreq"><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="semimonthly">Twice a month</option><option value="monthly">Monthly</option></select></div>
+        <div class="pp-f" id="ppDayRow"><label for="ppDay">Period ends on</label>
+          <select id="ppDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+        <div class="pp-f" id="ppAnchorRow"><label for="ppAnchor">A date a period ends (anchor)</label><input type="date" id="ppAnchor" /><div class="pp-sm">Pick any day one of your pay periods ended or will end. Every 2 weeks is counted from it.</div></div>
+        <div class="pp-f" id="ppSemiRow"><label for="ppSemi">First period ends on day</label><input type="number" id="ppSemi" min="1" max="27" step="1" inputmode="numeric" /><div class="pp-sm">The second period ends on the last day of the month.</div></div>
+        <div class="pp-f" id="ppMonthRow"><label for="ppMonth">Period ends on day of month</label><input type="number" id="ppMonth" min="1" max="31" step="1" inputmode="numeric" /><div class="pp-sm">31 means the last day of every month.</div></div>
+        <div class="pp-f"><label for="ppTime">Period ends at</label><select id="ppTime"></select></div>
+        <div class="pp-f"><label for="ppPayday">Payday (any one payday)</label><input type="date" id="ppPayday" /><div class="pp-sm">Used to figure how many days after a period ends you get paid.</div></div>
+        <div class="pp-prev" id="ppPreview"></div>
+        <div class="acts"><button type="button" class="btn btn-ghost" id="ppCancel">Cancel</button><button type="button" class="btn btn-primary" id="ppSave">Save</button></div>
+      </div>
+    </div>
+    <div class="tl-modal" id="totalsModal" role="dialog" aria-modal="true" aria-labelledby="totalsModalTitle">
+      <div class="box">
+        <h3 id="totalsModalTitle">Reset totals?</h3>
+        <p>The totals at the top start over from zero. Only trips and shift miles logged after now will count. <b>Your trips and history are not deleted</b> — you can undo this or view all-time totals any time.</p>
+        <div class="acts"><button type="button" class="btn btn-ghost" id="totalsCancel">Cancel</button><button type="button" class="btn btn-primary danger" id="totalsConfirm">Reset totals</button></div>
+      </div>
+    </div>
+      <div class="totals-bar" id="totalsBar">
+        <div class="tb-l" id="totalsSince">All-time totals</div>
+        <div class="tb-r">
+          <button type="button" class="btn-small" id="totalsViewBtn" style="display:none">Show all-time</button>
+          <button type="button" class="btn-small" id="totalsUndoBtn" style="display:none">Undo reset</button>
+          <button type="button" class="btn-small" id="ppEditBtn">Pay period</button>
+          <button type="button" class="btn-small danger" id="totalsResetBtn">Reset totals</button>
+        </div>
+      </div>
+      <div class="pp-line" id="ppLine"></div>
+      <div class="stats" aria-label="Totals across all logged trips">
+        <div class="stat"><div class="num" id="statTrips">0</div><div class="lbl">Trips logged</div></div>
+        <div class="stat"><div class="num" id="statMiles">0</div><div class="lbl">Total miles</div></div>
+        <div class="stat"><div class="num" id="statStops">0</div><div class="lbl">Total stops</div></div>
+        <div class="stat"><div class="num" id="statAvg">0</div><div class="lbl">Avg miles / trip</div></div>
+        <div class="stat pay"><div class="num" id="statPay">$0.00</div><div class="lbl">Total pay</div></div>
+      </div>
+
+      <section class="panel mile-panel" id="milePanel" aria-labelledby="mileTitle">
+        <div class="panel-head"><h2 id="mileTitle">Shift miles</h2><span class="mile-state" id="mileState">Stopped</span></div>
+        <div class="panel-body">
+          <div class="mile-top">
+            <div>
+              <div class="mile-big"><span id="mileSession">0.0</span> <small>mi this shift</small></div>
+              <div class="mile-sub" id="mileToday">Today: 0.0 mi · $0.00</div>
+            </div>
+            <div class="mile-btns"><button type="button" class="mile-btn pause" id="milePause" style="display:none">Pause</button><button type="button" class="mile-btn" id="mileBtn">Start shift</button></div>
+          </div>
+          <p class="hint" id="mileHint" style="margin:10px 0 0">GPS counts miles only between Start shift and Stop shift. Miles are split midnight to midnight.</p>
+        </div>
+      </section>
+
+      <div class="layout">
+        <!-- ============ FORM ============ -->
+        <section class="panel form-panel" aria-labelledby="formTitle">
+          <div class="panel-head">
+            <h2 id="formTitle">New trip</h2>
+            <span class="hint" id="formHint">Fill in &amp; save</span>
+          </div>
+          <div class="panel-body">
+            <form id="tripForm" novalidate>
+              <div class="grid2">
+                <div class="field">
+                  <label for="fTrip">Trip #</label>
+                  <input type="text" id="fTrip" placeholder="e.g. 1042" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="fDate">Date &amp; time <span class="opt">(optional)</span></label>
+                  <div class="dt-row"><input type="date" id="fDate" /><input type="time" id="fTime" aria-label="Trip time" /></div>
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="field">
+                  <label for="fTrailer">Trailer #</label>
+                  <input type="text" id="fTrailer" placeholder="e.g. 53177" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="fType">Trailer type</label>
+                  <select id="fType">
+                    <option value="Reefer">Reefer</option>
+                    <option value="Dry Van">Dry Van</option>
+                    <option value="Flatbed">Flatbed</option>
+                    <option value="Tanker">Tanker</option>
+                    <option value="Step Deck">Step Deck</option>
+                    <option value="Conestoga">Conestoga</option>
+                    <option value="Intermodal">Intermodal</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="stops-head">
+                <h3>Stops</h3>
+                <span class="count" id="stopCount">1 stop</span>
+              </div>
+              <div id="stopRows"></div>
+              <button type="button" class="btn-add-stop" id="addStopBtn">+ Add a stop</button>
+
+              <div class="route-total" aria-live="polite">
+                <div class="t-lbl">Total route miles<small id="routeBreakdown">Sum of miles to each stop</small></div>
+                <div class="t-num"><span id="routeTotal">0</span> <small>mi</small></div>
+              </div>
+
+              <div class="stops-head">
+                <h3>Activities</h3>
+                <span class="count" id="actCount">0 total</span>
+              </div>
+              <div id="actRows"></div>
+              <div class="pay-total" aria-live="polite"><span>Trip pay</span><span class="n" id="formPay">$0.00</span></div>
+
+              <div class="field" style="margin-top:12px">
+                <label for="fNotes">Notes <span class="opt">(optional)</span></label>
+                <textarea id="fNotes" placeholder="Delays, dock notes, anything worth remembering…"></textarea>
+              </div>
+
+              <div class="odo" id="odoBox" style="margin-top:14px">
+                <div class="rate-sub">Odometer this week</div>
+                <div class="odo-row">
+                  <label>Start<input type="number" inputmode="numeric" min="0" step="1" id="odoStart" placeholder="e.g. 412350"></label>
+                  <label>End<input type="number" inputmode="numeric" min="0" step="1" id="odoEnd" placeholder="enter at week's end"></label>
+                </div>
+                <button type="button" class="mile-btn" id="odoSave" style="width:100%;margin:6px 0 8px">Save miles</button>
+                <div class="hint" id="odoOut"></div>
+              </div>
+              <p class="err" id="formErr" role="alert"></p>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="saveBtn">Save trip</button>
+                <button type="button" class="btn btn-ghost" id="cancelEditBtn" style="display:none">Cancel edit</button>
+                <button type="button" class="btn btn-ghost" id="clearBtn">Clear</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ============ LIST ============ -->
+        <section aria-labelledby="listTitle">
+          <div class="list-tools">
+            <div class="search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="search" id="searchInput" placeholder="Search by trip #, store #, or trailer #" aria-label="Search trips" />
+            </div>
+            <div class="tool-btns">
+              <button type="button" class="btn-small" id="exportCsvBtn">Export CSV</button>
+              <button type="button" class="btn-small" id="exportJsonBtn">Back up (JSON)</button>
+              <button type="button" class="btn-small" id="importBtn">Restore</button>
+              <input type="file" id="importFile" accept=".json,application/json" style="display:none" />
+            </div>
+          </div>
+
+          <div class="panel week-panel" id="weekPanel">
+            <div class="panel-head"><h2>This week</h2><span class="hint" id="weekRange"></span></div>
+            <div class="panel-body">
+              <label class="hint" style="display:flex;align-items:center;gap:8px;margin:0 0 8px">Week starts on <select id="weekStartSel" style="font-size:15px;padding:4px 6px"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></label>
+              <div class="week-days" id="weekDays"></div>
+              <div class="week-total" id="weekTotals"></div>
+              <div class="week-btns">
+                <button type="button" class="btn-small" id="saveWeekBtn">Save week</button>
+                <button type="button" class="btn-small" id="printWeekBtn">Print week</button>
+              </div>
+              <div class="saved-weeks" id="savedWeeks"></div>
+            </div>
+          </div>
+
+          <div class="panel rates-panel" id="ratesPanel">
+            <div class="panel-head"><h2>Pay rates</h2><button type="button" class="btn-small" id="ratesToggle">Edit rates</button></div>
+            <div class="panel-body rates-body">
+              <p class="hint" style="margin:0 0 8px">Pay for each activity. Change these any time you get a raise. Pay already logged keeps the rates it was earned at; new trips and today's miles use the new rates.</p>
+              <div class="rate-sub">Activities</div>
+              <div id="rateRows"></div>
+              <div class="rate-sub">Mileage (cents per mile)</div>
+              <div id="mileRateRows"></div>
+            </div>
+          </div>
+
+          <h2 id="listTitle" style="position:absolute;left:-9999px">Logged trips</h2>
+          <div id="tripList"></div>
+          <div class="empty" id="emptyState">
+            <h3>No trips logged yet</h3>
+            <p>Fill in the trip form to log your first run. Each stop takes a store number and the miles to get there — the route total is figured for you.</p>
+          </div>
+          <div class="empty" id="noMatchState" style="display:none">
+            <h3>No matches</h3>
+            <p>No logged trip matches that search. Try a different trip, store, or trailer number.</p>
+          </div>
+        </section>
+      </div>
+
+      <p class="foot">Your trips live in this browser on this device — they aren't sent anywhere or tied to an account. Use <strong>Back up (JSON)</strong> to keep a copy you can restore later or move to another device.</p>
+    </div>
+
+    <p class="ver"><a href="index.html">Rig Hub home</a> · Rig Hub v1.6.0 · Trip Logger v1.5.0 · 1.0.1 original · 1.1.0 activity pay, Tue–Mon week · 1.2.0 GPS shift miles and mileage pay · 1.3.0 weekly odometer · Rig Hub 1.2.0 pick any week start day · 1.2.1 Save miles · 1.2.2 odometer saves with trip · 1.2.3 pause shift miles · 1.2.4 save &amp; print week · Rig Hub 1.4 reset totals · Rig Hub 1.5 pay periods</p>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script src="mile.js"></script>
+    <script>
+      (function(){
+        "use strict";
+        var KEY = "trip-logger-shared-v1";
+        var ACTIVITIES = ["Arrive", "Arrive and Drop", "Stop", "Stop and Drop", "Live Load", "Live Unload", "Layover", "Hook"];
+        var trips = [];
+        var RATE_KEY = "trip-logger-rates-v1";
+        var DEFAULT_RATES = {"Arrive":12.75,"Arrive and Drop":12.75,"Stop":12.75,"Stop and Drop":12.75,"Live Load":12.75,"Live Unload":12.75,"Layover":42.00,"Hook":10.00};
+        function cleanRates(raw){
+          var o = {};
+          ACTIVITIES.forEach(function(a){
+            var v = raw && raw[a] != null ? parseFloat(raw[a]) : NaN;
+            o[a] = (isNaN(v) || v < 0) ? DEFAULT_RATES[a] : Math.round(v * 100) / 100;
+          });
+          return o;
+        }
+        var RATES = cleanRates(null);
+        try{ var rr = localStorage.getItem(RATE_KEY); if(rr) RATES = cleanRates(JSON.parse(rr)); }catch(e){}
+        function saveRates(){ try{ localStorage.setItem(RATE_KEY, JSON.stringify(RATES)); }catch(e){} }
+        function money(n){ return "$" + (Math.round(n * 100) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+        function actsPay(acts, rates){
+          acts = cleanActs(acts); rates = rates || RATES;
+          return ACTIVITIES.reduce(function(s,a){ return s + acts[a] * (rates[a] || 0); }, 0);
+        }
+        function tripPay(t){ return actsPay(t.activities, t.rates ? cleanRates(t.rates) : RATES); }
+
+        /* ---------- GPS mileage ---------- */
+        var APP_VERSION = "1.5.0";
+        var MRATE_KEY = "trip-logger-mile-rates-v1", MSNAP_KEY = "trip-logger-mile-snap-v1", MCACHE_KEY = "trip-logger-mile-days-v1";
+        var MILE_FIELDS = [["base","Base, all miles",0.64],["night","Night shift, all miles",0.07],["weekend","Weekend (Sat & Sun, midnight to midnight)",0.07]];
+        function cleanMRates(raw){
+          var o = {};
+          MILE_FIELDS.forEach(function(f){
+            var v = raw && raw[f[0]] != null ? parseFloat(raw[f[0]]) : NaN;
+            o[f[0]] = (isNaN(v) || v < 0) ? f[2] : Math.round(v * 1000) / 1000;
+          });
+          return o;
+        }
+        function lsGet(k, d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+        function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+        var WS_KEY = "righub-week-start-v1", weekStart = parseInt(lsGet(WS_KEY, 2), 10); if(!(weekStart >= 0 && weekStart <= 6)) weekStart = 2;
+        var DAY_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        (function(){ var sel = document.getElementById("weekStartSel"); sel.value = String(weekStart);
+          sel.addEventListener("change", function(){ weekStart = parseInt(sel.value, 10); lsSet(WS_KEY, weekStart); if(typeof render === "function") render(); toast("Week now starts on " + DAY_FULL[weekStart] + "."); }); })();
+        var MRATES = cleanMRates(lsGet(MRATE_KEY, null));
+        var MSNAP = lsGet(MSNAP_KEY, {});           // day -> rates that day was earned at
+        var mileStatus = {tracking:false, sessionMeters:0, gps:"", days: lsGet(MCACHE_KEY, {})};
+        function dayKey(d){ function z(n){ return (n < 10 ? "0" : "") + n; } return d.getFullYear() + "-" + z(d.getMonth()+1) + "-" + z(d.getDate()); }
+        function isWeekendKey(k){ var p = k.split("-"); var wd = new Date(+p[0], +p[1]-1, +p[2]).getDay(); return wd === 0 || wd === 6; }
+        function dayMiles(k){ return (parseFloat(mileStatus.days[k]) || 0) / 1609.344; }
+        function ratesFor(k){
+          if(k >= dayKey(new Date())) return MRATES;
+          return MSNAP[k] ? cleanMRates(MSNAP[k]) : MRATES;
+        }
+        function dayMilePay(k){
+          var mi = dayMiles(k); if(mi <= 0) return 0;
+          var r = ratesFor(k);
+          return mi * (r.base + r.night + (isWeekendKey(k) ? r.weekend : 0));
+        }
+        function snapRates(){
+          var today = dayKey(new Date()), changed = false;
+          Object.keys(mileStatus.days).forEach(function(k){
+            if(k >= today){ if(!MSNAP[k] || JSON.stringify(MSNAP[k]) !== JSON.stringify(MRATES)){ MSNAP[k] = cleanMRates(MRATES); changed = true; } }
+            else if(!MSNAP[k]){ MSNAP[k] = cleanMRates(MRATES); changed = true; }
+          });
+          if(changed) lsSet(MSNAP_KEY, MSNAP);
+        }
+        function readMileStatus(){
+          if(!window.MileBridge) return;
+          try{
+            var st = JSON.parse(window.MileBridge.status());
+            if(st && st.days){ mileStatus = st; lsSet(MCACHE_KEY, st.days); }
+          }catch(e){}
+        }
+        function allMilePay(){ return Object.keys(mileStatus.days).reduce(function(s,k){ return s + dayMilePay(k); }, 0); }
+
+        /* ---------- Totals reset (v1.1): baseline only, never deletes trips ---------- */
+        var TOTALS_KEY = "trip-logger-totals-since-v1";
+        var TOTALS = lsGet(TOTALS_KEY, null) || {};
+        if(typeof TOTALS !== "object") TOTALS = {};
+        function saveTotals(){ lsSet(TOTALS_KEY, TOTALS); }
+        function idTime(id){ var m = /^t([0-9a-z]{8})/.exec(String(id || "")); if(!m) return 0; var n = parseInt(m[1], 36); return (n > 1e12 && n < 1e14) ? n : 0; }
+        function tripTime(t){ return (t && +t.created) || idTime(t && t.id) || 0; }
+        function milePaySince(){
+          var b = TOTALS.mileBase || {}, d0 = b.day || dayKey(new Date(TOTALS.since));
+          return Object.keys(mileStatus.days).reduce(function(s,k){
+            if(k < d0) return s;
+            if(k > d0) return s + dayMilePay(k);
+            var full = parseFloat(mileStatus.days[k]) || 0; if(full <= 0) return s;
+            var rest = Math.max(0, full - (parseFloat(b.meters) || 0));
+            return s + dayMilePay(k) * (rest / full);
+          }, 0);
+        }
+        function sinceText(ms){
+          var d = new Date(ms);
+          try{ return d.toLocaleDateString(undefined, {month:"short", day:"numeric", year:"numeric"}) + " " + d.toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"}); }catch(e){ return d.toString(); }
+        }
+        function renderTotalsBar(){
+          var lbl = document.getElementById("totalsSince"), vb = document.getElementById("totalsViewBtn"), ub = document.getElementById("totalsUndoBtn"), pl = document.getElementById("ppLine");
+          var now = Date.now(), b = PP.on ? ppBounds(now, PP) : null;
+          var resetLive = !!(TOTALS.since && (!b || TOTALS.since >= b.start));
+          pl.innerHTML = PP.on ? ppSummary(PP, now) + ' · <button type="button" onclick="openPayPeriod()">Change</button>' : 'Want totals to start over each pay period? <button type="button" onclick="openPayPeriod()">Set your pay period</button>';
+          vb.style.display = (PP.on || TOTALS.since) ? "" : "none";
+          ub.style.display = resetLive ? "" : "none";
+          ppSchedule();
+          if(TOTALS.showAll){ lbl.innerHTML = "All-time totals"; vb.textContent = PP.on ? "Show this pay period" : "Show since reset"; return; }
+          vb.textContent = "Show all-time";
+          if(PP.on){ lbl.innerHTML = "Pay period <b>" + esc(ppRangeText(b, PP, false)) + "</b>" + (resetLive ? " · since reset <b>" + esc(sinceText(TOTALS.since)) + "</b>" : ""); return; }
+          if(!TOTALS.since){ lbl.innerHTML = "All-time totals"; return; }
+          lbl.innerHTML = "Since <b>" + esc(sinceText(TOTALS.since)) + "</b>";
+        }
+        (function(){
+          var modal = document.getElementById("totalsModal");
+          function close(){ modal.classList.remove("show"); }
+          document.getElementById("totalsResetBtn").addEventListener("click", function(){ modal.classList.add("show"); document.getElementById("totalsConfirm").focus(); });
+          document.getElementById("totalsCancel").addEventListener("click", close);
+          modal.addEventListener("click", function(e){ if(e.target === modal) close(); });
+          document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+          document.getElementById("totalsConfirm").addEventListener("click", function(){
+            readMileStatus();
+            var now = Date.now(), tk = dayKey(new Date(now));
+            var prev = TOTALS.since ? {since: TOTALS.since, mileBase: TOTALS.mileBase || null, prev: TOTALS.prev || null} : null;
+            TOTALS = {since: now, mileBase: {day: tk, meters: parseFloat(mileStatus.days[tk]) || 0}, showAll: false, prev: prev};
+            saveTotals(); close(); render(); toast("Totals reset. Your trip history is still saved.");
+          });
+          document.getElementById("totalsUndoBtn").addEventListener("click", function(){
+            var p = TOTALS.prev;
+            TOTALS = p ? {since: p.since, mileBase: p.mileBase, showAll: false, prev: p.prev || null} : {};
+            saveTotals(); render(); toast(p ? "Reset undone — back to the earlier start date." : "Reset undone — showing all-time totals.");
+          });
+          document.getElementById("totalsViewBtn").addEventListener("click", function(){
+            TOTALS.showAll = !TOTALS.showAll; saveTotals(); render();
+          });
+        })();
+
+        /* ---------- Pay period (TL 1.3.6 / Rig Hub 1.5): totals roll over at the period cutoff; trips count by their own date/time ---------- */
+        var PP_KEY = "trip-logger-pay-period-v1";
+        var DAY_MS = 864e5, ppTimer = null;
+        function parseDay(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+        function isDay(s){ return /^\d{4}-\d{2}-\d{2}$/.test(String(s || "")); }
+        function nextWeekday(wd){ var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + ((wd - d.getDay() + 7) % 7)); return dayKey(d); }
+        function ppClean(p){
+          p = (p && typeof p === "object") ? p : {};
+          var freq = ["weekly","biweekly","semimonthly","monthly"].indexOf(p.freq) >= 0 ? p.freq : "biweekly";
+          var em = parseInt(p.endMin, 10); if(!(em >= 0 && em <= 1440)) em = 1440;
+          var ed = parseInt(p.endDay, 10); if(!(ed >= 0 && ed <= 6)) ed = 5;
+          var anc = isDay(p.anchor) ? p.anchor : nextWeekday(ed);
+          var a = parseDay(anc); if(a.getDay() !== ed){ a.setDate(a.getDate() - ((a.getDay() - ed + 7) % 7)); anc = dayKey(a); }
+          var s1 = parseInt(p.semiDay, 10); if(!(s1 >= 1 && s1 <= 27)) s1 = 15;
+          var md = parseInt(p.monthDay, 10); if(!(md >= 1 && md <= 31)) md = 31;
+          return {on: !!p.on, freq: freq, endDay: ed, endMin: em, anchor: anc, semiDay: s1, monthDay: md, payday: isDay(p.payday) ? p.payday : ""};
+        }
+        var PP = ppClean(lsGet(PP_KEY, null));
+        function savePP(){ lsSet(PP_KEY, PP); }
+        /* boundary = end of a period: calendar end date d (local) + endMin minutes after that day's midnight (1440 = midnight at the end of the day) */
+        function ppB(y, m, d, P){ var date = new Date(y, m, d); return {t: new Date(y, m, d, 0, P.endMin).getTime(), d: date}; }
+        function ppBounds(t, P){
+          var lo = null, hi = null;
+          if(P.freq === "weekly" || P.freq === "biweekly"){
+            var L = P.freq === "weekly" ? 7 : 14, a = parseDay(P.anchor);
+            var B = function(k){ return ppB(a.getFullYear(), a.getMonth(), a.getDate() + k * L, P); };
+            var k = Math.floor((t - B(0).t) / (L * DAY_MS));
+            while(B(k).t > t) k--;
+            while(B(k + 1).t <= t) k++;
+            lo = B(k); hi = B(k + 1);
+          } else {
+            var base = new Date(t), list = [];
+            for(var i = -2; i <= 2; i++){
+              var y = base.getFullYear(), m = base.getMonth() + i, last = new Date(y, m + 1, 0).getDate();
+              if(P.freq === "semimonthly"){ list.push(ppB(y, m, P.semiDay, P)); list.push(ppB(y, m, last, P)); }
+              else list.push(ppB(y, m, Math.min(P.monthDay, last), P));
+            }
+            list.sort(function(x, z){ return x.t - z.t; });
+            for(var j = 0; j < list.length; j++){ if(list[j].t <= t) lo = list[j]; else { hi = list[j]; break; } }
+          }
+          return {start: lo.t, end: hi.t, startEnd: lo.d, endDate: hi.d};
+        }
+        function ppLag(P){
+          if(!isDay(P.payday)) return null;
+          var pd = parseDay(P.payday), b = ppBounds(new Date(pd.getFullYear(), pd.getMonth(), pd.getDate(), 12).getTime(), P);
+          var e = (dayKey(b.endDate) === P.payday) ? b.endDate : b.startEnd;
+          return Math.round((pd - e) / DAY_MS);
+        }
+        function ppNextPayday(now, P){
+          var lag = ppLag(P); if(lag === null) return null;
+          var today = new Date(now); today.setHours(0,0,0,0);
+          var b = ppBounds(now, P), list = [];
+          for(var i = 0; i < 4; i++){ list.unshift(b.endDate); b = ppBounds(b.start - 1, P); }
+          for(var j = 0; j < list.length; j++){ var d = new Date(list[j].getFullYear(), list[j].getMonth(), list[j].getDate() + lag); if(d >= today) return d; }
+          return null;
+        }
+        /* a trip's own moment: its date + time; legacy trips without a time use when they were saved (if same day) or noon */
+        function tripMoment(t){
+          if(t && isDay(t.date)){
+            var d = parseDay(t.date), tm = /^(\d{1,2}):(\d{2})/.exec(t.time || "");
+            if(tm) return new Date(d.getFullYear(), d.getMonth(), d.getDate(), +tm[1], +tm[2]).getTime();
+            var c = tripTime(t); if(c && dayKey(new Date(c)) === t.date) return c;
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12).getTime();
+          }
+          return tripTime(t) || 0;
+        }
+        function milePayRange(s, e){ return Object.keys(mileStatus.days).reduce(function(sum, k){ if(!isDay(k)) return sum; var t = parseDay(k).getTime(); return (t >= s && t < e) ? sum + dayMilePay(k) : sum; }, 0); }
+        function timeLabel(min){
+          if(min === 1440) return "midnight (end of day)";
+          var h = Math.floor(min / 60), mm = min % 60, ap = h < 12 ? "AM" : "PM", h12 = h % 12 || 12;
+          return h12 + ":" + (mm < 10 ? "0" : "") + mm + " " + ap + (min === 0 ? " (start of day)" : "");
+        }
+        function dShort(d, wd){ try{ return d.toLocaleDateString(undefined, wd ? {weekday:"short", month:"short", day:"numeric"} : {month:"short", day:"numeric"}); }catch(e){ return dayKey(d); } }
+        function ppRangeText(b, P, wd){
+          var s = new Date(b.start), sTxt = dShort(s, wd) + ((s.getHours() || s.getMinutes()) ? " " + timeLabel(s.getHours() * 60 + s.getMinutes()).replace(/ \(.*\)/, "") : "");
+          var eTxt = dShort(b.endDate, wd) + (wd ? " " + (P.endMin === 1440 ? "midnight" : timeLabel(P.endMin).replace(/ \(.*\)/, "")) : "");
+          return sTxt + " – " + eTxt;
+        }
+        function ppSummary(P, now){
+          var b = ppBounds(now, P), np = ppNextPayday(now, P);
+          return "Current pay period: <b>" + esc(ppRangeText(b, P, true)) + "</b> · Next payday: " + (np ? '<span class="pp-pay">' + esc(dShort(np, true)) + "</span>" : "<i>set a payday date</i>");
+        }
+        function ppSchedule(){
+          if(ppTimer) clearTimeout(ppTimer); ppTimer = null;
+          if(!PP.on) return;
+          var wait = ppBounds(Date.now(), PP).end - Date.now() + 1000;
+          ppTimer = setTimeout(function(){ render(); }, Math.max(1000, Math.min(wait, 3600000)));
+        }
+        document.addEventListener("visibilitychange", function(){ if(!document.hidden) render(); });
+        window.TLPayPeriod = {clean: ppClean, bounds: ppBounds, nextPayday: ppNextPayday, tripMoment: tripMoment, get: function(){ return PP; }};
+        (function(){
+          var modal = document.getElementById("ppModal"), tsel = document.getElementById("ppTime");
+          var opts = '<option value="1440">Midnight (end of the day)</option>';
+          for(var h = 0; h < 24; h++) opts += '<option value="' + (h * 60) + '">' + timeLabel(h * 60) + "</option>";
+          tsel.innerHTML = opts;
+          function el(id){ return document.getElementById(id); }
+          function readForm(){
+            return ppClean({on: el("ppOn").checked, freq: el("ppFreq").value, endDay: el("ppDay").value, endMin: el("ppTime").value, anchor: el("ppAnchor").value, semiDay: el("ppSemi").value, monthDay: el("ppMonth").value, payday: el("ppPayday").value});
+          }
+          function syncRows(){
+            var f = el("ppFreq").value, wk = (f === "weekly" || f === "biweekly");
+            el("ppDayRow").style.display = wk ? "" : "none";
+            el("ppAnchorRow").style.display = f === "biweekly" ? "" : "none";
+            el("ppSemiRow").style.display = f === "semimonthly" ? "" : "none";
+            el("ppMonthRow").style.display = f === "monthly" ? "" : "none";
+            var P = readForm(); el("ppPreview").innerHTML = ppSummary(P, Date.now());
+          }
+          function fill(P){
+            el("ppOn").checked = PP.on || !lsGet(PP_KEY, null); el("ppFreq").value = P.freq; el("ppDay").value = String(P.endDay); el("ppTime").value = String(P.endMin);
+            el("ppAnchor").value = P.anchor; el("ppSemi").value = P.semiDay; el("ppMonth").value = P.monthDay; el("ppPayday").value = P.payday;
+            syncRows();
+          }
+          function open(){ fill(PP); modal.classList.add("show"); }
+          function close(){ modal.classList.remove("show"); }
+          window.openPayPeriod = open;
+          el("ppEditBtn").addEventListener("click", open);
+          el("ppCancel").addEventListener("click", close);
+          modal.addEventListener("click", function(e){ if(e.target === modal) close(); });
+          document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+          el("ppDay").addEventListener("change", function(){
+            var a = isDay(el("ppAnchor").value) ? parseDay(el("ppAnchor").value) : new Date(), wd = +el("ppDay").value, diff = (wd - a.getDay() + 7) % 7;
+            if(diff > 3) diff -= 7; a.setDate(a.getDate() + diff); el("ppAnchor").value = dayKey(a); syncRows();
+          });
+          el("ppAnchor").addEventListener("change", function(){ if(isDay(el("ppAnchor").value)) el("ppDay").value = String(parseDay(el("ppAnchor").value).getDay()); syncRows(); });
+          ["ppOn","ppFreq","ppTime","ppSemi","ppMonth","ppPayday"].forEach(function(id){ el(id).addEventListener("change", syncRows); el(id).addEventListener("input", syncRows); });
+          el("ppSave").addEventListener("click", function(){
+            PP = readForm(); savePP(); if(PP.on) TOTALS.showAll = false; saveTotals(); close(); render();
+            toast(PP.on ? "Pay period saved. Totals now show the current pay period." : "Pay periods off. Totals are all-time again.");
+          });
+        })();
+        var editingId = null;
+
+        function blankActs(){
+          var o = {};
+          ACTIVITIES.forEach(function(a){ o[a] = 0; });
+          return o;
+        }
+        function cleanActs(raw){
+          var o = blankActs();
+          if(raw && typeof raw === "object"){
+            ACTIVITIES.forEach(function(a){
+              var n = parseInt(raw[a], 10);
+              o[a] = (isNaN(n) || n < 0) ? 0 : n;
+            });
+          }
+          return o;
+        }
+        function actSummary(t){
+          var acts = cleanActs(t.activities);
+          var parts = ACTIVITIES.filter(function(a){ return acts[a] > 0; }).map(function(a){ return a + " ×" + acts[a]; });
+          return parts.join(", ");
+        }
+
+        function uid(){
+          return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+        }
+        function load(){
+          try{
+            var raw = localStorage.getItem(KEY);
+            if(raw){
+              var parsed = JSON.parse(raw);
+              if(Array.isArray(parsed)){
+                trips = parsed.filter(function(t){ return t && typeof t === "object"; });
+                trips.forEach(function(t){ t.activities = cleanActs(t.activities); if(t.rates) t.rates = cleanRates(t.rates); });
+              }
+            }
+          }catch(e){ trips = []; }
+        }
+        function persist(){
+          try{ localStorage.setItem(KEY, JSON.stringify(trips)); }catch(e){ /* storage full/blocked: keep working in memory */ }
+        }
+        function fmt(n){
+          var v = Math.round(n * 10) / 10;
+          return v % 1 === 0 ? String(v) : v.toFixed(1);
+        }
+        function esc(s){
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+            return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+          });
+        }
+        function tripTotal(t){
+          return t.stops.reduce(function(sum,s){ return sum + (parseFloat(s.miles) || 0); }, 0);
+        }
+        function actChips(t){
+          var acts = cleanActs(t.activities);
+          return ACTIVITIES.filter(function(a){ return acts[a] > 0; }).map(function(a){
+            return '<span class="chip">' + esc(a) + ' <b>&times;' + acts[a] + '</b></span>';
+          }).join("");
+        }
+        function fmtDate(iso){
+          if(!iso) return "";
+          var parts = iso.split("-");
+          if(parts.length !== 3) return iso;
+          var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          var m = parseInt(parts[1],10);
+          return months[m-1] + " " + parseInt(parts[2],10) + ", " + parts[0];
+        }
+
+        /* ---------- Toast ---------- */
+        var toastEl = document.getElementById("toast");
+        var toastTimer = null;
+        function toast(msg){
+          toastEl.textContent = msg;
+          toastEl.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2600);
+        }
+
+        /* ---------- Stop rows in form ---------- */
+        var stopRowsEl = document.getElementById("stopRows");
+        function addStopRow(store, miles){
+          var row = document.createElement("div");
+          row.className = "stop-row";
+          row.innerHTML =
+            '<div class="n"></div>' +
+            '<div class="sf"><label>Store #</label><input type="text" class="in-store" placeholder="e.g. 3241" autocomplete="off" value="' + esc(store || "") + '"></div>' +
+            '<div class="sf"><label>Miles to stop</label><input type="number" class="in-miles" inputmode="decimal" min="0" step="0.1" placeholder="0" value="' + (miles === undefined || miles === null ? "" : esc(miles)) + '"></div>' +
+            '<button type="button" class="stop-del" aria-label="Remove this stop">&times;</button>';
+          row.querySelector(".stop-del").addEventListener("click", function(){
+            if(stopRowsEl.children.length <= 1){
+              row.querySelector(".in-store").value = "";
+              row.querySelector(".in-miles").value = "";
+            } else {
+              row.remove();
+            }
+            refreshForm();
+          });
+          row.querySelector(".in-miles").addEventListener("input", refreshForm);
+          row.querySelector(".in-store").addEventListener("input", refreshForm);
+          stopRowsEl.appendChild(row);
+          refreshForm();
+        }
+        function readStops(){
+          var out = [];
+          var rows = stopRowsEl.querySelectorAll(".stop-row");
+          for(var i = 0; i < rows.length; i++){
+            out.push({
+              store: rows[i].querySelector(".in-store").value.trim(),
+              miles: rows[i].querySelector(".in-miles").value
+            });
+          }
+          return out;
+        }
+        function refreshForm(){
+          var rows = stopRowsEl.querySelectorAll(".stop-row");
+          for(var i = 0; i < rows.length; i++){
+            rows[i].querySelector(".n").textContent = i + 1;
+          }
+          var stops = readStops();
+          var total = stops.reduce(function(s,x){ return s + (parseFloat(x.miles) || 0); }, 0);
+          document.getElementById("routeTotal").textContent = fmt(total);
+          document.getElementById("stopCount").textContent = stops.length + (stops.length === 1 ? " stop" : " stops");
+          document.getElementById("routeBreakdown").textContent =
+            stops.length ? stops.map(function(x){ return fmt(parseFloat(x.miles) || 0); }).join(" + ") + " mi" : "Sum of miles to each stop";
+        }
+
+        /* ---------- Activities in form ---------- */
+        var actRowsEl = document.getElementById("actRows");
+        var formActs = blankActs();
+        ACTIVITIES.forEach(function(a){
+          var row = document.createElement("div");
+          row.className = "act-row";
+          row.innerHTML =
+            '<div class="a-name">' + esc(a) + '</div>' +
+            '<button type="button" class="act-btn a-minus" aria-label="Decrease ' + esc(a) + ' count">&minus;</button>' +
+            '<div class="a-count" data-act="' + esc(a) + '">0</div>' +
+            '<button type="button" class="act-btn a-plus" aria-label="Increase ' + esc(a) + ' count">+</button>';
+          row.querySelector(".a-minus").addEventListener("click", function(){ bumpAct(a, -1); });
+          row.querySelector(".a-plus").addEventListener("click", function(){ bumpAct(a, 1); });
+          actRowsEl.appendChild(row);
+        });
+        function bumpAct(a, d){
+          formActs[a] = Math.max(0, (formActs[a] || 0) + d);
+          refreshActUI();
+        }
+        function refreshActUI(){
+          var counts = actRowsEl.querySelectorAll(".a-count");
+          for(var i = 0; i < counts.length; i++){
+            counts[i].textContent = formActs[counts[i].getAttribute("data-act")] || 0;
+          }
+          var total = ACTIVITIES.reduce(function(s,a){ return s + (formActs[a] || 0); }, 0);
+          document.getElementById("actCount").textContent = total + " total";
+          var editT = null; for(var k = 0; k < trips.length; k++){ if(trips[k].id === editingId) editT = trips[k]; }
+          document.getElementById("formPay").textContent = money(actsPay(formActs, editT && editT.rates ? editT.rates : RATES));
+        }
+
+        /* ---------- Form handling ---------- */
+        var form = document.getElementById("tripForm");
+        var errEl = document.getElementById("formErr");
+        function showErr(msg){
+          errEl.textContent = msg;
+          errEl.classList.add("show");
+        }
+        function hideErr(){ errEl.classList.remove("show"); }
+
+        function resetForm(){
+          editingId = null;
+          form.reset();
+          var _w = ODO[curWeekKey] || {}; document.getElementById("odoStart").value = _w.start != null ? _w.start : ""; document.getElementById("odoEnd").value = _w.end != null ? _w.end : "";
+          document.getElementById("fType").value = "Reefer";
+          stopRowsEl.innerHTML = "";
+          addStopRow();
+          formActs = blankActs();
+          refreshActUI();
+          document.getElementById("formTitle").textContent = "New trip";
+          document.getElementById("formHint").textContent = "Fill in & save";
+          document.getElementById("saveBtn").textContent = "Save trip";
+          document.getElementById("cancelEditBtn").style.display = "none";
+          hideErr();
+          refreshForm();
+        }
+
+        form.addEventListener("submit", function(ev){
+          ev.preventDefault();
+          saveOdo(true);
+          hideErr();
+          var tripNo = document.getElementById("fTrip").value.trim();
+          var trailer = document.getElementById("fTrailer").value.trim();
+          var type = document.getElementById("fType").value;
+          var date = document.getElementById("fDate").value;
+          var notes = document.getElementById("fNotes").value.trim();
+          var stops = readStops().filter(function(s){ return s.store !== "" || s.miles !== ""; });
+
+          if(!tripNo){ showErr("Enter a Trip # to save this run."); document.getElementById("fTrip").focus(); return; }
+          if(!trailer){ showErr("Enter the Trailer # for this run."); document.getElementById("fTrailer").focus(); return; }
+          if(stops.length === 0){ showErr("Add at least one stop with a store number and its miles."); return; }
+          for(var i = 0; i < stops.length; i++){
+            if(!stops[i].store){ showErr("Stop " + (i+1) + " needs a Store #."); return; }
+            var m = parseFloat(stops[i].miles);
+            if(stops[i].miles === "" || isNaN(m) || m < 0){ showErr("Stop " + (i+1) + " needs the miles to reach it (0 or more)."); return; }
+            stops[i].miles = m;
+          }
+
+          var record = {
+            id: editingId || uid(),
+            created: Date.now(),
+            trip: tripNo,
+            date: date,
+            time: date ? document.getElementById("fTime").value : "",
+            trailer: trailer,
+            type: type,
+            notes: notes,
+            stops: stops,
+            activities: cleanActs(formActs),
+            rates: null
+          };
+          var prev = null; for(var q = 0; q < trips.length; q++){ if(trips[q].id === editingId) prev = trips[q]; }
+          record.rates = (prev && prev.rates) ? cleanRates(prev.rates) : cleanRates(RATES);
+          if(prev) record.created = tripTime(prev) || record.created;
+          if(editingId){
+            for(var j = 0; j < trips.length; j++){ if(trips[j].id === editingId) trips[j] = record; }
+            toast("Trip " + tripNo + " updated.");
+          } else {
+            trips.unshift(record);
+            toast("Trip " + tripNo + " and odometer saved — " + fmt(tripTotal(record)) + " miles over " + stops.length + (stops.length === 1 ? " stop." : " stops."));
+          }
+          persist();
+          resetForm();
+          render();
+        });
+
+        document.getElementById("addStopBtn").addEventListener("click", function(){
+          addStopRow();
+          var inputs = stopRowsEl.querySelectorAll(".in-store");
+          inputs[inputs.length - 1].focus();
+        });
+        document.getElementById("clearBtn").addEventListener("click", function(){ resetForm(); });
+        document.getElementById("cancelEditBtn").addEventListener("click", function(){ resetForm(); });
+
+        /* ---------- List rendering ---------- */
+        var listEl = document.getElementById("tripList");
+        var searchEl = document.getElementById("searchInput");
+
+        function matches(t, q){
+          if(!q) return true;
+          q = q.toLowerCase();
+          if(t.trip.toLowerCase().indexOf(q) !== -1) return true;
+          if(t.trailer.toLowerCase().indexOf(q) !== -1) return true;
+          if(t.type.toLowerCase().indexOf(q) !== -1) return true;
+          return t.stops.some(function(s){ return String(s.store).toLowerCase().indexOf(q) !== -1; });
+        }
+
+        /* ---------- Activities this week (start day selectable) ---------- */
+        function renderWeek(){
+          var today = new Date();
+          var monday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          monday.setDate(monday.getDate() - ((monday.getDay() - weekStart + 7) % 7)); /* Rig Hub 1.2.0: week starts on the day picked (default Tuesday, resets at midnight) */
+          var days = [];
+          for(var i = 0; i < 7; i++){
+            days.push(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i));
+          }
+          var dayActs = days.map(function(){ return blankActs(); });
+          var dayPay = days.map(function(){ return 0; });
+          trips.forEach(function(t){
+            if(!t.date) return;
+            var p = String(t.date).split("-");
+            if(p.length !== 3) return;
+            var d = new Date(parseInt(p[0],10), parseInt(p[1],10) - 1, parseInt(p[2],10));
+            if(isNaN(d.getTime())) return;
+            var idx = Math.round((d - monday) / 86400000);
+            if(idx < 0 || idx > 6) return;
+            var acts = cleanActs(t.activities);
+            ACTIVITIES.forEach(function(a){ dayActs[idx][a] += acts[a]; });
+            dayPay[idx] += tripPay(t);
+          });
+          var dayMi = days.map(function(d){ return dayMiles(dayKey(d)); });
+          curWeekKey = dayKey(monday); renderOdo(dayMi.reduce(function(a,b){ return a + b; }, 0));
+          var dayMPay = days.map(function(d){ return dayMilePay(dayKey(d)); });
+          var wdNames = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+          var mNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          function dayLbl(d){ return wdNames[(d.getDay() + 6) % 7] + " " + mNames[d.getMonth()] + " " + d.getDate(); }
+          document.getElementById("weekRange").textContent =
+            mNames[monday.getMonth()] + " " + monday.getDate() + " – " + mNames[days[6].getMonth()] + " " + days[6].getDate();
+          var html = "";
+          days.forEach(function(d, i){
+            var parts = ACTIVITIES.filter(function(a){ return dayActs[i][a] > 0; }).map(function(a){ return esc(a) + " &times;" + dayActs[i][a]; });
+            var isToday = d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+            html += '<div class="wd' + (isToday ? " today" : "") + '"><span class="d">' + dayLbl(d) + (isToday ? " · today" : "") + '</span><span class="c">' + (parts.length ? parts.join(", ") : (dayMi[i] > 0 ? "" : "—")) + (dayMi[i] > 0 ? (parts.length ? " · " : "") + fmt(dayMi[i]) + " GPS mi" : (parts.length ? "" : "")) + ((dayPay[i] + dayMPay[i]) > 0 ? '<span class="p">' + money(dayPay[i] + dayMPay[i]) + '</span>' : '') + '</span></div>';
+          });
+          document.getElementById("weekDays").innerHTML = html;
+          WEEK_REPORT = {key: dayKey(monday), range: document.getElementById("weekRange").textContent + ", " + days[6].getFullYear(),
+            rows: days.map(function(d, i){ return {day: dayLbl(d), acts: ACTIVITIES.filter(function(a){ return dayActs[i][a] > 0; }).map(function(a){ return a + " x" + dayActs[i][a]; }).join(", "), mi: dayMi[i], pay: dayPay[i] + dayMPay[i]}; })};
+          var totals = blankActs();
+          dayActs.forEach(function(da){ ACTIVITIES.forEach(function(a){ totals[a] += da[a]; }); });
+          var tParts = ACTIVITIES.filter(function(a){ return totals[a] > 0; }).map(function(a){ return esc(a) + " &times;" + totals[a]; });
+          document.getElementById("weekTotals").innerHTML = "<b>Week totals:</b> " + (tParts.length ? tParts.join(", ") : "—") +
+            (function(){
+              var aP = dayPay.reduce(function(a,b){ return a + b; }, 0), mP = dayMPay.reduce(function(a,b){ return a + b; }, 0), mi = dayMi.reduce(function(a,b){ return a + b; }, 0);
+              return '<div style="margin-top:6px"><b>GPS miles:</b> ' + fmt(mi) + ' mi · ' + money(mP) + ' &nbsp; <b>Activities:</b> ' + money(aP) + '</div>' +
+                '<div class="pay-total"><span>Week pay</span><span class="n">' + money(aP + mP) + '</span></div>';
+            })();
+          var _o = ODO[curWeekKey] || {};
+          WEEK_REPORT.totals = ACTIVITIES.filter(function(a){ return totals[a] > 0; }).map(function(a){ return a + " x" + totals[a]; }).join(", ");
+          WEEK_REPORT.mi = dayMi.reduce(function(a,b){ return a + b; }, 0);
+          WEEK_REPORT.milePay = dayMPay.reduce(function(a,b){ return a + b; }, 0);
+          WEEK_REPORT.actPay = dayPay.reduce(function(a,b){ return a + b; }, 0);
+          WEEK_REPORT.total = WEEK_REPORT.milePay + WEEK_REPORT.actPay;
+          WEEK_REPORT.odoStart = _o.start != null ? _o.start : null; WEEK_REPORT.odoEnd = _o.end != null ? _o.end : null;
+          renderSavedWeeks();
+        }
+
+        /* ---------- Save & print weekly results ---------- */
+        var WEEK_REPORT = null, WEEKS_KEY = "trip-logger-weeks-v1", SAVED_WEEKS = lsGet(WEEKS_KEY, {});
+        function renderSavedWeeks(){
+          var el = document.getElementById("savedWeeks"), ks = Object.keys(SAVED_WEEKS).sort().reverse();
+          if(!ks.length){ el.innerHTML = ""; return; }
+          el.innerHTML = '<b>Saved weeks</b>' + ks.map(function(k){ var w = SAVED_WEEKS[k];
+            return '<div class="sw"><span>' + esc(w.range) + ' · ' + money(w.total) + '</span><span class="b"><button type="button" class="btn-small" data-print="' + k + '">Print</button><button type="button" class="btn-small" data-del="' + k + '">Delete</button></span></div>'; }).join("");
+        }
+        document.getElementById("savedWeeks").addEventListener("click", function(e){
+          var b = e.target.closest("button"); if(!b) return;
+          if(b.dataset.print && SAVED_WEEKS[b.dataset.print]) printWeek(SAVED_WEEKS[b.dataset.print]);
+          if(b.dataset.del && confirm("Delete the saved week " + SAVED_WEEKS[b.dataset.del].range + "?")){ delete SAVED_WEEKS[b.dataset.del]; lsSet(WEEKS_KEY, SAVED_WEEKS); renderSavedWeeks(); toast("Saved week deleted."); }
+        });
+        function printWeek(w){
+          var odo = (w.odoStart != null && w.odoEnd != null) ? "Odometer " + w.odoStart.toLocaleString() + " to " + w.odoEnd.toLocaleString() + " (" + (w.odoEnd - w.odoStart).toLocaleString() + " mi)" : (w.odoStart != null ? "Odometer start " + w.odoStart.toLocaleString() : "");
+          var h = '<h1>Trip Logger · Week of ' + esc(w.range) + '</h1><p class="sub">' + (w.savedAt ? "Saved " + esc(new Date(w.savedAt).toLocaleString()) : "Printed " + esc(new Date().toLocaleString())) + (odo ? " · " + esc(odo) : "") + '</p>' +
+            '<table><tr><th>Day</th><th>Activities</th><th class="n">Miles</th><th class="n">Pay</th></tr>' +
+            w.rows.map(function(r){ return '<tr><td>' + esc(r.day) + '</td><td>' + (r.acts ? esc(r.acts) : "—") + '</td><td class="n">' + (r.mi > 0 ? fmt(r.mi) : "—") + '</td><td class="n">' + (r.pay > 0 ? money(r.pay) : "—") + '</td></tr>'; }).join("") +
+            '<tr class="tot"><td>Week</td><td>' + (w.totals ? esc(w.totals) : "—") + '</td><td class="n">' + fmt(w.mi) + '</td><td class="n">' + money(w.total) + '</td></tr></table>' +
+            '<p>Mileage pay: ' + money(w.milePay) + ' · Activity pay: ' + money(w.actPay) + ' · <b>Week pay: ' + money(w.total) + '</b></p>';
+          document.getElementById("printArea").innerHTML = h;
+          document.body.classList.add("printing");
+          setTimeout(function(){ if(window.TLBridge && TLBridge.printPage) TLBridge.printPage(); else window.print(); }, 150);
+        }
+        window.addEventListener("afterprint", function(){ document.body.classList.remove("printing"); });
+        document.getElementById("saveWeekBtn").addEventListener("click", function(){
+          if(!WEEK_REPORT) return;
+          var w = JSON.parse(JSON.stringify(WEEK_REPORT)); w.savedAt = new Date().toISOString();
+          var again = !!SAVED_WEEKS[w.key]; SAVED_WEEKS[w.key] = w; lsSet(WEEKS_KEY, SAVED_WEEKS); renderSavedWeeks();
+          toast(again ? "Saved week updated." : "Week saved.");
+        });
+        document.getElementById("printWeekBtn").addEventListener("click", function(){ if(WEEK_REPORT) printWeek(WEEK_REPORT); });
+
+        var ODO_KEY = "trip-logger-odo-v1", ODO = lsGet(ODO_KEY, {}), curWeekKey = "";
+        function prevOdoEnd(){
+          var ks = Object.keys(ODO).filter(function(k){ return k < curWeekKey && ODO[k] && ODO[k].end; }).sort();
+          return ks.length ? ODO[ks[ks.length-1]].end : null;
+        }
+        function renderOdo(gpsMi){
+          var w = ODO[curWeekKey] || {}, sEl = document.getElementById("odoStart"), eEl = document.getElementById("odoEnd"), out = document.getElementById("odoOut");
+          if(document.activeElement !== sEl) sEl.value = w.start != null ? w.start : "";
+          if(document.activeElement !== eEl) eEl.value = w.end != null ? w.end : "";
+          var pe = prevOdoEnd();
+          sEl.placeholder = (w.start == null && pe != null) ? "last week ended " + pe : "e.g. 412350";
+          if(w.start != null && w.end != null){
+            var om = w.end - w.start;
+            if(om < 0){ out.textContent = "End is lower than start. Check the numbers."; return; }
+            var diff = om - gpsMi;
+            out.textContent = "Odometer: " + om.toLocaleString() + " mi · GPS: " + fmt(gpsMi) + " mi" + (gpsMi > 0 ? " (" + (diff >= 0 ? "GPS " + fmt(diff) + " under" : "GPS " + fmt(-diff) + " over") + ")" : "") + ". Pay uses GPS miles.";
+          } else if(w.start != null){
+            out.textContent = "Started at " + w.start.toLocaleString() + ". Enter the end reading " + DAY_FULL[(weekStart + 6) % 7] + " night to see the week's odometer miles.";
+          } else out.textContent = "Enter the start reading at the beginning of the week (" + DAY_FULL[weekStart] + ").";
+        }
+        function saveOdo(quiet){
+          var w = ODO[curWeekKey] || {}, ok = true;
+          [["odoStart","start"],["odoEnd","end"]].forEach(function(p){
+            var v = document.getElementById(p[0]).value.trim(), n = parseInt(v, 10);
+            if(v === "") delete w[p[1]]; else if(isNaN(n) || n < 0) ok = false; else w[p[1]] = n;
+          });
+          if(!ok){ toast("Enter the odometer as a whole number."); return; }
+          if(w.start != null && w.end != null && w.end < w.start) toast("End is lower than start. Check the numbers.");
+          if(Object.keys(w).length) ODO[curWeekKey] = w; else delete ODO[curWeekKey];
+          lsSet(ODO_KEY, ODO);
+          if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+          render();
+          if(!quiet) toast(w.start != null || w.end != null ? "Miles saved." : "Odometer cleared.");
+        }
+        ["odoStart","odoEnd"].forEach(function(id){ document.getElementById(id).addEventListener("change", function(){ saveOdo(true); }); });
+        document.getElementById("odoSave").addEventListener("click", function(){ saveOdo(false); });
+        function renderMile(){
+          var on = !!mileStatus.tracking;
+          document.getElementById("mileSession").textContent = (on || mileStatus.sessionMeters) ? (mileStatus.sessionMeters / 1609.344).toFixed(1) : "0.0";
+          var tk = dayKey(new Date());
+          document.getElementById("mileToday").textContent = "Today: " + dayMiles(tk).toFixed(1) + " mi · " + money(dayMilePay(tk)) +
+            " (" + ((MRATES.base + MRATES.night + (isWeekendKey(tk) ? MRATES.weekend : 0)) * 100).toFixed(1).replace(/\.0$/, "") + "¢/mi" + (isWeekendKey(tk) ? ", weekend" : "") + ")";
+          var btn = document.getElementById("mileBtn"), st = document.getElementById("mileState"), hint = document.getElementById("mileHint");
+          btn.textContent = on ? "Stop shift" : "Start shift";
+          btn.className = "mile-btn" + (on ? " stop" : "");
+          var pb = document.getElementById("milePause"), paused = on && !!mileStatus.paused;
+          pb.style.display = (on && window.MileBridge && window.MileBridge.pause) ? "" : "none";
+          pb.textContent = paused ? "Resume" : "Pause";
+          var g = mileStatus.gps;
+          if(!window.MileBridge){ st.textContent = "No GPS"; st.className = "mile-state warn"; hint.textContent = "This browser cannot count miles."; btn.disabled = true; return; }
+          if(on && g === "off"){ st.textContent = "GPS off"; st.className = "mile-state warn"; hint.textContent = "Turn on Location in your phone settings so miles can be counted."; }
+          else if(on && g === "searching"){ st.textContent = "Finding GPS"; st.className = "mile-state on"; hint.textContent = "Looking for a GPS signal. Miles start counting once it locks on."; }
+          else if(paused){ st.textContent = "Paused"; st.className = "mile-state warn"; hint.textContent = "Miles are paused. Tap Resume when you're back on the clock. Driving while paused isn't counted."; }
+          else if(on){ st.textContent = "Tracking"; st.className = "mile-state on"; hint.textContent = "Counting miles while this page is open. On iPhone, miles pause if the screen locks or you leave the app."; }
+          else if(g === "denied"){ st.textContent = "No permission"; st.className = "mile-state warn"; hint.textContent = "Location permission is off. Tap Start shift and allow location \"While using the app\"."; }
+          else { st.textContent = "Stopped"; st.className = "mile-state"; hint.textContent = "GPS counts miles only between Start shift and Stop shift. Miles are split midnight to midnight."; }
+        }
+        function render(){
+          readMileStatus(); snapRates(); renderMile();
+          var q = searchEl.value.trim();
+          var visible = trips.filter(function(t){ return matches(t, q); });
+
+          document.getElementById("emptyState").style.display = trips.length === 0 ? "block" : "none";
+          document.getElementById("noMatchState").style.display = (trips.length > 0 && visible.length === 0) ? "block" : "none";
+
+          var per = (PP.on && !TOTALS.showAll) ? ppBounds(Date.now(), PP) : null;
+          var useSince = !!(TOTALS.since && !TOTALS.showAll && (!per || TOTALS.since >= per.start));
+          var counted = trips.filter(function(t){
+            if(useSince && tripTime(t) < TOTALS.since) return false;
+            if(per){ var tm = tripMoment(t); if(tm < per.start || tm >= per.end) return false; }
+            return true;
+          });
+          var totalMiles = counted.reduce(function(s,t){ return s + tripTotal(t); }, 0);
+          var totalStops = counted.reduce(function(s,t){ return s + t.stops.length; }, 0);
+          document.getElementById("statTrips").textContent = counted.length;
+          document.getElementById("statMiles").textContent = fmt(totalMiles);
+          document.getElementById("statStops").textContent = totalStops;
+          document.getElementById("statAvg").textContent = counted.length ? fmt(totalMiles / counted.length) : "0";
+          document.getElementById("statPay").textContent = money(counted.reduce(function(s,t){ return s + tripPay(t); }, 0) + (useSince ? milePaySince() : (per ? milePayRange(per.start, per.end) : allMilePay())));
+          renderTotalsBar();
+          renderWeek();
+
+          listEl.innerHTML = "";
+          visible.forEach(function(t){
+            var total = tripTotal(t);
+            var card = document.createElement("article");
+            card.className = "trip";
+
+            var cum = 0;
+            var rowsHtml = t.stops.map(function(s, i){
+              cum += parseFloat(s.miles) || 0;
+              return "<tr><td>" + (i+1) + "</td><td><b>Store " + esc(s.store) + "</b></td>" +
+                '<td class="num">' + fmt(parseFloat(s.miles) || 0) + " mi</td>" +
+                '<td class="num cum">' + fmt(cum) + " mi</td></tr>";
+            }).join("");
+
+            card.innerHTML =
+              '<div class="trip-main">' +
+                '<div class="trip-top">' +
+                  '<div class="trip-id"><span>Trip</span> #' + esc(t.trip) + '</div>' +
+                  '<div class="trip-total"><div class="n">' + fmt(total) + ' mi</div><div class="l">Route total</div></div>' +
+                '</div>' +
+                '<div class="trip-meta">' +
+                  (t.date ? '<span class="chip">' + esc(fmtDate(t.date)) + '</span>' : '') +
+                  '<span class="chip">Trailer <b>#' + esc(t.trailer) + '</b></span>' +
+                  '<span class="chip">' + esc(t.type) + '</span>' +
+                  '<span class="chip"><b>' + t.stops.length + '</b>&nbsp;' + (t.stops.length === 1 ? "stop" : "stops") + '</span>' +
+                  actChips(t) +
+                  (tripPay(t) > 0 ? '<span class="chip paychip">Pay <b>' + money(tripPay(t)) + '</b></span>' : '') +
+                '</div>' +
+                (t.notes ? '<p class="trip-notes">' + esc(t.notes) + '</p>' : '') +
+              '</div>' +
+              '<div class="trip-actions">' +
+                '<button type="button" class="btn-small act-stops">Stop details</button>' +
+                '<button type="button" class="btn-small act-copy">Copy summary</button>' +
+                '<button type="button" class="btn-small act-edit">Edit</button>' +
+                '<button type="button" class="btn-small act-del">Delete</button>' +
+              '</div>' +
+              '<div class="trip-stops"><table><thead><tr><th>#</th><th>Store</th><th class="num">Miles to stop</th><th class="num">Running total</th></tr></thead><tbody>' +
+              rowsHtml + '</tbody></table></div>';
+
+            card.querySelector(".act-stops").addEventListener("click", function(){
+              var open = card.classList.toggle("open");
+              this.textContent = open ? "Hide details" : "Stop details";
+            });
+            card.querySelector(".act-edit").addEventListener("click", function(){ startEdit(t.id); });
+            card.querySelector(".act-del").addEventListener("click", function(){
+              trips = trips.filter(function(x){ return x.id !== t.id; });
+              if(editingId === t.id) resetForm();
+              persist(); render();
+              toast("Trip #" + t.trip + " deleted.");
+            });
+            card.querySelector(".act-copy").addEventListener("click", function(){
+              var lines = [
+                "Trip #" + t.trip + (t.date ? " — " + fmtDate(t.date) : ""),
+                "Trailer #" + t.trailer + " (" + t.type + ")",
+                "Stops: " + t.stops.length
+              ];
+              var c = 0;
+              t.stops.forEach(function(s, i){
+                c += parseFloat(s.miles) || 0;
+                lines.push("  " + (i+1) + ". Store " + s.store + " — " + fmt(parseFloat(s.miles) || 0) + " mi (running " + fmt(c) + ")");
+              });
+              lines.push("Total route miles: " + fmt(tripTotal(t)));
+              var actLine = actSummary(t);
+              if(actLine) lines.push("Activities: " + actLine);
+              if(tripPay(t) > 0) lines.push("Pay: " + money(tripPay(t)));
+              if(t.notes) lines.push("Notes: " + t.notes);
+              copyText(lines.join("\n"));
+            });
+            listEl.appendChild(card);
+          });
+        }
+
+        function copyText(text){
+          function done(){ toast("Summary copied — paste it anywhere."); }
+          if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+          } else { fallback(); }
+          function fallback(){
+            var ta = document.createElement("textarea");
+            ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta); ta.select();
+            try{ document.execCommand("copy"); done(); }catch(e){ toast("Copy didn't work in this browser."); }
+            ta.remove();
+          }
+        }
+
+        function startEdit(id){
+          var t = null;
+          trips.forEach(function(x){ if(x.id === id) t = x; });
+          if(!t) return;
+          editingId = id;
+          document.getElementById("fTrip").value = t.trip;
+          document.getElementById("fDate").value = t.date || "";
+          document.getElementById("fTime").value = t.time || "";
+          document.getElementById("fTrailer").value = t.trailer;
+          document.getElementById("fType").value = t.type;
+          document.getElementById("fNotes").value = t.notes || "";
+          stopRowsEl.innerHTML = "";
+          t.stops.forEach(function(s){ addStopRow(s.store, s.miles); });
+          formActs = cleanActs(t.activities);
+          refreshActUI();
+          document.getElementById("formTitle").textContent = "Edit trip #" + t.trip;
+          document.getElementById("formHint").textContent = "Editing — save to update";
+          document.getElementById("saveBtn").textContent = "Save changes";
+          document.getElementById("cancelEditBtn").style.display = "";
+          hideErr(); refreshForm();
+          document.querySelector(".form-panel").scrollIntoView({behavior:"smooth", block:"start"});
+          document.getElementById("fTrip").focus();
+        }
+
+        searchEl.addEventListener("input", render);
+
+        /* ---------- Export / import ---------- */
+        function download(name, text, mime){
+          var blob = new Blob([text], {type: mime || "text/plain"});
+          try {
+            var file = new File([blob], name, {type: blob.type});
+            if (navigator.canShare && navigator.canShare({files:[file]})) {
+              navigator.share({files:[file], title:name}).catch(function(e){ if(!e || e.name!=="AbortError") anchor(); });
+              return;
+            }
+          } catch (e) {}
+          anchor();
+          function anchor(){
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+          }
+        }
+        document.getElementById("exportCsvBtn").addEventListener("click", function(){
+          if(trips.length === 0){ toast("No trips to export yet."); return; }
+          function csv(v){ v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
+          var lines = [["Trip #","Date","Trailer #","Trailer Type","Stop #","Store #","Miles to Stop","Total Route Miles","Notes"].concat(ACTIVITIES).concat(["Trip Pay"]).map(csv).join(",")];
+          trips.forEach(function(t){
+            var total = fmt(tripTotal(t));
+            var acts = cleanActs(t.activities);
+            var actVals = ACTIVITIES.map(function(a){ return acts[a]; });
+            t.stops.forEach(function(s, i){
+              lines.push([t.trip, t.date || "", t.trailer, t.type, i+1, s.store, fmt(parseFloat(s.miles) || 0), total, t.notes || ""].concat(actVals).concat([i === 0 ? tripPay(t).toFixed(2) : ""]).map(csv).join(","));
+            });
+          });
+          download("trip-log.csv", lines.join("\n"), "text/csv");
+          toast("CSV downloaded — one row per stop.");
+        });
+        document.getElementById("exportJsonBtn").addEventListener("click", function(){
+          if(trips.length === 0 && Object.keys(mileStatus.days).length === 0 && Object.keys(ODO).length === 0 && Object.keys(SAVED_WEEKS).length === 0){ toast("Nothing to back up yet."); return; }
+          download("trip-log-backup.json", JSON.stringify({app:"trip-logger", version:3, appVersion: APP_VERSION, payPeriod: PP, rates: RATES, mileRates: MRATES, mileSnap: MSNAP, mileDays: mileStatus.days, odometer: ODO, savedWeeks: SAVED_WEEKS, trips: trips}, null, 2), "application/json");
+          toast("Backup downloaded.");
+        });
+        var importFile = document.getElementById("importFile");
+        document.getElementById("importBtn").addEventListener("click", function(){ importFile.click(); });
+        importFile.addEventListener("change", function(){
+          var file = importFile.files[0];
+          importFile.value = "";
+          if(!file) return;
+          var reader = new FileReader();
+          reader.onload = function(){
+            try{
+              var data = JSON.parse(reader.result);
+              var incoming = Array.isArray(data) ? data : data.trips;
+              if(!Array.isArray(incoming)) throw new Error("bad");
+              var cleaned = [];
+              incoming.forEach(function(t){
+                if(!t || !t.trip || !Array.isArray(t.stops) || t.stops.length === 0) return;
+                cleaned.push({
+                  id: uid(),
+                  created: (+t.created) || idTime(t.id) || Date.now(),
+                  trip: String(t.trip),
+                  date: t.date || "",
+                  time: /^\d{1,2}:\d{2}$/.test(String(t.time || "")) ? String(t.time) : "",
+                  trailer: String(t.trailer || ""),
+                  type: String(t.type || "Other"),
+                  notes: String(t.notes || ""),
+                  activities: cleanActs(t.activities),
+                  rates: t.rates ? cleanRates(t.rates) : null,
+                  stops: t.stops.map(function(s){ return {store: String(s.store || ""), miles: parseFloat(s.miles) || 0}; })
+                });
+              });
+              var restoredMiles = false;
+              if(data && data.mileDays && typeof data.mileDays === "object"){
+                if(window.MileBridge) window.MileBridge.importDays(JSON.stringify(data.mileDays));
+                Object.keys(data.mileDays).forEach(function(k){ if((parseFloat(data.mileDays[k])||0) > (parseFloat(mileStatus.days[k])||0)) mileStatus.days[k] = data.mileDays[k]; });
+                lsSet(MCACHE_KEY, mileStatus.days); restoredMiles = true;
+              }
+              if(data && data.mileSnap && typeof data.mileSnap === "object"){ Object.keys(data.mileSnap).forEach(function(k){ if(!MSNAP[k]) MSNAP[k] = cleanMRates(data.mileSnap[k]); }); lsSet(MSNAP_KEY, MSNAP); }
+              if(data && data.odometer && typeof data.odometer === "object"){ Object.keys(data.odometer).forEach(function(k){ if(!ODO[k]) ODO[k] = data.odometer[k]; }); lsSet(ODO_KEY, ODO); restoredMiles = true; }
+              if(data && data.savedWeeks && typeof data.savedWeeks === "object"){ Object.keys(data.savedWeeks).forEach(function(k){ if(!SAVED_WEEKS[k]) SAVED_WEEKS[k] = data.savedWeeks[k]; }); lsSet(WEEKS_KEY, SAVED_WEEKS); restoredMiles = true; }
+              if(data && data.mileRates){ MRATES = cleanMRates(data.mileRates); lsSet(MRATE_KEY, MRATES); buildMileRates(); }
+              if(cleaned.length === 0){ if(restoredMiles){ render(); toast("Mileage restored."); } else toast("That file had no trips to restore."); return; }
+              if(data && data.payPeriod && typeof data.payPeriod === "object" && !PP.on){ PP = ppClean(data.payPeriod); savePP(); }
+              if(data && data.rates){ RATES = cleanRates(data.rates); saveRates(); buildRates(); }
+              trips = cleaned.concat(trips);
+              persist(); render();
+              toast(cleaned.length + (cleaned.length === 1 ? " trip" : " trips") + " restored.");
+            }catch(e){
+              toast("Couldn't read that file — pick a Trip Logger backup (.json).");
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        /* ---------- Pay rates ---------- */
+        var rateRowsEl = document.getElementById("rateRows");
+        function buildRates(){
+          rateRowsEl.innerHTML = "";
+          ACTIVITIES.forEach(function(a){
+            var row = document.createElement("div");
+            row.className = "rate-row";
+            row.innerHTML = '<div class="r-name">' + esc(a) + '</div><div class="r-in">$<input type="number" inputmode="decimal" step="0.01" min="0" aria-label="Pay for ' + esc(a) + '" value="' + RATES[a].toFixed(2) + '"></div>';
+            var inp = row.querySelector("input");
+            inp.addEventListener("change", function(){
+              var v = parseFloat(inp.value);
+              if(isNaN(v) || v < 0){ inp.value = RATES[a].toFixed(2); return; }
+              RATES[a] = Math.round(v * 100) / 100; inp.value = RATES[a].toFixed(2);
+              saveRates(); refreshActUI(); render();
+              toast(a + " now pays " + money(RATES[a]) + ".");
+            });
+            rateRowsEl.appendChild(row);
+          });
+        }
+        buildRates();
+        document.getElementById("ratesToggle").addEventListener("click", function(){
+          var open = document.getElementById("ratesPanel").classList.toggle("open");
+          this.textContent = open ? "Done" : "Edit rates";
+        });
+
+        var mileRateRowsEl = document.getElementById("mileRateRows");
+        function buildMileRates(){
+          mileRateRowsEl.innerHTML = "";
+          MILE_FIELDS.forEach(function(f){
+            var row = document.createElement("div");
+            row.className = "rate-row";
+            row.innerHTML = '<div class="r-name">' + esc(f[1]) + '</div><div class="r-in">$<input type="number" inputmode="decimal" step="0.01" min="0" aria-label="' + esc(f[1]) + ' per mile" value="' + MRATES[f[0]].toFixed(2) + '"><span class="hint">/mi</span></div>';
+            var inp = row.querySelector("input");
+            inp.addEventListener("change", function(){
+              var v = parseFloat(inp.value);
+              if(isNaN(v) || v < 0){ inp.value = MRATES[f[0]].toFixed(2); return; }
+              MRATES[f[0]] = Math.round(v * 1000) / 1000; inp.value = MRATES[f[0]].toFixed(2);
+              lsSet(MRATE_KEY, MRATES); render();
+              toast(f[1].split(",")[0].split(" (")[0] + " now $" + MRATES[f[0]].toFixed(2) + " a mile.");
+            });
+            mileRateRowsEl.appendChild(row);
+          });
+        }
+        buildMileRates();
+        document.getElementById("milePause").addEventListener("click", function(){
+          if(!window.MileBridge || !mileStatus.tracking) return;
+          if(mileStatus.paused){ window.MileBridge.resume(); toast("Resumed. Counting miles."); }
+          else { window.MileBridge.pause(); toast("Paused. Miles won't count until you resume."); }
+          setTimeout(render, 300);
+        });
+        document.getElementById("mileBtn").addEventListener("click", function(){
+          if(!window.MileBridge) return;
+          if(mileStatus.tracking){
+            var mi = (mileStatus.sessionMeters / 1609.344).toFixed(1);
+            if(!confirm("Stop shift? " + mi + " miles counted this shift.")) return;
+            window.MileBridge.stop(); toast("Shift stopped — " + mi + " mi.");
+          } else { window.MileBridge.start(); toast("Shift started. Counting miles."); }
+          setTimeout(render, 600);
+        });
+        window.onMileState = function(){ render(); };
+        setInterval(function(){ if(mileStatus.tracking && !document.hidden) render(); }, 5000);
+        document.addEventListener("visibilitychange", function(){ if(!document.hidden) render(); });
+
+        /* ---------- Init ---------- */
+        load();
+        resetForm();
+        render();
+      })();
+    </script>
+    <div id="printArea"></div>
+  <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});</script>
+</body>
+</html>

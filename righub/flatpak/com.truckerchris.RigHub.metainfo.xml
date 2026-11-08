@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.truckerchris.RigHub</id>
+  <name>Rig Hub</name>
+  <summary>Rig Nav, Trip Logger, Tandem Slide and Weather for drivers</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <developer id="com.trucker"><name>Trucker Chris</name></developer>
+  <description><p>Desktop version of Rig Hub: Rig Nav truck routing, the Trip Logger (trips, stops, activity pay, shift miles, pay periods that roll over by themselves, reset totals), Weather from the National Weather Service, and the Tandem Slide calculator for CAT scale weights. The slide result is a rule-of-thumb estimate. Always re-scale after pinning. Data is saved on this computer.</p></description>
+  <icon type="stock">com.truckerchris.RigHub</icon>
+  <launchable type="desktop-id">com.truckerchris.RigHub.desktop</launchable>
+  <categories><category>Utility</category></categories>
+  <content_rating type="oars-1.1"/>
+  <releases><release version="1.6.0" date="2026-11-08"><description><p>Adds Tandem Slide on the switcher bar, using the same CAT scale calculator as the standalone app. Rig Nav, Trip Logger and Weather stay in place.</p></description></release><release version="1.5.1" date="2026-10-27"><description><p>Big switcher bar at the top: Home, Rig Nav, Trip Logger, Weather, with the version shown clearly.</p></description></release><release version="1.5" date="2026-10-27"/></releases>
+</component>

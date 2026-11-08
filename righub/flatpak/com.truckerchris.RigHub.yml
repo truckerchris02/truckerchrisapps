@@ -1,0 +1,26 @@
+app-id: com.truckerchris.RigHub
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: righub
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --share=network
+  - --device=dri
+  - --filesystem=xdg-download
+  - --system-talk-name=org.freedesktop.GeoClue2
+modules:
+  - name: righub
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 righub.py /app/bin/righub
+      - mkdir -p /app/share/righub && cp -r app/. /app/share/righub/
+      - install -Dm644 com.truckerchris.RigHub.desktop /app/share/applications/com.truckerchris.RigHub.desktop
+      - install -Dm644 com.truckerchris.RigHub.metainfo.xml /app/share/metainfo/com.truckerchris.RigHub.metainfo.xml
+      - for n in 16 24 32 48 64 128 256 512; do install -Dm644 icon$n.png /app/share/icons/hicolor/${n}x${n}/apps/com.truckerchris.RigHub.png; done
+    sources:
+      - type: dir
+        path: .
+        skip: [build, repo, .flatpak-builder]
