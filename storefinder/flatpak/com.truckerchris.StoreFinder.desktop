@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Walmart Store Finder
+Comment=Find Walmart stores and distribution centers
+Exec=storefinder
+Icon=com.truckerchris.StoreFinder
+Categories=Utility;
+Keywords=walmart;store;distribution;zip;trucking;
+Terminal=false

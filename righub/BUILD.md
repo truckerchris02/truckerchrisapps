@@ -1,8 +1,10 @@
-# Rig Hub 1.8.0 build
+# Rig Hub 1.9.0 build
 
-Package stays `com.truckerchris.righub`. Version name is `1.8.0`. Version code is `14` (1.5.1 was version code `11`), so an update signed with the same key keeps Rig Nav, Trip Logger, Weather, and Tandem Slide data.
+Package stays `com.truckerchris.righub`. Version name is `1.9.0`. Version code is `15` (1.5.1 was version code `11`, 1.8.0 was version code `14`), so an update signed with the same key keeps Rig Nav, Trip Logger, Weather, Tandem Slide, and the other saved hub data.
 
 Tandem Slide in this app is the standalone calculator: `android/assets/tandem/` and `flatpak/app/tandem/` are copies of that engine and page. The phone tab and the desktop switcher only open that page. They do not contain a second axle formula.
+
+Walmart Store Finder inside the hub is a copy of Store Finder 1.2.0 with storage keys `righub_stores_custom`, `righub_stores_edits`, and `righub_stores_deleted`. The standalone app under `storefinder/` keeps `wsf_custom`, `wsf_edits`, and `wsf_deleted`. Search results and saved stores have a Navigate in Rig Nav action. Rig Nav also matches Walmart stores and distribution centers from the bundled list, for example `Walmart 59` or `DC 6006`.
 
 The unsigned APK reuses the 1.5.1 `classes.dex` for `MainActivity`, `MileService` and `MileStore`, and reuses the 1.5.1 `resources.arsc`. Only `HubActivity` is recompiled. That keeps the trip-mileage shell and the resource ids (`ic_stat` is `0x7f010001`).
 
@@ -11,6 +13,10 @@ The unsigned APK reuses the 1.5.1 `classes.dex` for `MainActivity`, `MileService
 ```bash
 python3 righub/tests/test_tandem_parity.py
 python3 righub/tests/test_hub_integration.py
+python3 righub/tests/test_added_tools.py
+node righub/tests/test_store_nav.js
+python3 storefinder/tests/test_normalize.py
+node storefinder/tests/test_storefinder.js
 ```
 
 The parity test runs the original Python calculator against the engine packed into Rig Hub, including slide direction, hole count, pin spacing, rejected input, and the return-to-shipper stop.
@@ -23,7 +29,7 @@ From the repo root, pass the published `RigHub-v1.5.1.apk` (GitHub release `rig-
 python3 righub/tools/build_unsigned_apk.py /path/to/RigHub-v1.5.1.apk
 ```
 
-Output: `righub/dist/RigHub-v1.8.0-unsigned.apk`.
+Output: `righub/dist/RigHub-v1.9.0-unsigned.apk`.
 
 The script downloads `android.jar`, R8/d8 and dexlib2 into `righub/.toolcache` (gitignored). Set `RIGHUB_TOOLS` to a directory that already has those jars to skip the download. Java 8+ is required (`javac`, `jar`, `java`).
 
@@ -45,10 +51,10 @@ keytool -list -v -keystore /PATH/TO/YOUR/EXISTING.keystore -alias RIGHUB
 apksigner sign \
   --ks /PATH/TO/YOUR/EXISTING.keystore \
   --ks-key-alias RIGHUB \
-  --out RigHub-v1.8.0.apk \
-  righub/dist/RigHub-v1.8.0-unsigned.apk
+  --out RigHub-v1.9.0.apk \
+  righub/dist/RigHub-v1.9.0-unsigned.apk
 
-apksigner verify --print-certs RigHub-v1.8.0.apk
+apksigner verify --print-certs RigHub-v1.9.0.apk
 ```
 
 `resources.arsc` in the unsigned APK is already stored and 4-byte aligned. If `apksigner` asks for alignment, run `zipalign -p -f 4` on a copy and sign that copy.
@@ -61,18 +67,22 @@ The wrapper is `righub/flatpak`. It needs `org.gnome.Platform//51` and `org.gnom
 flatpak install --user flathub org.gnome.Platform//51 org.gnome.Sdk//51
 cd righub/flatpak
 flatpak-builder --user --force-clean --repo=repo build com.truckerchris.RigHub.yml
-flatpak build-bundle repo RigHub-v1.8.0.flatpak com.truckerchris.RigHub
+flatpak build-bundle repo RigHub-v1.9.0.flatpak com.truckerchris.RigHub
 ```
 
 ## Publishing
 
-Do not upload the unsigned APK as the release file. After the APK is signed with the original key and the Flatpak bundle is built, create GitHub release `rig-hub-v1.8.0` and attach:
+Do not upload the unsigned APK as the release file. After the APK is signed with the original key and the Flatpak bundle is built, create GitHub release `rig-hub-v1.9.0` and attach:
 
-- `RigHub-v1.8.0.apk`
-- `RigHub-v1.8.0.flatpak`
+- `RigHub-v1.9.0.apk`
+- `RigHub-v1.9.0.flatpak`
 
-Leave every older release, including `rig-hub-v1.5.1` and `tandem-slide-v1.0`, where it is. The download page in this repo now links to the 1.6.0 asset names. Those links 404 until that release exists.
+Leave every older release, including `rig-hub-v1.5.1` and `tandem-slide-v1.0`, where it is. The download page in this repo links to the 1.9.0 asset names. Those links 404 until that release exists.
 
 ## iPhone web
 
-This repo does not contain the iPhone Rig Hub site. That site is https://github.com/truckerchris02/truckerchriswebapps (`rig-hub/`). It still shows Rig Nav, Trip Logger and Weather at v1.5, and its service worker cache is `rig-hub-v1.5`. Standalone Tandem Slide is already at `tandemslide/` in that repo. A follow-up there should add a Tandem Slide card on `rig-hub/index.html`, copy this same `engine.js` and `index.html` into `rig-hub/tandem/` (so it stays inside the Rig Hub cache scope), and add those files to `rig-hub/sw.js` under a new cache name. Do not change Trip Logger pay logic in that follow-up.
+The iPhone Rig Hub site is https://github.com/truckerchris02/truckerchriswebapps (`rig-hub/`), published at https://truckerchris02.github.io/truckerchriswebapps/rig-hub/ . It was still v1.5 (Rig Nav, Trip Logger, and Weather). Rig Hub 1.9.0 is ready to replace that folder.
+
+`righub/iphone/index.html`, `righub/iphone/manifest.webmanifest`, and `righub/iphone/sw.js` are the iPhone home page, manifest, and service worker (`rig-hub-v1.9.0`). Every other page is the desktop copy under `righub/flatpak/app/`, with two wording changes for the phone: the HERE key sentence says "this phone", and the RigCare card says "Saved in this browser." The hub list on that repo's home page should say Rig Hub v1.9.0 and mention Tandem Slide, Hazmat Helper, Inspection, RigCare, and Walmart Store Finder. It stays in All-in-One Hub Apps, which that page sorts A to Z.
+
+This agent could not push that update. GitHub denied cursor[bot] write access to truckerchriswebapps (HTTP 403). Trip Logger pay logic is unchanged. Do not publish the `rig-hub-v1.9.0` release from this change.

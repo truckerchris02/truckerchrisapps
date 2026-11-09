@@ -1,0 +1,14 @@
+{
+  "retrieved": "2026-11-09",
+  "osm_store_rows": 7246,
+  "osm_dc_rows": 105,
+  "us_stores": 4474,
+  "stores_with_number": 3905,
+  "stores_with_phone": 4381,
+  "stores_with_street": 4369,
+  "stores_with_zip": 4387,
+  "distribution_centers": 119,
+  "dcs_from_abfba_included": 33,
+  "dcs_with_number": 33,
+  "dcs_with_phone": 6
+}

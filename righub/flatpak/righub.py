@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# Rig Hub v1.8.0 desktop - GTK4 + WebKitGTK wrapper around the Rig Hub web app
-# (Rig Nav, Trip Logger, Weather, Tandem Slide, Hazmat Helper, Inspection, RigCare).
+# Rig Hub v1.9.0 desktop - GTK4 + WebKitGTK wrapper around the Rig Hub web app
+# (Rig Nav, Trip Logger, Weather, Tandem Slide, Hazmat Helper, Inspection, RigCare, Store Finder).
 # Each screen keeps its own view, so switching doesn't lose the map, a half-filled
-# trip, scale weights, a hazmat search, an inspection, or a maintenance log.
+# trip, scale weights, a hazmat search, an inspection, a maintenance log, or a store search.
 import os, json, base64, gi
 gi.require_version('Gtk','4.0'); gi.require_version('WebKit','6.0')
 from gi.repository import Gtk, Gdk, Gio, GLib, WebKit
-APP='com.truckerchris.RigHub'; HERE=os.environ.get('RIGHUB_DIR','/app/share/righub'); VER='1.8.0'
+APP='com.truckerchris.RigHub'; HERE=os.environ.get('RIGHUB_DIR','/app/share/righub'); VER='1.9.0'
 # id, label, icon, page, version shown in the bar
 TABS=[('home','Home','go-home-symbolic','index.html',''),
       ('nav','Rig Nav','find-location-symbolic','rignav/index.html','Rig Nav v1.5.0'),
@@ -15,7 +15,8 @@ TABS=[('home','Home','go-home-symbolic','index.html',''),
       ('slide','Tandem Slide','object-flip-horizontal-symbolic','tandem/index.html','Tandem Slide v1.0'),
       ('haz','Hazmat','dialog-warning-symbolic','hazmat/index.html','Hazmat Helper v1.0'),
       ('insp','Inspection','checkbox-checked-symbolic','inspection/index.html','Inspection v1.1'),
-      ('care','RigCare','preferences-system-symbolic','rigcare/index.html','RigCare v1.2')]
+      ('care','RigCare','preferences-system-symbolic','rigcare/index.html','RigCare v1.2'),
+      ('stores','Stores','system-search-symbolic','stores/index.html','Store Finder v1.2.0')]
 PAGE={t[3]:t[0] for t in TABS}
 data=os.path.join(GLib.get_user_data_dir(),'righub'); cache=os.path.join(GLib.get_user_cache_dir(),'righub'); os.makedirs(data,exist_ok=True)
 LAST=os.path.join(data,'last-tab')
@@ -75,6 +76,7 @@ class A(Gtk.Application):
         ucm.add_script(WebKit.UserScript.new(HOOK,WebKit.UserContentInjectedFrames.TOP_FRAME,WebKit.UserScriptInjectionTime.END,None,None))
         ucm.add_style_sheet(WebKit.UserStyleSheet.new(PAGECSS,WebKit.UserContentInjectedFrames.TOP_FRAME,WebKit.UserStyleLevel.USER,None,None))
         ucm.register_script_message_handler('tl',None); ucm.connect('script-message-received::tl',s.on_save)
+        ucm.register_script_message_handler('righubnav',None); ucm.connect('script-message-received::righubnav',s.on_store_nav)
         v=WebKit.WebView(network_session=s.session,user_content_manager=ucm)
         st=v.get_settings(); st.set_enable_javascript(True); st.set_allow_file_access_from_file_urls(True)
         if os.environ.get('RIGHUB_DEBUG'): st.set_enable_write_console_messages_to_stdout(True)
@@ -124,4 +126,16 @@ class A(Gtk.Application):
             except GLib.Error: return
             if f: f.replace_contents(raw,None,False,Gio.FileCreateFlags.REPLACE_DESTINATION,None)
         d.save(s.win,None,done)
+    def on_store_nav(s, _m, val):
+        # Store Finder hands a Walmart store or DC to Rig Nav and switches to that tab.
+        try: o=json.loads(val.to_string())
+        except Exception: return
+        from urllib.parse import quote
+        mode=o.get('mode')
+        if mode=='point' and o.get('lat') not in (None, '') and o.get('lon') not in (None, ''):
+            frag='dest='+quote('%s,%s,%s'%(o['lat'], o.get('lon', o.get('lng')), o.get('name') or ''), safe='')
+        else:
+            frag='addr='+quote(o.get('address') or '', safe='')+'&name='+quote(o.get('name') or '', safe='')
+        s.show('nav')
+        s.view('nav').load_uri('file://'+HERE+'/rignav/index.html?handoff=1#'+frag)
 A().run(None)

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Walmart Store Finder</title>
+<style>
+:root{
+  --bg:#12161d; --bg2:#0b0e13; --card:#1b212b; --line:#2a3340;
+  --txt:#eef2f7; --mut:#9aa6b4; --blue:#1d86e0; --blue-d:#0f5fa8;
+  --badge-sc:#2ecc71; --badge-nm:#f39c12;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Roboto,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:10;background:var(--bg2);padding:12px 14px;border-bottom:1px solid var(--line)}
+header h1{margin:0 0 8px;font-size:18px;color:#fff}
+header h1 .spark{color:var(--blue)}
+.toprow{display:flex;gap:8px}
+#search{flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:15px}
+#search::placeholder{color:var(--mut)}
+#addBtn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:0 14px;font-size:15px;font-weight:600}
+#addBtn:active{background:var(--blue-d)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 14px 4px}
+.tab{white-space:nowrap;padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-size:14px}
+.tab.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.typebar{display:flex;gap:8px;padding:8px 14px 10px;flex-wrap:wrap}
+.count{padding:2px 14px 10px;color:var(--mut);font-size:12px}
+#list,#nat{list-style:none;margin:0;padding:0 14px 12px}
+.store{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.store .nm{font-size:16px;font-weight:600;margin:0 0 4px}
+.store .meta{color:var(--mut);font-size:13px}
+.store .ph{color:var(--blue);font-size:14px;margin-top:4px;text-decoration:none;display:inline-block}
+.badge{display:inline-block;box-sizing:border-box;width:126px;text-align:center;white-space:nowrap;overflow:hidden;font-size:11px;font-weight:700;border-radius:6px;padding:2px 0;margin-left:8px;vertical-align:2px;color:#0b0e13}
+.badge.sc{background:var(--badge-sc)}
+.badge.nbm{background:var(--badge-nm)}
+.badge.d1{background:#f2c94c}
+.badge.dc{background:#c4b5fd}
+.badge.st{background:#7dd3fc}
+.badge.oth{background:#cbd5e1}
+.drop{display:inline-block;width:18px;height:18px;line-height:18px;border-radius:50%;background:#1d9bf0;color:#fff;font-size:12px;font-weight:900;text-align:center;margin-right:6px;vertical-align:1px}
+.savebtn{margin-top:8px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px}
+.savebtn[disabled]{background:#2a3340;color:var(--mut)}
+.navbtn{margin-top:8px;background:transparent;color:#7ec8ff;border:1px solid var(--blue);border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px;min-height:44px}
+.navbtn:active{background:#16324a}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.acts .savebtn,.acts .navbtn{margin-top:0}
+.section-label{padding:4px 14px 8px;font-size:13px;font-weight:700;color:#c5d4e4}
+#detail{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;display:none;padding-bottom:40px}
+#detail.show{display:block}
+#detail header{display:flex;align-items:center;gap:10px}
+#backBtn{background:none;border:none;color:var(--blue);font-size:16px;font-weight:600;padding:6px 4px}
+.dbody{padding:16px 14px}
+.dbody h2{margin:0 0 6px;font-size:20px}
+.kv{margin:10px 0;font-size:15px}
+.kv .k{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.kv a{color:var(--blue);text-decoration:none}
+.notes{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:12px 0;font-size:14px}
+.btnrow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{flex:1;min-width:140px;padding:13px;border-radius:10px;border:none;font-size:15px;font-weight:600}
+.btn.pri{background:var(--blue);color:#fff}
+.btn.sec{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.btn.dng{background:transparent;color:#ff6b6b;border:1px solid #5a2b2b}
+#form{position:fixed;inset:0;background:var(--bg);z-index:30;overflow-y:auto;display:none;padding-bottom:40px}
+#form.show{display:block}
+.fbody{padding:16px 14px}
+.fbody label{display:block;margin:12px 0 4px;color:var(--mut);font-size:13px}
+.fbody input,.fbody select,.fbody textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:15px}
+.fbody textarea{min-height:70px}
+.empty{padding:40px 20px;text-align:center;color:var(--mut)}
+.attrib{padding:8px 14px 28px;color:var(--mut);font-size:11px;line-height:1.4}
+.online{margin:0 14px 16px}
+#onlineBtn{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:600}
+#onlineStatus{color:var(--mut);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="spark">✦</span> Walmart Store Finder</h1>
+  <div style="font-size:12px;color:#9fb0c3;margin:-4px 0 8px">Store Finder v1.2.0 · Rig Hub v1.9.0 · <span id="verCount">0</span> in your list · <span id="catCount">0</span> US stores offline. Saved places stay in Rig Hub.</div>
+  <div class="toprow">
+    <input id="search" type="search" placeholder="Search #, city, state, ZIP…" autocomplete="off">
+    <button id="addBtn" type="button">+ Add</button>
+  </div>
+</header>
+<div class="tabs" id="metroTabs"></div>
+<div class="typebar" id="typeBar"></div>
+<div class="count" id="count"></div>
+<ul id="list"></ul>
+<div class="section-label" id="natLabel" hidden>Nationwide</div>
+<div class="count" id="natCount" hidden></div>
+<ul id="nat"></ul>
+<div class="online" id="onlineBox" hidden>
+  <button id="onlineBtn" type="button">Look up online</button>
+  <div id="onlineStatus"></div>
+</div>
+<p class="attrib">Store locations are from OpenStreetMap contributors, ODbL. The distribution-center starter list also uses the ABFBA 2026 public warehouse list. Store numbers, addresses, and phones that were not in the source are left blank.</p>
+
+<div id="detail">
+  <header><button id="backBtn" type="button">‹ Back</button><h1 style="margin:0;font-size:16px">Details</h1></header>
+  <div class="dbody" id="detailBody"></div>
+</div>
+
+<div id="form">
+  <header><button id="formBack" type="button" style="background:none;border:none;color:var(--blue);font-size:16px;font-weight:600;padding:6px 4px">‹ Cancel</button><h1 style="margin:0;font-size:16px" id="formTitle">Add store</h1></header>
+  <div class="fbody">
+    <label>Name</label><input id="f_name">
+    <label>Type</label>
+    <select id="f_type">
+      <option>Supercenter</option>
+      <option>Neighborhood Market</option>
+      <option>Division 1</option>
+      <option>Store</option>
+      <option>DC</option>
+      <option>Other</option>
+    </select>
+    <label>Store number</label><input id="f_num" inputmode="numeric">
+    <label>Address (street, city, ST zip)</label><input id="f_addr">
+    <label>City</label><input id="f_city">
+    <label>County</label><input id="f_county">
+    <label>Phone</label><input id="f_phone" inputmode="tel">
+    <label>Metro area</label><select id="f_metro"></select>
+    <label>Store page URL</label><input id="f_url" inputmode="url">
+    <label>Notes</label><textarea id="f_notes"></textarea>
+    <label>Gate, parking, receiving</label><textarea id="f_gate"></textarea>
+    <div class="btnrow"><button class="btn pri" id="saveBtn" type="button">Save</button></div>
+  </div>
+</div>
+
+<script src="stores.js"></script>
+<script src="dcs.js"></script>
+<script src="us-stores.js"></script>
+<script src="app.js"></script>
+<script src="navlink.js"></script>
+<script>
+"use strict";
+var LS = window.localStorage;
+var TYPES = ["All","Supercenter","Neighborhood Market","Division 1","Store","DC","Other"];
+var state = { metro:"All", type:"All", q:"", detailId:null, editingId:null };
+var user = StoreFinder.loadUser(LS);
+var natHits = [];
+var onlineExtra = [];
+var preview = null;
+
+function navButton(attr){
+  return '<button class="navbtn" type="button" '+attr+'>Navigate in Rig Nav</button>';
+}
+function storeById(id){
+  var all = mine();
+  for (var i=0;i<all.length;i++) if (Number(all[i].id) === Number(id)) return all[i];
+  return null;
+}
+function navigateRigNav(s){
+  if (!s || typeof RigHubStoreNav === "undefined") return;
+  var place = RigHubStoreNav.enrich ? RigHubStoreNav.enrich(s, catalog()) : s;
+  var hop = RigHubStoreNav.handoff(place);
+  if (!hop.ok){ alert("This place has no map point or address yet, so Rig Nav cannot route to it."); return; }
+  var d = hop.destination;
+  var spec = { name: d.name, address: d.address || "", mode: hop.mode };
+  if (hop.mode === "point") { spec.lat = d.lat; spec.lon = d.lng; }
+  if (window.RigHubNav && typeof window.RigHubNav.open === "function"){
+    window.RigHubNav.open(JSON.stringify(spec));
+    return;
+  }
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.righubnav){
+    window.webkit.messageHandlers.righubnav.postMessage(JSON.stringify(spec));
+    return;
+  }
+  try { localStorage.setItem("righub_nav_dest", JSON.stringify({lat:d.lat, lng:d.lng, name:d.name, address:d.address||"", mode:hop.mode, t:Date.now()})); } catch (err) {}
+  var frag = hop.mode === "point"
+    ? ("dest=" + encodeURIComponent(d.lat + "," + d.lng + "," + d.name))
+    : ("addr=" + encodeURIComponent(d.address || "") + "&name=" + encodeURIComponent(d.name || ""));
+  window.location.href = "../rignav/index.html#" + frag;
+}
+window.__back = function(){
+  var form = document.getElementById("form");
+  var detail = document.getElementById("detail");
+  if (form && form.className.indexOf("show") >= 0) { closeForm(); return true; }
+  if (detail && detail.className.indexOf("show") >= 0) { closeDetail(); return true; }
+  return false;
+};
+
+/* Drop-trailer stores (from his Drop Stores list, Oct 24 2026), matched by store number */
+var DROP_STORES = {"10":1,"12":1,"17":1,"72":1,"79":1,"137":1,"168":1,"186":1,"472":1,"499":1,"576":1,"592":1,"794":1,"823":1,"838":1,"894":1,"992":1,"1099":1,"1221":1,"1507":1,"1597":1,"2428":1,"3283":1,"3295":1,"3492":1,"4241":1,"4321":1,"4615":1,"4637":1,
+  "4":1,"22":1,"28":1,"41":1,"130":1,"138":1,"444":1,"557":1,"558":1,"993":1,"2221":1,"5261":1};
+
+function reloadUser(){ user = StoreFinder.loadUser(LS); }
+function mine(){ return StoreFinder.myList(typeof STORES_SEED === "undefined" ? [] : STORES_SEED, typeof DC_SEED === "undefined" ? [] : DC_SEED, user); }
+function catalog(){
+  return (typeof US_STORES === "undefined" ? [] : US_STORES).concat(typeof DC_SEED === "undefined" ? [] : DC_SEED);
+}
+function metros(){
+  var pref = ["All","Tulsa Metro","OKC Metro","Wichita Metro","Joplin Metro","Springfield Metro","Distribution","Saved"];
+  var seen = {}, out = [];
+  pref.forEach(function(m){ if (!seen[m]) { seen[m] = 1; out.push(m); } });
+  mine().forEach(function(s){
+    if (s.metroArea && !seen[s.metroArea]) { seen[s.metroArea] = 1; out.push(s.metroArea); }
+  });
+  return out;
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function dropMark(s){ var n=String(s.storeNumber||"").replace(/[^0-9]/g,""); return DROP_STORES[n] ? '<span class="drop" title="Drop trailer store">&#10003;</span>' : ''; }
+function badge(t){
+  if (t==="Supercenter") return '<span class="badge sc">Supercenter</span>';
+  if (t==="Neighborhood Market") return '<span class="badge nbm">Neighborhood Market</span>';
+  if (t==="Division 1") return '<span class="badge d1">Division 1</span>';
+  if (t==="DC") return '<span class="badge dc">DC</span>';
+  if (t==="Store") return '<span class="badge st">Store</span>';
+  return '<span class="badge oth">'+esc(t||"Other")+'</span>';
+}
+function cityState(s){
+  if (s.city && s.state) return esc(s.city+", "+s.state);
+  var m = String(s.address||"").match(/,\s*([A-Za-z .'-]+),\s*([A-Z]{2})\b/);
+  return m ? esc(m[1]+", "+m[2]) : esc(s.city||"");
+}
+function telHref(phone){
+  var digits = String(phone||"").replace(/[^0-9+]/g,"");
+  return digits ? "tel:"+digits : "";
+}
+function directionsHref(s){
+  if (s.lat && s.lon) return "geo:"+s.lat+","+s.lon+"?q="+encodeURIComponent(s.lat+","+s.lon+" ("+(s.name||"Walmart")+")");
+  if (s.address) return "geo:0,0?q="+encodeURIComponent(s.address);
+  return "";
+}
+
+function filtered(){
+  var q = state.q.trim().toLowerCase();
+  return mine().filter(function(s){
+    if (state.metro !== "All" && s.metroArea !== state.metro) return false;
+    if (state.type !== "All" && s.type !== state.type) return false;
+    if (q){
+      var hay = (s.name+" "+s.city+" "+(s.state||"")+" "+s.storeNumber+" "+s.address+" "+(s.zip||"")).toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  }).sort(function(a,b){ return a.name < b.name ? -1 : 1; });
+}
+function renderTabs(){
+  var el = document.getElementById("metroTabs");
+  el.innerHTML = "";
+  metros().forEach(function(m){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (state.metro===m ? " active" : "");
+    b.textContent = m;
+    b.onclick = function(){ state.metro = m; render(); };
+    el.appendChild(b);
+  });
+  var tb = document.getElementById("typeBar");
+  tb.innerHTML = "";
+  TYPES.forEach(function(t){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (state.type===t ? " active" : "");
+    b.textContent = t;
+    b.onclick = function(){ state.type = t; render(); };
+    tb.appendChild(b);
+  });
+}
+function storeCard(s, extra){
+  var phone = telHref(s.phone);
+  return '<li class="store" data-id="'+(s.id==null?"":s.id)+'">'
+    + '<p class="nm">'+dropMark(s)+esc(s.name)+badge(s.type)+'</p>'
+    + '<div class="meta">'+cityState(s)+(s.storeNumber?' &nbsp;•&nbsp; #'+esc(s.storeNumber):'')+(s.metroArea?' &nbsp;•&nbsp; '+esc(s.metroArea):'')+'</div>'
+    + (s.address && !(s.city && s.state) ? '' : (s.address ? '<div class="meta">'+esc(s.address)+'</div>' : ''))
+    + (phone ? '<a class="ph" href="'+esc(phone)+'">'+esc(s.phone)+'</a>' : '')
+    + (extra||"")
+    + '</li>';
+}
+function render(){
+  reloadUser();
+  renderTabs();
+  var list = filtered();
+  var vc = document.getElementById("verCount"); if (vc) vc.textContent = mine().length;
+  document.title = "Walmart Store Finder (" + mine().length + ")";
+  var cc = document.getElementById("catCount"); if (cc) cc.textContent = (typeof US_STORES === "undefined" ? 0 : US_STORES.length);
+  document.getElementById("count").textContent = list.length + " in your list" + (state.q ? " matching" : "");
+  var ul = document.getElementById("list");
+  if (!list.length){ ul.innerHTML = '<div class="empty">Nothing in your list matches. Try a city, state, ZIP, or store number.</div>'; }
+  else {
+    ul.innerHTML = list.map(function(s){ return storeCard(s, '<div class="acts">'+navButton('data-nav-id="'+s.id+'"')+'</div>'); }).join("");
+    var items = ul.getElementsByClassName("store");
+    for (var i=0;i<items.length;i++){
+      (function(li){ li.onclick = function(e){
+        if (e.target.tagName === "A") return;
+        if (e.target.classList && e.target.classList.contains("navbtn")) { navigateRigNav(storeById(e.target.getAttribute("data-nav-id"))); return; }
+        if (e.target.tagName === "BUTTON") return;
+        openDetail(parseInt(li.getAttribute("data-id"),10));
+      }; })(items[i]);
+    }
+  }
+  renderNationwide();
+}
+function renderNationwide(){
+  var label = document.getElementById("natLabel");
+  var count = document.getElementById("natCount");
+  var ul = document.getElementById("nat");
+  var box = document.getElementById("onlineBox");
+  var q = state.q.trim();
+  if (!q){
+    label.hidden = count.hidden = box.hidden = true;
+    ul.innerHTML = "";
+    natHits = [];
+    return;
+  }
+  var hits = (typeof RigHubStoreNav !== "undefined")
+    ? RigHubStoreNav.catalogHits(catalog(), q, StoreFinder.searchCatalog)
+    : StoreFinder.searchCatalog(catalog(), q);
+  var seen = {};
+  hits.forEach(function(hit){ if (hit.catalogKey) seen[hit.catalogKey] = 1; });
+  onlineExtra.forEach(function(hit){
+    if (hit.catalogKey && seen[hit.catalogKey]) return;
+    hits.push(hit);
+  });
+  natHits = hits.slice(0, 60);
+  label.hidden = false;
+  count.hidden = false;
+  box.hidden = false;
+  count.textContent = hits.length ? ("Nationwide: " + hits.length + (hits.length>60 ? " (showing 60)" : "")) : "No nationwide match in the offline list.";
+  var owned = mine();
+  ul.innerHTML = natHits.map(function(s, i){
+    var saved = StoreFinder.isSaved(owned, s);
+    var save = saved
+      ? '<button class="savebtn" type="button" disabled>Saved</button>'
+      : '<button class="savebtn" type="button" data-i="'+i+'">Save</button>';
+    var btn = '<div class="acts">' + save + navButton('data-nav-i="'+i+'"') + '</div>';
+    return storeCard(s, btn).replace('data-id=""', 'data-i="'+i+'"');
+  }).join("");
+  var cards = ul.getElementsByClassName("store");
+  for (var i=0;i<cards.length;i++){
+    (function(li){
+      li.onclick = function(e){
+        if (e.target.tagName === "A") return;
+        if (e.target.classList && e.target.classList.contains("navbtn")) { navigateRigNav(natHits[parseInt(e.target.getAttribute("data-nav-i"),10)]); return; }
+        if (e.target.tagName === "BUTTON") { saveHit(parseInt(e.target.getAttribute("data-i"),10)); return; }
+        openPreview(parseInt(li.getAttribute("data-i"),10));
+      };
+    })(cards[i]);
+  }
+}
+function saveHit(index){
+  var hit = natHits[index];
+  if (!hit) return;
+  StoreFinder.saveResult(LS, hit, mine());
+  reloadUser();
+  render();
+}
+function openPreview(index){
+  var s = natHits[index];
+  if (!s) return;
+  var saved = StoreFinder.isSaved(mine(), s);
+  if (saved && saved.id != null) { openDetail(saved.id); return; }
+  preview = s;
+  state.detailId = null;
+  var geo = directionsHref(s);
+  var phone = telHref(s.phone);
+  var html = '<h2>'+dropMark(s)+esc(s.name)+'</h2>'
+    + '<div>'+badge(s.type)+'</div>'
+    + (s.address ? '<div class="kv"><div class="k">Address</div>'+esc(s.address)+'</div>' : '')
+    + (phone ? '<div class="kv"><div class="k">Phone</div><a href="'+esc(phone)+'">'+esc(s.phone)+'</a></div>' : '')
+    + (s.storeNumber ? '<div class="kv"><div class="k">Store number</div>#'+esc(s.storeNumber)+'</div>' : '')
+    + (s.sourceNote ? '<div class="notes">'+esc(s.sourceNote)+'</div>' : '')
+    + '<div class="btnrow">'
+    + (geo ? '<a class="btn pri" style="text-align:center;text-decoration:none;display:block" href="'+geo+'">Directions</a>' : '')
+    + (s.officialUrl ? '<a class="btn sec" style="text-align:center;text-decoration:none;display:block" href="'+esc(s.officialUrl)+'">Store page</a>' : '')
+    + '<button class="btn pri" id="savePreview" type="button">Save</button>'
+    + '<button class="btn sec" id="navPreview" type="button">Navigate in Rig Nav</button>'
+    + '</div>';
+  document.getElementById("detailBody").innerHTML = html;
+  document.getElementById("detail").className = "show";
+  document.getElementById("savePreview").onclick = function(){ StoreFinder.saveResult(LS, s, mine()); closeDetail(); render(); };
+  document.getElementById("navPreview").onclick = function(){ navigateRigNav(s); };
+}
+
+function openDetail(id){
+  var s = null;
+  var all = mine();
+  for (var i=0;i<all.length;i++) if (Number(all[i].id) === Number(id)) s = all[i];
+  if (!s) return;
+  preview = null;
+  state.detailId = id;
+  var geo = directionsHref(s);
+  var phone = telHref(s.phone);
+  var html = '<h2>'+dropMark(s)+esc(s.name)+'</h2>'
+    + (dropMark(s) ? '<div style="color:#1d9bf0;font-weight:700;margin:4px 0 8px">Drop trailer store</div>' : '')
+    + '<div>'+badge(s.type)+'</div>'
+    + (s.address ? '<div class="kv"><div class="k">Address</div>'+esc(s.address)+'</div>' : '')
+    + (phone ? '<div class="kv"><div class="k">Phone</div><a href="'+esc(phone)+'">'+esc(s.phone)+'</a></div>' : '')
+    + '<div class="kv"><div class="k">County</div>'+esc(s.county||"—")+'</div>'
+    + '<div class="kv"><div class="k">Store number</div>'+(s.storeNumber ? '#'+esc(s.storeNumber) : '—')+'</div>'
+    + '<div class="kv"><div class="k">Metro area</div>'+esc(s.metroArea||"—")+'</div>'
+    + (s.notes ? '<div class="notes">'+esc(s.notes)+'</div>' : '')
+    + (s.gateNotes ? '<div class="notes"><div class="k" style="color:var(--mut);font-size:12px;text-transform:uppercase">Gate, parking, receiving</div>'+esc(s.gateNotes)+'</div>' : '')
+    + (s.sourceNote ? '<div class="notes">'+esc(s.sourceNote)+'</div>' : '')
+    + '<div class="btnrow">'
+    + (geo ? '<a class="btn pri" style="text-align:center;text-decoration:none;display:block" href="'+geo+'">Directions</a>' : '')
+    + (s.officialUrl ? '<a class="btn sec" style="text-align:center;text-decoration:none;display:block" href="'+esc(s.officialUrl)+'">Store page</a>' : '')
+    + '<button class="btn sec" id="navDetail" type="button">Navigate in Rig Nav</button>'
+    + '</div>'
+    + '<div class="btnrow">'
+    +   '<button class="btn sec" id="editBtn" type="button">Edit</button>'
+    +   '<button class="btn dng" id="delBtn" type="button">Delete</button>'
+    + '</div>';
+  document.getElementById("detailBody").innerHTML = html;
+  document.getElementById("detail").className = "show";
+  document.getElementById("navDetail").onclick = function(){ navigateRigNav(s); };
+  document.getElementById("editBtn").onclick = function(){ openForm(id); };
+  document.getElementById("delBtn").onclick = function(){
+    if (!confirm("Delete "+s.name+"?")) return;
+    StoreFinder.deleteEntry(LS, id);
+    closeDetail();
+    render();
+  };
+}
+function closeDetail(){ document.getElementById("detail").className = ""; state.detailId = null; preview = null; }
+
+function fillMetro(selected){
+  var fm = document.getElementById("f_metro");
+  fm.innerHTML = "";
+  metros().slice(1).forEach(function(m){ var o=document.createElement("option"); o.textContent=m; fm.appendChild(o); });
+  if (selected && !fm.querySelector('option')) {}
+  var have = false;
+  for (var i=0;i<fm.options.length;i++) if (fm.options[i].textContent === selected) have = true;
+  if (selected && !have){ var extra=document.createElement("option"); extra.textContent=selected; fm.appendChild(extra); }
+  fm.value = selected || "Tulsa Metro";
+}
+function ensureType(value){
+  var sel = document.getElementById("f_type");
+  var have = false;
+  for (var i=0;i<sel.options.length;i++) if (sel.options[i].textContent === value) have = true;
+  if (value && !have){ var o=document.createElement("option"); o.textContent=value; sel.appendChild(o); }
+}
+function openForm(id){
+  state.editingId = id || null;
+  var s = null;
+  if (id){
+    var all = mine();
+    for (var i=0;i<all.length;i++) if (Number(all[i].id) === Number(id)) s = all[i];
+  }
+  document.getElementById("formTitle").textContent = s ? "Edit" : "Add store";
+  fillMetro(s ? s.metroArea : "Tulsa Metro");
+  ensureType(s ? s.type : "Supercenter");
+  document.getElementById("f_name").value   = s ? s.name : "";
+  document.getElementById("f_type").value   = s ? s.type : "Supercenter";
+  document.getElementById("f_num").value    = s ? (s.storeNumber||"") : "";
+  document.getElementById("f_addr").value   = s ? (s.address||"") : "";
+  document.getElementById("f_city").value   = s ? (s.city||"") : "";
+  document.getElementById("f_county").value = s ? (s.county||"") : "";
+  document.getElementById("f_phone").value  = s ? (s.phone||"") : "";
+  document.getElementById("f_url").value    = s ? (s.officialUrl||"") : "";
+  document.getElementById("f_notes").value  = s ? (s.notes||"") : "";
+  document.getElementById("f_gate").value   = s ? (s.gateNotes||"") : "";
+  document.getElementById("form").className = "show";
+}
+function closeForm(){ document.getElementById("form").className = ""; state.editingId = null; }
+function formFields(existing){
+  var v = function(id){ return document.getElementById(id).value.trim(); };
+  var rec = {
+    name:v("f_name"), type:v("f_type"), storeNumber:v("f_num"), address:v("f_addr"),
+    city:v("f_city"), county:v("f_county"), phone:v("f_phone"),
+    metroArea:v("f_metro"), officialUrl:v("f_url"), notes:v("f_notes"), gateNotes:v("f_gate")
+  };
+  if (existing){
+    rec.state = existing.state || "";
+    rec.zip = existing.zip || "";
+    rec.lat = existing.lat || "";
+    rec.lon = existing.lon || "";
+    rec.catalogKey = existing.catalogKey || "";
+    rec.source = existing.source || "";
+    rec.sourceNote = existing.sourceNote || "";
+  }
+  return rec;
+}
+function saveForm(){
+  var name = document.getElementById("f_name").value.trim();
+  if (!name){ alert("Name is required."); return; }
+  if (state.editingId != null){
+    var existing = null;
+    var all = mine();
+    for (var i=0;i<all.length;i++) if (Number(all[i].id) === Number(state.editingId)) existing = all[i];
+    var id = state.editingId;
+    StoreFinder.updateEntry(LS, id, formFields(existing));
+    closeForm();
+    render();
+    openDetail(id);
+  } else {
+    var rec = StoreFinder.addCustom(LS, formFields(null));
+    closeForm();
+    render();
+    openDetail(rec.id);
+  }
+}
+
+document.getElementById("search").addEventListener("input", function(e){
+  state.q = e.target.value;
+  onlineExtra = [];
+  document.getElementById("onlineStatus").textContent = "";
+  render();
+});
+document.getElementById("addBtn").onclick = function(){ openForm(null); };
+document.getElementById("backBtn").onclick = closeDetail;
+document.getElementById("formBack").onclick = closeForm;
+document.getElementById("saveBtn").onclick = saveForm;
+document.getElementById("f_type").addEventListener("change", function(){
+  if (state.editingId == null && document.getElementById("f_type").value === "DC") {
+    fillMetro("Distribution");
+  }
+});
+document.getElementById("onlineBtn").onclick = function(){
+  var status = document.getElementById("onlineStatus");
+  status.textContent = "Looking up…";
+  StoreFinder.lookupOnline(state.q, function(url){ return fetch(url).then(function(r){ return r.text(); }); })
+    .then(function(rows){
+      if (!rows.length){ status.textContent = "No online match. Offline list only."; return; }
+      onlineExtra = rows;
+      status.textContent = rows.length + " online match" + (rows.length===1?"":"es") + ".";
+      render();
+    })
+    .catch(function(){ status.textContent = "Online lookup did not answer. The offline list is unchanged."; });
+};
+
+if (location.hash && location.hash.indexOf("q=") !== -1) {
+  var params = new URLSearchParams(location.hash.replace(/^#/, ""));
+  if (params.get("q")) {
+    document.getElementById("search").value = params.get("q");
+    state.q = params.get("q");
+  }
+}
+render();
+if (location.hash.indexOf("add=dc") !== -1) {
+  openForm(null);
+  document.getElementById("f_type").value = "DC";
+  fillMetro("Distribution");
+}
+</script>
+</body>
+</html>

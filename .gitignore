@@ -2,6 +2,7 @@
 *.flatpak
 righub/.toolcache/
 righub/dist/
+righub/flatpak/.flatpak-builder/
 
 __pycache__/
 *.pyc
