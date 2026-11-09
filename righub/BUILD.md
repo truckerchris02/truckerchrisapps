@@ -1,6 +1,6 @@
-# Rig Hub 1.7.0 build
+# Rig Hub 1.8.0 build
 
-Package stays `com.truckerchris.righub`. Version name is `1.7.0`. Version code is `13` (1.5.1 was version code `11`), so an update signed with the same key keeps Rig Nav, Trip Logger, Weather, and Tandem Slide data.
+Package stays `com.truckerchris.righub`. Version name is `1.8.0`. Version code is `14` (1.5.1 was version code `11`), so an update signed with the same key keeps Rig Nav, Trip Logger, Weather, and Tandem Slide data.
 
 Tandem Slide in this app is the standalone calculator: `android/assets/tandem/` and `flatpak/app/tandem/` are copies of that engine and page. The phone tab and the desktop switcher only open that page. They do not contain a second axle formula.
 
@@ -23,7 +23,7 @@ From the repo root, pass the published `RigHub-v1.5.1.apk` (GitHub release `rig-
 python3 righub/tools/build_unsigned_apk.py /path/to/RigHub-v1.5.1.apk
 ```
 
-Output: `righub/dist/RigHub-v1.7.0-unsigned.apk`.
+Output: `righub/dist/RigHub-v1.8.0-unsigned.apk`.
 
 The script downloads `android.jar`, R8/d8 and dexlib2 into `righub/.toolcache` (gitignored). Set `RIGHUB_TOOLS` to a directory that already has those jars to skip the download. Java 8+ is required (`javac`, `jar`, `java`).
 
@@ -45,10 +45,10 @@ keytool -list -v -keystore /PATH/TO/YOUR/EXISTING.keystore -alias RIGHUB
 apksigner sign \
   --ks /PATH/TO/YOUR/EXISTING.keystore \
   --ks-key-alias RIGHUB \
-  --out RigHub-v1.7.0.apk \
-  righub/dist/RigHub-v1.7.0-unsigned.apk
+  --out RigHub-v1.8.0.apk \
+  righub/dist/RigHub-v1.8.0-unsigned.apk
 
-apksigner verify --print-certs RigHub-v1.7.0.apk
+apksigner verify --print-certs RigHub-v1.8.0.apk
 ```
 
 `resources.arsc` in the unsigned APK is already stored and 4-byte aligned. If `apksigner` asks for alignment, run `zipalign -p -f 4` on a copy and sign that copy.
@@ -61,15 +61,15 @@ The wrapper is `righub/flatpak`. It needs `org.gnome.Platform//51` and `org.gnom
 flatpak install --user flathub org.gnome.Platform//51 org.gnome.Sdk//51
 cd righub/flatpak
 flatpak-builder --user --force-clean --repo=repo build com.truckerchris.RigHub.yml
-flatpak build-bundle repo RigHub-v1.7.0.flatpak com.truckerchris.RigHub
+flatpak build-bundle repo RigHub-v1.8.0.flatpak com.truckerchris.RigHub
 ```
 
 ## Publishing
 
-Do not upload the unsigned APK as the release file. After the APK is signed with the original key and the Flatpak bundle is built, create GitHub release `rig-hub-v1.7.0` and attach:
+Do not upload the unsigned APK as the release file. After the APK is signed with the original key and the Flatpak bundle is built, create GitHub release `rig-hub-v1.8.0` and attach:
 
-- `RigHub-v1.7.0.apk`
-- `RigHub-v1.7.0.flatpak`
+- `RigHub-v1.8.0.apk`
+- `RigHub-v1.8.0.flatpak`
 
 Leave every older release, including `rig-hub-v1.5.1` and `tandem-slide-v1.0`, where it is. The download page in this repo now links to the 1.6.0 asset names. Those links 404 until that release exists.
 

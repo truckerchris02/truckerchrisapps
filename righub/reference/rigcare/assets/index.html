@@ -1,0 +1,72 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>RigCare</title><style>
+*{box-sizing:border-box}body{margin:0;background:#0f1115;color:#e8e8ea;font:17px system-ui,Roboto,sans-serif;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+header{background:#171a21;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;border-bottom:1px solid #262a33}
+h1{font-size:22px;margin:0;color:#f59e0b;flex:1}select,input,textarea{width:100%;font-size:17px;padding:13px;border-radius:10px;border:1px solid #333845;background:#1d212a;color:#fff;margin:4px 0 12px}
+header select{width:auto;margin:0;max-width:55%}label{font-size:14px;color:#9aa0ab}
+.card{background:#171a21;margin:12px;border-radius:14px;padding:16px;border:1px solid #262a33}
+.odo{font-size:34px;font-weight:700}.muted{color:#9aa0ab;font-size:14px}
+button{font-size:17px;padding:14px 16px;border-radius:12px;border:0;background:#f59e0b;color:#111;font-weight:700;min-height:52px}
+button.sec{background:#2a2f3a;color:#eee}button.del{background:#5b1d1d;color:#fff}.row{display:flex;gap:10px}.row>*{flex:1}
+.rem{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;margin:8px 0;background:#1d212a;border-left:6px solid #22c55e}
+.rem.due{border-color:#f59e0b;background:#2a2312}.rem.overdue{border-color:#ef4444;background:#2d1616}
+.tag{font-size:13px;font-weight:700;padding:4px 8px;border-radius:6px;background:#22c55e;color:#111}.due .tag{background:#f59e0b}.overdue .tag{background:#ef4444;color:#fff}
+.log{padding:12px 0;border-bottom:1px solid #262a33}nav{position:fixed;bottom:0;left:0;right:0;display:flex;padding-bottom:env(safe-area-inset-bottom);background:#171a21;border-top:1px solid #262a33}
+nav button{flex:1;background:none;color:#9aa0ab;border-radius:0;font-size:14px;min-height:64px}nav button.on{color:#f59e0b}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;z-index:9}.modal.show{display:flex}
+.sheet{background:#171a21;width:100%;max-height:calc(92vh - env(safe-area-inset-top));overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}h2{margin:4px 0 14px;font-size:20px}h3{margin:0 0 8px}
+footer{text-align:center;color:#666;font-size:13px;padding:16px}</style></head><body>
+<header><h1>RigCare</h1><select id="vsel" onchange="db.cur=this.value;save();render()"></select></header>
+<main id="main"></main><footer id="ft"></footer>
+<nav><button data-t="dash" class="on">🏠<br>Dashboard</button><button data-t="log">🔧<br>Log</button><button data-t="rem">⏰<br>Reminders</button><button data-t="more">⚙️<br>More</button></nav>
+<div class="modal" id="modal" onclick="if(event.target===this)closeM()"><div class="sheet" id="sheet"></div></div>
+<script src="logic.js"></script><script>
+var VERSION='1.2',KEY='rigcare_db',tab='dash',db;
+try{db=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!RC.validate(db))db=RC.defaults();
+function save(){localStorage.setItem(KEY,JSON.stringify(db));}save();
+function V(){return db.vehicles.find(function(v){return v.id===db.cur})||db.vehicles[0];}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+function n(x){return Math.round(x).toLocaleString();}function $(x){return '$'+(+x).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function openM(h){sheet.innerHTML=h;modal.classList.add('show');}function closeM(){modal.classList.remove('show');}
+window.__back=function(){if(modal.classList.contains('show')){closeM();return true}if(tab!=='dash'){go('dash');return true}return false};
+function go(t){tab=t;document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.t===t)});render();scrollTo(0,0);}
+document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){go(b.dataset.t)}});
+function typeOpts(sel){return RC.TYPES.map(function(t){return '<option'+(t===sel?' selected':'')+'>'+t+'</option>'}).join('');}
+function remHtml(r,v){var s=RC.status(r,v.odo),p=[];
+ if(s.milesLeft!==null)p.push(s.milesLeft<=0?n(-s.milesLeft)+' mi over':n(s.milesLeft)+' mi left');
+ if(s.daysLeft!==null)p.push(s.daysLeft<=0?(-s.daysLeft)+' days over':s.daysLeft+' days left');
+ return '<div class="rem '+s.state+'" onclick="editRem(\''+r.id+'\')"><div><b>'+esc(r.type)+'</b><div class="muted">'+p.join(' · ')+'</div></div><span class="tag">'+(s.state==='ok'?'OK':s.state==='due'?'DUE SOON':'OVERDUE')+'</span></div>';}
+function sortedRems(v){var o={overdue:0,due:1,ok:2};return db.reminders.filter(function(r){return r.vid===v.id}).sort(function(a,b){return o[RC.status(a,v.odo).state]-o[RC.status(b,v.odo).state]});}
+function render(){var v=V();vsel.innerHTML=db.vehicles.map(function(x){return '<option value="'+x.id+'"'+(x.id===v.id?' selected':'')+'>'+esc(x.name)+'</option>'}).join('');
+ var h='',t=RC.totals(db,v.id),rs=sortedRems(v),logs=db.logs.filter(function(l){return l.vid===v.id}).sort(function(a,b){return b.date.localeCompare(a.date)||b.odo-a.odo});
+ if(tab==='dash'){var bad=rs.filter(function(r){return RC.status(r,v.odo).state!=='ok'}).length;
+  h='<div class="card"><div class="muted">'+esc(v.name)+' · '+esc(v.desc||'')+'</div><div class="odo">'+n(v.odo)+' mi</div><div class="row" style="margin-top:10px"><button onclick="odoM()">Update Odometer</button><button class="sec" onclick="logM()">+ Service</button></div></div>'+
+  '<div class="card"><h3>Service Status '+(bad?'<span style="color:#ef4444">('+bad+' need attention)</span>':'')+'</h3>'+(rs.map(function(r){return remHtml(r,v)}).join('')||'<div class="muted">No reminders yet.</div>')+'</div>'+
+  '<div class="card"><h3>Costs</h3><div class="row"><div><div class="muted">This year</div><b style="font-size:22px">'+$(t.year)+'</b></div><div><div class="muted">All time</div><b style="font-size:22px">'+$(t.all)+'</b></div><div><div class="muted">Services</div><b style="font-size:22px">'+t.count+'</b></div></div></div>';}
+ else if(tab==='log'){h='<div class="card"><button style="width:100%" onclick="logM()">+ Add Service Entry</button></div><div class="card"><h3>History</h3>'+(logs.map(function(l){return '<div class="log" onclick="logM(\''+l.id+'\')"><div class="row"><b>'+esc(l.type)+'</b><b style="text-align:right">'+$(l.cost||0)+'</b></div><div class="muted">'+l.date+' · '+n(l.odo)+' mi'+(l.notes?' · '+esc(l.notes):'')+'</div></div>'}).join('')||'<div class="muted">No entries yet.</div>')+'</div>'+
+  '<div class="card"><h3>Cost by type</h3>'+(Object.keys(t.byType).map(function(k){return '<div class="row"><span>'+esc(k)+'</span><span style="text-align:right">'+$(t.byType[k])+'</span></div>'}).join('')||'<div class="muted">—</div>')+'</div>';}
+ else if(tab==='rem'){h='<div class="card"><button style="width:100%" onclick="editRem()">+ Add Reminder</button></div><div class="card"><div class="muted">Tap a reminder to edit or mark done.</div>'+rs.map(function(r){return remHtml(r,v)}).join('')+'</div>';}
+ else{h='<div class="card"><h3>Vehicles</h3>'+db.vehicles.map(function(x){return '<div class="rem" onclick="vehM(\''+x.id+'\')"><div><b>'+esc(x.name)+'</b><div class="muted">'+esc(x.desc||'')+' · '+n(x.odo)+' mi · '+$(RC.totals(db,x.id).all)+'</div></div></div>'}).join('')+'<button style="width:100%" onclick="vehM()">+ Add Vehicle</button></div>'+
+  '<div class="card"><h3>Backup</h3><button style="width:100%" onclick="exp()">Back up to Google Drive</button><div class="muted" style="margin:6px 0 12px">Pick Drive in the share menu.</div><button class="sec" style="width:100%" onclick="imp.click()">Restore from backup</button><div class="muted" style="margin-top:6px">Open Drive in the file picker and choose your RigCare backup.</div><input type="file" id="imp" accept=".json,application/json" style="display:none" onchange="doImp(this)"></div>'+
+  '<div class="card"><h3>About</h3>RigCare v'+VERSION+'<div class="muted">Vehicle maintenance tracker. All data stays on this phone.</div></div>';}
+ main.innerHTML=h;ft.textContent='RigCare v'+VERSION;}
+function odoM(){var v=V();openM('<h2>Update Odometer</h2><label>'+esc(v.name)+' current miles</label><input id="o" type="number" inputmode="numeric" value="'+v.odo+'"><div class="row"><button class="sec" onclick="closeM()">Cancel</button><button onclick="var x=+o.value;if(x>=0){V().odo=x;save();closeM();render()}">Save</button></div>');setTimeout(function(){o.select()},50);}
+function logM(id){var v=V(),l=id?db.logs.find(function(x){return x.id===id}):{date:RC.today(),odo:v.odo,type:'Oil change',cost:'',notes:''};
+ openM('<h2>'+(id?'Edit':'Add')+' Service</h2><label>Service type</label><select id="ft_">'+typeOpts(l.type)+'</select><label>Date</label><input id="fd" type="date" value="'+l.date+'"><label>Odometer</label><input id="fo" type="number" inputmode="numeric" value="'+l.odo+'"><label>Cost ($)</label><input id="fc" type="number" inputmode="decimal" step="0.01" value="'+l.cost+'"><label>Notes</label><textarea id="fn" rows="2">'+esc(l.notes)+'</textarea>'+
+ '<div class="row"><button class="sec" onclick="closeM()">Cancel</button><button onclick="saveLog(\''+(id||'')+'\')">Save</button></div>'+(id?'<button class="del" style="width:100%;margin-top:10px" onclick="if(confirm(\'Delete entry?\')){db.logs=db.logs.filter(function(x){return x.id!==\''+id+'\'});save();closeM();render()}">Delete</button>':''));}
+function saveLog(id){var e={vid:V().id,type:ft_.value,date:fd.value||RC.today(),odo:+fo.value||0,cost:+fc.value||0,notes:fn.value.trim()};
+ if(id){var l=db.logs.find(function(x){return x.id===id});Object.assign(l,e);}else RC.addLog(db,e);save();closeM();render();}
+function editRem(id){var v=V(),r=id?db.reminders.find(function(x){return x.id===id}):{type:'Oil change',miles:15000,days:0,lastOdo:v.odo,lastDate:RC.today()};
+ openM('<h2>'+(id?'Edit':'Add')+' Reminder</h2><label>Service type</label><select id="rt">'+typeOpts(r.type)+'</select><div class="row"><div><label>Every (miles, 0=off)</label><input id="rm" type="number" inputmode="numeric" value="'+r.miles+'"></div><div><label>Every (days, 0=off)</label><input id="rd" type="number" inputmode="numeric" value="'+r.days+'"></div></div><div class="row"><div><label>Last done (miles)</label><input id="rlo" type="number" inputmode="numeric" value="'+r.lastOdo+'"></div><div><label>Last done (date)</label><input id="rld" type="date" value="'+r.lastDate+'"></div></div>'+
+ '<div class="row"><button class="sec" onclick="closeM()">Cancel</button><button onclick="saveRem(\''+(id||'')+'\')">Save</button></div>'+(id?'<button class="sec" style="width:100%;margin-top:10px" onclick="rlo.value=V().odo;rld.value=RC.today();saveRem(\''+id+'\')">✔ Mark Done Now</button><button class="del" style="width:100%;margin-top:10px" onclick="if(confirm(\'Delete reminder?\')){db.reminders=db.reminders.filter(function(x){return x.id!==\''+id+'\'});save();closeM();render()}">Delete</button>':''));}
+function saveRem(id){var e={vid:V().id,type:rt.value,miles:+rm.value||0,days:+rd.value||0,lastOdo:+rlo.value||0,lastDate:rld.value||RC.today()};
+ if(!e.miles&&!e.days){alert('Set miles or days');return}
+ if(id)Object.assign(db.reminders.find(function(x){return x.id===id}),e);else{e.id=RC.uid();db.reminders.push(e);}save();closeM();render();}
+function vehM(id){var x=id?db.vehicles.find(function(v){return v.id===id}):{name:'',desc:'',odo:0};
+ openM('<h2>'+(id?'Edit':'Add')+' Vehicle</h2><label>Name</label><input id="vn" value="'+esc(x.name)+'"><label>Description</label><input id="vd" value="'+esc(x.desc)+'"><label>Odometer</label><input id="vo" type="number" inputmode="numeric" value="'+x.odo+'"><div class="row"><button class="sec" onclick="closeM()">Cancel</button><button onclick="saveVeh(\''+(id||'')+'\')">Save</button></div>'+(id&&db.vehicles.length>1?'<button class="del" style="width:100%;margin-top:10px" onclick="delVeh(\''+id+'\')">Delete Vehicle</button>':''));}
+function saveVeh(id){var e={name:vn.value.trim()||'Vehicle',desc:vd.value.trim(),odo:+vo.value||0};if(id)Object.assign(db.vehicles.find(function(v){return v.id===id}),e);else{e.id=RC.uid();db.vehicles.push(e);db.cur=e.id;}save();closeM();render();}
+function delVeh(id){if(!confirm('Delete vehicle and all its records?'))return;db.vehicles=db.vehicles.filter(function(v){return v.id!==id});db.logs=db.logs.filter(function(l){return l.vid!==id});db.reminders=db.reminders.filter(function(r){return r.vid!==id});db.cur=db.vehicles[0].id;save();closeM();render();}
+function exp(){var s=JSON.stringify(db,null,1),fn='RigCare-backup-'+RC.today()+'.json';try{if(window.AndroidBridge&&AndroidBridge.share(s,fn))return;}catch(e){}var a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(s);a.download='rigcare-backup-'+RC.today()+'.json';document.body.appendChild(a);a.click();a.remove();
+ openM('<h2>Backup</h2><div class="muted">Sharing didn\'t work, copy this text and save it:</div><textarea rows="8" onclick="this.select()">'+esc(s)+'</textarea><button style="width:100%" onclick="closeM()">Done</button>');}
+function doImp(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!RC.validate(o))throw 0;if(confirm('Replace all current data with this backup?')){db=o;if(!db.cur)db.cur=db.vehicles[0].id;save();render();alert('Backup restored');}}catch(e){alert('Not a valid RigCare backup')}};r.readAsText(f);}
+render();</script></body></html>
