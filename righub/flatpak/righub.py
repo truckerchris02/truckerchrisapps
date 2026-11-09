@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-# Rig Hub v1.6.0 desktop - GTK4 + WebKitGTK wrapper around the Rig Hub web app
-# (Rig Nav, Trip Logger, Weather, Tandem Slide).
-# 1.6.0 adds Tandem Slide on the same switcher bar. Each screen keeps its own view,
-# so switching doesn't lose the map, a half-filled trip, or scale weights.
+# Rig Hub v1.7.0 desktop - GTK4 + WebKitGTK wrapper around the Rig Hub web app
+# (Rig Nav, Trip Logger, Weather, Tandem Slide, Hazmat Helper, Inspection).
+# Each screen keeps its own view, so switching doesn't lose the map, a half-filled
+# trip, scale weights, a hazmat search, or an inspection in progress.
 import os, json, base64, gi
 gi.require_version('Gtk','4.0'); gi.require_version('WebKit','6.0')
 from gi.repository import Gtk, Gdk, Gio, GLib, WebKit
-APP='com.truckerchris.RigHub'; HERE=os.environ.get('RIGHUB_DIR','/app/share/righub'); VER='1.6.0'
+APP='com.truckerchris.RigHub'; HERE=os.environ.get('RIGHUB_DIR','/app/share/righub'); VER='1.7.0'
 # id, label, icon, page, version shown in the bar
 TABS=[('home','Home','go-home-symbolic','index.html',''),
       ('nav','Rig Nav','find-location-symbolic','rignav/index.html','Rig Nav v1.5.0'),
       ('log','Trip Logger','x-office-document-symbolic','trip.html','Trip Logger v1.5.0'),
       ('wx','Weather','weather-storm-symbolic','weather.html','Weather (NWS)'),
-      ('slide','Tandem Slide','object-flip-horizontal-symbolic','tandem/index.html','Tandem Slide v1.0')]
+      ('slide','Tandem Slide','object-flip-horizontal-symbolic','tandem/index.html','Tandem Slide v1.0'),
+      ('haz','Hazmat','dialog-warning-symbolic','hazmat/index.html','Hazmat Helper v1.0'),
+      ('insp','Inspection','checkbox-checked-symbolic','inspection/index.html','Inspection v1.1')]
 PAGE={t[3]:t[0] for t in TABS}
 data=os.path.join(GLib.get_user_data_dir(),'righub'); cache=os.path.join(GLib.get_user_cache_dir(),'righub'); os.makedirs(data,exist_ok=True)
 LAST=os.path.join(data,'last-tab')
@@ -25,7 +27,7 @@ rd.onloadend=function(){window.webkit.messageHandlers.tl.postMessage(JSON.string
 PAGECSS=":root{color-scheme:dark} p.ver,.ver{font-size:15px !important}"
 GTKCSS="""
 .rh-bar{background:#14110e;border-bottom:2px solid #3a3228;padding:10px 12px;}
-button.rh-tab{font-size:19px;font-weight:700;padding:10px 20px;min-height:34px;border-radius:12px;background:#231e18;color:#e8dccb;border:1px solid #3a3228;box-shadow:none;}
+button.rh-tab{font-size:15px;font-weight:700;padding:8px 8px;min-height:34px;border-radius:12px;background:#231e18;color:#e8dccb;border:1px solid #3a3228;box-shadow:none;}
 button.rh-tab:hover{background:#2f281f;}
 button.rh-tab.on{background:#e07f2e;color:#1b1208;border-color:#e07f2e;}
 button.rh-tab image{-gtk-icon-size:22px;}
@@ -43,7 +45,7 @@ class A(Gtk.Application):
         try: cp.load_from_string(GTKCSS)
         except Exception: cp.load_from_data(GTKCSS,-1)
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(),cp,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        w=Gtk.ApplicationWindow(application=s,title='Rig Hub v'+VER); w.set_default_size(1100,980); s.win=w
+        w=Gtk.ApplicationWindow(application=s,title='Rig Hub v'+VER); w.set_default_size(1280,980); s.win=w
         s.session=WebKit.NetworkSession.new(data,cache); s.views={}; s.btns={}; s.cur=None
         bar=Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=10); bar.add_css_class('rh-bar')
         tabs=Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=10,homogeneous=True); tabs.set_hexpand(True)

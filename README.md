@@ -17,7 +17,7 @@ Apps that combine several tools.
 | App | Version | Package | Description | Release asset |
 | --- | --- | --- | --- | --- |
 | Music Hub | 1.4.0 | `com.truckerchris.musichub` | Music and podcast hub with latest/oldest feed sort | [MusicHub-v1.4.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/music-hub-v1.4.0/MusicHub-v1.4.apk) |
-| Rig Hub | 1.6.0 | `com.truckerchris.righub` | Rig Nav, Trip Logger, Tandem Slide and Weather in one app | [RigHub-v1.6.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.6.0/RigHub-v1.6.0.apk), [RigHub-v1.6.0.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.6.0/RigHub-v1.6.0.flatpak) |
+| Rig Hub | 1.7.0 | `com.truckerchris.righub` | Rig Nav, Trip Logger, Tandem Slide, Hazmat Helper, Inspection and Weather in one app | [RigHub-v1.7.0.apk](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.7.0/RigHub-v1.7.0.apk), [RigHub-v1.7.0.flatpak](https://github.com/truckerchris02/truckerchrisapps/releases/download/rig-hub-v1.7.0/RigHub-v1.7.0.flatpak) |
 
 ### Single Apps
 

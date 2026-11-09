@@ -1,7 +1,7 @@
 package com.truckerchris.righub;
 import android.content.*;import android.location.*;import android.app.*;import android.os.*;import org.json.*;import java.util.*;
 public class WxChecker{
-  public static final String UA="RigHub/1.6.0 (trucker.chris02@gmail.com)";
+  public static final String UA="RigHub/1.7.0 (trucker.chris02@gmail.com)";
   public static SharedPreferences sp(Context c){return c.getSharedPreferences("righub_wx",0);}
   public static String http(String url)throws Exception{java.net.HttpURLConnection c=(java.net.HttpURLConnection)new java.net.URL(url).openConnection();c.setConnectTimeout(15000);c.setReadTimeout(20000);c.setRequestProperty("User-Agent",UA);c.setRequestProperty("Accept","application/geo+json, application/json");
     int code=c.getResponseCode();java.io.InputStream in=code<400?c.getInputStream():c.getErrorStream();java.io.ByteArrayOutputStream bo=new java.io.ByteArrayOutputStream();byte[] b=new byte[16384];int n;if(in!=null){while((n=in.read(b))>0)bo.write(b,0,n);in.close();}

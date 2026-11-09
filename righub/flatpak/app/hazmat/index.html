@@ -1,0 +1,245 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14171c"><title>Hazmat Helper v1.0</title>
+<style>
+:root{color-scheme:dark;--bg:#14171c;--card:#1e232b;--card2:#262c36;--tx:#e9edf2;--mut:#9aa5b4;--acc:#ff8a1f;--x:#e5484d;--o:#f5b625;--ok:#3fb950;--bd:#323a46}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#101318;border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0;flex:1}header h1 small{color:var(--mut);font-weight:400;font-size:12px;margin-left:6px}
+#back{display:none;background:none;border:0;color:var(--acc);font-size:22px;padding:0 6px;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:12px 12px 90px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#101318;border-top:1px solid var(--bd);display:flex;z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 2px 9px;font-size:11px;cursor:pointer}
+nav button b{display:block;font-size:20px;line-height:24px}nav button.on{color:var(--acc)}
+input,select,textarea{background:#0f1216!important;color:#e9edf2!important;border:1px solid #3a4452;border-radius:10px;padding:10px 12px;font-size:16px;outline:none;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--acc)}input::placeholder{color:#6f7a89}
+select{background-image:linear-gradient(45deg,transparent 50%,#9aa5b4 50%),linear-gradient(135deg,#9aa5b4 50%,transparent 50%)!important;background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%!important;background-size:5px 5px!important;background-repeat:no-repeat!important;padding-right:28px}
+input[type=checkbox]{-webkit-appearance:auto;appearance:auto;width:18px;height:18px;padding:0;accent-color:var(--acc);vertical-align:middle}
+.search{width:100%}
+.btn{background:var(--acc);color:#1a1205;border:0;border-radius:10px;padding:10px 14px;font-weight:600;font-size:14px;cursor:pointer}
+.btn.sec{background:var(--card2);color:var(--tx);border:1px solid var(--bd)}.btn.sm{padding:6px 10px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:10px 0}
+.row{display:flex;gap:10px;align-items:center}.grow{flex:1;min-width:0}
+.res{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--bd);cursor:pointer}.res:active{background:var(--card2)}
+.res .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis}.res .sub{color:var(--mut);font-size:12.5px}
+.pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:600;background:var(--card2);border:1px solid var(--bd);margin:2px 4px 2px 0}
+.pill.x{background:#3a1416;border-color:var(--x);color:#ffb3b5}.pill.o{background:#3a2e10;border-color:var(--o);color:#ffe08a}.pill.ok{background:#11301a;border-color:var(--ok);color:#a7f0b5}.pill.c{background:#1b2840;border-color:#4a7bd0;color:#b8d0ff}
+.mut{color:var(--mut)}.small{font-size:12.5px}h2{font-size:17px;margin:14px 0 6px}h3{font-size:15px;margin:12px 0 4px}
+table.kv{width:100%;border-collapse:collapse}table.kv td{padding:6px 4px;border-bottom:1px solid var(--bd);vertical-align:top}table.kv td:first-child{color:var(--mut);width:42%}
+.plc{display:inline-flex;flex-direction:column;align-items:center;margin:6px;width:108px;text-align:center;font-size:11.5px;vertical-align:top}
+.grid{display:flex;flex-wrap:wrap;justify-content:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{background:var(--card2);border:1px solid var(--bd);color:var(--tx);border-radius:999px;padding:6px 10px;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--acc);color:var(--acc)}
+.star{background:none;border:0;font-size:24px;color:#5c6676;cursor:pointer}.star.on{color:#ffc53d}
+.load-it{background:var(--card2);border-radius:12px;padding:10px;margin:8px 0;border:1px solid var(--bd)}
+.load-it input[type=number]{width:110px}
+.opts{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:13px}.opts label{display:flex;gap:6px;align-items:center}
+.pair{border-left:4px solid var(--ok);padding:8px 10px;margin:6px 0;background:var(--card2);border-radius:8px}
+.pair.X{border-color:var(--x)}.pair.O{border-color:var(--o)}.pair.C{border-color:#4a7bd0}
+.segt{border-collapse:collapse;font-size:11px;margin:auto}.segt td,.segt th{border:1px solid var(--bd);width:26px;height:24px;text-align:center;padding:0}
+.segt th{background:var(--card2);font-weight:600}.segt td.X{background:#5a1b1e;color:#ffb3b5;font-weight:700}.segt td.O{background:#4a3a10;color:#ffe08a;font-weight:700}.segt td.S{color:var(--mut)}
+.scroll{overflow-x:auto}.warn{background:#2b2210;border:1px solid #6b5418;color:#ffe2a0;border-radius:12px;padding:10px;font-size:13px}
+.empty{color:var(--mut);text-align:center;padding:30px 10px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.modal .box{background:var(--bg);width:100%;max-width:760px;max-height:85vh;overflow:auto;border-radius:16px 16px 0 0;padding:12px;border:1px solid var(--bd)}
+a{color:var(--acc)}
+</style></head><body>
+<header><button id="back" onclick="goBack()">&#8592;</button><h1>&#9888;&#65039; Hazmat Helper<small>v1.0</small></h1></header>
+<main id="main"></main>
+<nav id="nav">
+<button data-t="search" class="on"><b>&#128269;</b>Search</button>
+<button data-t="load"><b>&#128666;</b>Load Check</button>
+<button data-t="placards"><b>&#9670;</b>Placards</button>
+<button data-t="favs"><b>&#9733;</b>Favorites</button>
+<button data-t="about"><b>&#9432;</b>About</button>
+</nav>
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+<script src="data.js"></script><script src="engine.js"></script>
+<script>
+var D=window.HZDATA,HMT=D.hmt,GT=D.guides,M=D.meta;
+HMT.forEach(function(e,i){e.i=i;e.k=(e.n+' '+(e.u||'')+' '+(e.u?e.u.slice(2):'')).toLowerCase();});
+var store={get:function(k,d){try{var v=localStorage.getItem('hz_'+k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem('hz_'+k,JSON.stringify(v))}catch(e){}}};
+var favs=store.get('favs',[]),load=store.get('load',[]),opts=store.get('opts',{domestic:true});
+var tab='search',stack=[],q=store.get('q','');
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+var CLASSNAME={'1':'Explosives','1.1':'Explosives (mass explosion)','1.2':'Explosives (projection hazard)','1.3':'Explosives (fire hazard)','1.4':'Explosives (minor hazard)','1.5':'Very insensitive explosives','1.6':'Extremely insensitive articles','2.1':'Flammable gas','2.2':'Non-flammable, non-poisonous gas','2.3':'Poisonous gas','3':'Flammable liquid','4.1':'Flammable solid','4.2':'Spontaneously combustible','4.3':'Dangerous when wet','5.1':'Oxidizer','5.2':'Organic peroxide','6.1':'Poisonous (toxic) material','6.2':'Infectious substance','7':'Radioactive','8':'Corrosive','9':'Miscellaneous hazardous material','Comb liq':'Combustible liquid','Forbidden':'Forbidden in transportation'};
+function cname(c){c=String(c||'');return CLASSNAME[c]||CLASSNAME[c.slice(0,3)]||CLASSNAME[c[0]]||c;}
+var SYM={'+':'Fixed name/class/PG (+)','A':'Regulated only by aircraft (unless hazardous substance/waste)','D':'Domestic-only shipping name','G':'Technical name required in ( )','I':'International shipping name','W':'Regulated only by vessel (unless hazardous substance/waste)'};
+// ---------- Placard SVG ----------
+var PL={
+'EXPLOSIVES 1.1':{bg:'#f47b20',num:'1',sym:'boom',tx:'EXPLOSIVES',d:'1.1'},'EXPLOSIVES 1.2':{bg:'#f47b20',num:'1',sym:'boom',tx:'EXPLOSIVES',d:'1.2'},'EXPLOSIVES 1.3':{bg:'#f47b20',num:'1',sym:'boom',tx:'EXPLOSIVES',d:'1.3'},
+'EXPLOSIVES 1.4':{bg:'#f47b20',num:'1',big:'1.4',tx:'EXPLOSIVES'},'EXPLOSIVES 1.5':{bg:'#f47b20',num:'1',big:'1.5',tx:'BLASTING AGENTS'},'EXPLOSIVES 1.6':{bg:'#f47b20',num:'1',big:'1.6',tx:'EXPLOSIVES'},
+'FLAMMABLE GAS':{bg:'#d7261e',fg:'#fff',num:'2',sym:'flame',tx:'FLAMMABLE GAS'},'NON-FLAMMABLE GAS':{bg:'#1f9a48',fg:'#fff',num:'2',sym:'cyl',tx:'NON-FLAMMABLE GAS'},'OXYGEN':{bg:'#ffd200',num:'2',sym:'oflame',tx:'OXYGEN'},
+'POISON GAS':{bg:'#fff',num:'2',sym:'skull',tx:'POISON GAS'},'FLAMMABLE':{bg:'#d7261e',fg:'#fff',num:'3',sym:'flame',tx:'FLAMMABLE'},'COMBUSTIBLE':{bg:'#d7261e',fg:'#fff',num:'3',sym:'flame',tx:'COMBUSTIBLE'},
+'FLAMMABLE SOLID':{bg:'stripe',num:'4',sym:'flame',tx:'FLAMMABLE SOLID'},'SPONTANEOUSLY COMBUSTIBLE':{bg:'split',top:'#fff',bot:'#d7261e',num:'4',sym:'flame',tx:'SPONTANEOUSLY COMBUSTIBLE'},
+'DANGEROUS WHEN WET':{bg:'#1565c0',fg:'#fff',num:'4',sym:'flame',tx:'DANGEROUS WHEN WET'},'OXIDIZER':{bg:'#ffd200',num:'5.1',sym:'oflame',tx:'OXIDIZER'},
+'ORGANIC PEROXIDE':{bg:'split',top:'#d7261e',bot:'#ffd200',num:'5.2',sym:'flame',tx:'ORGANIC PEROXIDE',fgt:'#fff'},
+'POISON':{bg:'#fff',num:'6',sym:'skull',tx:'POISON'},'POISON INHALATION HAZARD':{bg:'#fff',num:'6',sym:'skull',tx:'INHALATION HAZARD'},
+'RADIOACTIVE':{bg:'split',top:'#ffd200',bot:'#fff',num:'7',sym:'rad',tx:'RADIOACTIVE'},'CORROSIVE':{bg:'split',top:'#fff',bot:'#111',num:'8',sym:'corr',tx:'CORROSIVE',fgb:'#fff'},
+'CLASS 9':{bg:'nine',num:'9'},'DANGEROUS':{bg:'dang',tx:'DANGEROUS'}};
+var PLDESC={'EXPLOSIVES 1.1':'Table 1 (any amount). Mass explosion hazard.','EXPLOSIVES 1.2':'Table 1 (any amount). Projection hazard.','EXPLOSIVES 1.3':'Table 1 (any amount). Fire hazard, minor blast/projection.','EXPLOSIVES 1.4':'Table 2 (1,001 lb rule). Minor explosion hazard.','EXPLOSIVES 1.5':'Table 2. Very insensitive explosives (blasting agents).','EXPLOSIVES 1.6':'Table 2. Extremely insensitive articles.',
+'FLAMMABLE GAS':'Table 2. Division 2.1.','NON-FLAMMABLE GAS':'Table 2. Division 2.2.','OXYGEN':'Optional for domestic oxygen instead of NON-FLAMMABLE GAS (172.504(f)(7)).','POISON GAS':'Table 1 (any amount). Division 2.3.','FLAMMABLE':'Table 2. Class 3.','COMBUSTIBLE':'Table 2. Combustible liquid (mainly bulk).','FLAMMABLE SOLID':'Table 2. Division 4.1.','SPONTANEOUSLY COMBUSTIBLE':'Table 2. Division 4.2.','DANGEROUS WHEN WET':'Table 1 (any amount). Division 4.3, also required as a subsidiary placard (172.505(c)).','OXIDIZER':'Table 2. Division 5.1.','ORGANIC PEROXIDE':'Table 1 if Type B, temperature controlled; otherwise Table 2. Division 5.2.','POISON':'Table 2. Division 6.1 (not inhalation hazard).','POISON INHALATION HAZARD':'Table 1 (any amount). 6.1 inhalation hazard; also subsidiary under 172.505(a).','RADIOACTIVE':'Table 1 (any amount) for Yellow-III labeled packages and the cases in footnote 1.','CORROSIVE':'Table 2. Class 8.','CLASS 9':'Table 2, but not required for domestic transport (bulk still needs the ID number displayed).','DANGEROUS':'Optional in place of separate Table 2 placards when 2+ Table 2 categories are on the vehicle (172.504(b)), except a category with 2,205 lb or more loaded at one facility.'};
+function symSVG(s,c){c=c||'#000';
+ if(s==='flame')return '<path d="M50 14c4 10 14 14 12 26 6-3 7-9 6-13 7 8 9 20 1 28-8 7-30 7-37-2-6-8-2-17 4-22-1 5 1 9 5 10-3-11 3-19 9-27z" fill="'+c+'"/>';
+ if(s==='oflame')return '<path d="M50 12c4 9 12 12 11 22 5-2 6-7 5-11 6 7 6 16 0 22H34c-5-6-2-13 3-17-1 4 1 7 4 8-2-9 3-16 9-24z" fill="'+c+'"/><circle cx="50" cy="52" r="9" fill="none" stroke="'+c+'" stroke-width="5"/>';
+ if(s==='skull')return '<text x="50" y="58" text-anchor="middle" font-size="40" fill="'+c+'">&#9760;</text>';
+ if(s==='rad')return '<circle cx="50" cy="40" r="5" fill="'+c+'"/><path d="M50 40 L38 19 A24 24 0 0 1 62 19Z M50 40 L74 40 A24 24 0 0 1 62 61Z M50 40 L38 61 A24 24 0 0 1 26 40Z" fill="'+c+'" transform="rotate(30 50 40)"/>';
+ if(s==='boom')return '<path d="M50 14l4 16 12-10-5 15 15-2-12 10 13 7-16 1 6 13-12-8-5 14-4-14-12 8 6-13-16-1 13-7-12-10 15 2-5-15 12 10z" fill="'+c+'"/>';
+ if(s==='cyl')return '<rect x="43" y="22" width="14" height="36" rx="6" fill="'+c+'"/><rect x="47" y="15" width="6" height="8" fill="'+c+'"/>';
+ if(s==='corr')return '<path d="M30 22h14v8H30zM56 22h14v8H56z" fill="#111"/><path d="M33 31v6M38 31v8M61 31v6M66 31v8" stroke="#111" stroke-width="2"/><rect x="26" y="42" width="20" height="5" fill="#111"/><path d="M58 44q6-6 14 0" stroke="#111" stroke-width="5" fill="none"/>';
+ return '';}
+function placardSVG(name,sz){sz=sz||96;var p=PL[name]||{bg:'#888',tx:name};var id='g'+Math.random().toString(36).slice(2,8);var defs='',fill=p.bg,fg=p.fg||'#000';
+ if(p.bg==='stripe'){defs='<pattern id="'+id+'" width="14" height="10" patternUnits="userSpaceOnUse"><rect width="7" height="10" fill="#d7261e"/><rect x="7" width="7" height="10" fill="#fff"/></pattern>';fill='url(#'+id+')';}
+ if(p.bg==='split'){defs='<linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="'+p.top+'"/><stop offset=".5" stop-color="'+p.bot+'"/></linearGradient>';fill='url(#'+id+')';}
+ if(p.bg==='nine'){defs='<linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#fff"/><stop offset=".5" stop-color="#fff"/></linearGradient>';fill='#fff';}
+ var s='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs>'+defs+'</defs>';
+ s+='<polygon points="50,2 98,50 50,98 2,50" fill="'+fill+'" stroke="#000" stroke-width="1.5"/><polygon points="50,7 93,50 50,93 7,50" fill="none" stroke="'+(p.bg==='#d7261e'||p.bg==='#1565c0'||p.bg==='#1f9a48'?'#fff':'#000')+'" stroke-width="1.2"/>';
+ if(p.bg==='nine'){for(var i=0;i<7;i++){var x=26+i*7;s+='<rect x="'+x+'" y="'+(50-(24-Math.abs(x+2-50)))+'" width="3.5" height="'+(24-Math.abs(x+2-50))+'" fill="#000"/>';}s+='<text x="50" y="86" text-anchor="middle" font-size="16" font-weight="700" font-family="Arial">9</text></svg>';return s;}
+ if(p.bg==='dang'){s+='<polygon points="50,7 72,29 28,29" fill="#d7261e"/><polygon points="50,93 72,71 28,71" fill="#d7261e"/><text x="50" y="54" text-anchor="middle" font-size="10" font-weight="800" font-family="Arial">DANGEROUS</text></svg>';return s;}
+ if(p.big)s+='<text x="50" y="47" text-anchor="middle" font-size="24" font-weight="800" font-family="Arial" fill="'+fg+'">'+p.big+'</text>';
+ else s+='<g transform="translate(10,2) scale(.8)">'+symSVG(p.sym,p.bg==='stripe'?'#000':(p.fgt||(p.bg==='split'&&p.top==='#fff'?'#000':fg)))+'</g>';
+ var tc=p.fgb||fg;if(p.bg==='split')tc=p.fgb||'#000';if(name==='ORGANIC PEROXIDE')tc='#000';
+ var t=p.tx||'',fs=t.length>18?5.6:t.length>12?7:8.5;
+ var words=t.split(' '),l1=t,l2='';if(t.length>14&&words.length>1){var h=Math.ceil(words.length/2);l1=words.slice(0,h).join(' ');l2=words.slice(h).join(' ');fs=Math.min(8,90/Math.max(l1.length,l2.length)*1.3);}
+ s+='<text x="50" y="'+(l2?64:68)+'" text-anchor="middle" font-size="'+fs+'" font-weight="800" font-family="Arial" fill="'+tc+'">'+esc(l1)+'</text>';
+ if(l2)s+='<text x="50" y="'+(64+fs+1)+'" text-anchor="middle" font-size="'+fs+'" font-weight="800" font-family="Arial" fill="'+tc+'">'+esc(l2)+'</text>';
+ if(p.d)s+='<text x="50" y="'+(l2?82:79)+'" text-anchor="middle" font-size="8" font-weight="800" font-family="Arial" fill="'+tc+'">'+p.d+'</text>';
+ s+='<text x="50" y="91" text-anchor="middle" font-size="10" font-weight="800" font-family="Arial" fill="'+tc+'">'+p.num+'</text></svg>';return s;}
+function plc(name,cap){return '<div class="plc">'+placardSVG(name,92)+'<div>'+esc(cap||name)+'</div></div>';}
+// ---------- Nav ----------
+function setTab(t){tab=t;stack=[];[].forEach.call(document.querySelectorAll('nav button'),function(b){b.classList.toggle('on',b.dataset.t===t)});render();window.scrollTo(0,0);}
+[].forEach.call(document.querySelectorAll('nav button'),function(b){b.onclick=function(){setTab(b.dataset.t)}});
+function push(v){stack.push({v:v,y:window.scrollY});render();window.scrollTo(0,0);}
+function goBack(){if(closeModal())return true;if(stack.length){var s=stack.pop();render();setTimeout(function(){window.scrollTo(0,s.y||0)},0);return true;}if(tab!=='search'){setTab('search');return true;}return false;}
+window.__back=goBack;
+function render(){var m=document.getElementById('main');document.getElementById('back').style.display=stack.length?'block':'none';
+ var top=stack[stack.length-1];if(top){m.innerHTML=top.v.type==='detail'?detailHTML(HMT[top.v.i]):top.v.type==='guide'?guideHTML(top.v.g):'';return;}
+ if(tab==='search')renderSearch(m);else if(tab==='load')renderLoad(m);else if(tab==='placards')renderPlacards(m);else if(tab==='favs')renderFavs(m);else renderAbout(m);}
+// ---------- Search ----------
+function doSearch(s){s=s.trim().toLowerCase();if(!s)return[];var num=s.replace(/^(un|na|id)\s*/,'');
+ var out=[];if(/^\d{1,4}$/.test(num)){HMT.forEach(function(e){if(e.u&&e.u.slice(2).indexOf(num)===0)out.push(e)});out.sort(function(a,b){return a.u.slice(2)===num?-1:b.u.slice(2)===num?1:a.u<b.u?-1:1});return out.slice(0,150);}
+ var w=s.split(/\s+/);var starts=[],cont=[];HMT.forEach(function(e){if(w.every(function(x){return e.k.indexOf(x)>=0})){(e.k.indexOf(w[0])===0?starts:cont).push(e)}});return starts.concat(cont).slice(0,150);}
+function resHTML(e){var see=/,? see /.test(e.n)&&!e.c;var c=e.c||'';var pl=c&&c!=='Forbidden'?HZ.placardFor(c,HZ.itemFromEntry(e,{})).p:null;
+ return '<div class="res" onclick="openEntry('+e.i+')">'+(pl?'<div style="flex:none">'+placardSVG(pl,40)+'</div>':'<div style="flex:none;width:40px;text-align:center;font-size:22px">'+(c==='Forbidden'?'&#9940;':'&#8618;')+'</div>')+
+ '<div class="grow"><div class="nm">'+esc(e.n)+'</div><div class="sub">'+(see?'Cross-reference':(esc(e.u||'')+(c?' &middot; Class '+esc(c):'')+(e.pg?' &middot; PG '+e.pg:'')+(e.g?' &middot; ERG '+e.g.join('/'):'')+(e.s?' &middot; '+esc(e.s):'')))+'</div></div>'+(favs.indexOf(e.i)>=0?'<span style="color:#ffc53d">&#9733;</span>':'')+'</div>';}
+function renderSearch(m){m.innerHTML='<input id="q" class="search" type="search" placeholder="Search name or UN number (e.g. 1203, diesel)" autocomplete="off" value="'+esc(q)+'"><div id="cnt" class="mut small" style="margin:6px 2px"></div><div id="res" class="card" style="padding:0"></div>';
+ var inp=document.getElementById('q');inp.oninput=function(){q=inp.value;store.set('q',q);upd()};upd();
+ function upd(){var r=doSearch(q),el=document.getElementById('res');document.getElementById('cnt').textContent=q.trim()?(r.length>=150?'Showing first 150 matches':r.length+' match'+(r.length===1?'':'es')):HMT.length+' Hazardous Materials Table entries, offline';
+  el.innerHTML=q.trim()?(r.length?r.map(resHTML).join(''):'<div class="empty">No matches. Try fewer words or the 4-digit UN number.</div>'):'<div class="empty">Type a product name or UN/NA number.<br><br>Tip: shipping names are formal, e.g. "Petroleum distillates", "Diesel fuel", "Paint".</div>';
+  el.style.display='block';}}
+function openEntry(i){var e=HMT[i];if(!e.c&&/ see /.test(e.n)){var t=e.n.split(/,? see /).pop();q=t;store.set('q',q);stack=[];tab='search';render();return;}push({type:'detail',i:i});}
+// ---------- Detail ----------
+function segSummary(e){var it=HZ.itemFromEntry(e,{});var X=[],O=[];
+ var classes=[['1.1D','Div 1.1/1.2'],['1.3C','Div 1.3'],['1.4C','Div 1.4'],['1.5D','Div 1.5'],['2.1','2.1'],['2.2','2.2'],['2.3A','2.3 Zone A'],['2.3B','2.3 Zone B'],['3','3'],['4.1','4.1'],['4.2','4.2'],['4.3','4.3'],['5.1','5.1'],['5.2','5.2'],['6.1A','6.1 PG I Zone A liquid'],['7','7'],['8','8 liquid']];
+ classes.forEach(function(c){var k=c[0],o={name:'Class '+c[1],un:'',cls:k.replace(/[AB]$/,''),pg:'',subs:[],zone:'',liquid:true,weight:0};
+  if(k==='2.3A'){o.cls='2.3';o.zone='A'}if(k==='2.3B'){o.cls='2.3';o.zone='B'}if(k==='6.1A'){o.cls='6.1';o.zone='A';o.pg='I'}if(/^1\./.test(k))o.cls=k;
+  if(/^1\./.test(e.c||'')&&/^1\./.test(k))return;
+  var r=HZ.segPair(it,o);if(r.level==='X')X.push(c[1]);else if(r.level==='O')O.push(c[1]);});
+ return {X:X,O:O,it:it};}
+function detailHTML(e){var it=HZ.itemFromEntry(e,{}),fav=favs.indexOf(e.i)>=0,c=e.c||'';
+ var h='<div class="card"><div class="row"><div class="grow"><div style="font-size:18px;font-weight:700">'+esc(e.n)+'</div><div class="mut">'+esc(e.u||'No ID number')+(c?' &middot; Class '+esc(c)+' &middot; '+esc(cname(c)):'')+'</div></div><button class="star'+(fav?' on':'')+'" onclick="toggleFav('+e.i+')">&#9733;</button></div>';
+ if(c==='Forbidden'){return h+'<div class="warn" style="margin-top:10px">This material is <b>FORBIDDEN</b> in transportation (49 CFR 172.101 column 3).</div></div>';}
+ var pls=[],pl=HZ.placardFor(c,it);if(pl.p)pls.push([pl.p,'Primary ('+(pl.t===1?'Table 1, any amount':'Table 2, 1,001 lb rule')+')']);
+ if(it.pih&&c!=='2.3'&&c!=='6.1')pls.push(['POISON INHALATION HAZARD','Subsidiary, 172.505(a)']);
+ if(it.subs.indexOf('4.3')>=0)pls.push(['DANGEROUS WHEN WET','Subsidiary, 172.505(c)']);
+ it.subs.forEach(function(s){if(s==='4.3')return;var p=HZ.placardFor(s,it).p;if(p&&!pls.some(function(x){return x[0]===p}))pls.push([p,'Optional subsidiary (172.505(d))']);});
+ h+='<div class="grid" style="margin-top:8px">'+(pls.length?pls.map(function(p){return plc(p[0],p[1])}).join(''):'<div class="mut small">'+esc(pl.note||'No placard for this class.')+'</div>')+'</div>';
+ h+='<div class="row" style="gap:8px;margin-top:6px"><button class="btn" onclick="addToLoad('+e.i+')">+ Add to Load Check</button></div></div>';
+ if(it.pih)h+='<div class="warn">&#9888;&#65039; <b>Poison Inhalation Hazard</b>'+(it.zone&&it.zone!=='?'?', Hazard Zone '+it.zone:'')+'. "Inhalation Hazard" must be on shipping papers and packages; POISON INHALATION HAZARD or POISON GAS placards are required at any quantity.</div>';
+ if(e.t)h+='<div class="warn" style="margin-top:8px;background:#122b18;border-color:#2f7a45;color:#b9f5c8">&#127807; Listed in ERG Table 1 (green pages): see initial isolation and protective action distances.</div>';
+ h+='<div class="card"><h3 style="margin-top:0">Shipping info (49 CFR 172.101)</h3><table class="kv">';
+ function kv(k,v){if(v!==undefined&&v!==''&&v!==null)h+='<tr><td>'+k+'</td><td>'+v+'</td></tr>';}
+ kv('Proper shipping name',esc(e.n));kv('Hazard class / division',esc(c)+' &ndash; '+esc(cname(c)));kv('ID number',esc(e.u));kv('Packing group',e.pg?e.pg+' &ndash; '+({I:'great danger',II:'medium danger',III:'minor danger'})[e.pg]:'');
+ kv('Label codes',esc(e.l));kv('Symbols',e.s?e.s.split(/\s+/).map(function(x){return '<b>'+esc(x)+'</b> '+esc(SYM[x]||'')}).join('<br>'):'');
+ kv('Special provisions (172.102)',esc(e.sp)+(/(^|, )13(,|$)/.test(e.sp||'')?'<br><span class="mut small">SP 13: "Inhalation Hazard" marking required.</span>':''));
+ kv('Packaging 173.___',(e.ex?'Exceptions '+esc(e.ex):'')+(e.nb?' &middot; Non-bulk '+esc(e.nb):'')+(e.bk?' &middot; Bulk '+esc(e.bk):''));
+ kv('Qty limit: passenger aircraft/rail',esc(e.pa));kv('Qty limit: cargo aircraft only',esc(e.ca));kv('Vessel stowage',esc((e.vs||'')+(e.vo?' / '+e.vo:'')));
+ h+='</table></div>';
+ if(e.g){h+='<div class="card"><h3 style="margin-top:0">Emergency Response Guide (ERG 2024)</h3>'+e.g.map(function(g){var gn=g.replace('P','');return '<div style="margin:4px 0"><span class="pill" style="font-size:15px;background:#4a2a0c;border-color:var(--acc);color:#ffc58f">GUIDE '+esc(g)+'</span> '+esc(GT[gn]||'')+(g.indexOf('P')>0?'<div class="mut small">"P" = material may polymerize violently when heated or contaminated.</div>':'')+'</div>'}).join('')+(e.g.length>1?'<div class="mut small">ERG lists more than one guide for this ID; the right one depends on the item (see ERG yellow pages).</div>':'')+(e.ge?'<div class="mut small">Explosives are not listed by ID in the ERG; guide assigned by division (ERG note 2).</div>':'')+'</div>';}
+ var ss=segSummary(e);h+='<div class="card"><h3 style="margin-top:0">Loading with other hazmat (177.848)</h3>';
+ if(/^1\./.test(c))h+='<div class="mut small" style="margin-bottom:6px">Explosive vs explosive is set by compatibility group '+esc((c.match(/[A-Z]$/)||[''])[0])+' (use Load Check).</div>';
+ h+='<div><b style="color:#ffb3b5">Never with (X):</b> '+(ss.X.length?ss.X.map(function(x){return '<span class="pill x">'+esc(x)+'</span>'}).join(''):'<span class="mut">none</span>')+'</div>';
+ h+='<div style="margin-top:6px"><b style="color:#ffe08a">Only if separated (O):</b> '+(ss.O.length?ss.O.map(function(x){return '<span class="pill o">'+esc(x)+'</span>'}).join(''):'<span class="mut">none</span>')+'</div>';
+ if(c==='8')h+='<div class="mut small" style="margin-top:6px">Class 8 restrictions apply to liquids only. This entry is treated as '+(it.liquid?'a liquid':'a solid')+'.</div>';
+ if(c==='6.1'&&!(it.zone==='A'&&e.pg==='I'))h+='<div class="mut small" style="margin-top:6px">The 6.1 row of the table only applies to PG I, Zone A poisonous liquids, so most 6.1 materials have no class restrictions.</div>';
+ if(/cyanide/i.test(e.n))h+='<div class="warn" style="margin-top:8px">Cyanides may not be loaded with acids if mixing would make hydrogen cyanide (177.848(c)).</div>';
+ h+='<div class="mut small" style="margin-top:6px">Subsidiary hazards count when they are stricter (177.848(e)(6)).</div></div>';
+ return h;}
+function guideHTML(g){return '';}
+function toggleFav(i){var k=favs.indexOf(i);if(k>=0)favs.splice(k,1);else favs.push(i);store.set('favs',favs);render();}
+// ---------- Load ----------
+var CLASSOPTS=[['1.1D','1.1 Explosives (group D)'],['1.2D','1.2 Explosives (group D)'],['1.3C','1.3 Explosives (group C)'],['1.4S','1.4 Explosives (group S)'],['1.4G','1.4 Explosives (group G)'],['1.5D','1.5 Blasting agents'],['1.6N','1.6 Explosives'],['2.1','2.1 Flammable gas'],['2.2','2.2 Non-flammable gas'],['2.3','2.3 Poison gas'],['3','3 Flammable liquid'],['Comb liq','Combustible liquid'],['4.1','4.1 Flammable solid'],['4.2','4.2 Spontaneously combustible'],['4.3','4.3 Dangerous when wet'],['5.1','5.1 Oxidizer'],['5.2','5.2 Organic peroxide'],['6.1','6.1 Poison'],['6.2','6.2 Infectious'],['7','7 Radioactive'],['8','8 Corrosive'],['9','9 Miscellaneous']];
+function addToLoad(i){var e=HMT[i];var it=HZ.itemFromEntry(e,{weight:0});it.src=i;load.push(it);store.set('load',load);toast('Added to Load Check');}
+function addClass(){var v=document.getElementById('addcls').value;if(!v)return;var o=CLASSOPTS.filter(function(x){return x[0]===v})[0];
+ load.push({name:o[1]+' (generic)',un:'',cls:v,pg:'',subs:[],zone:v==='2.3'?'B':'',pih:v==='2.3',liquid:true,weight:0,bulk:false,yellow3:false,orgBTC:false});store.set('load',load);render();}
+function upd(i,k,v){load[i][k]=v;if(k==='zone'){load[i].pih=!!v;}store.set('load',load);renderResult();}
+function delItem(i){load.splice(i,1);store.set('load',load);render();}
+function renderLoad(m){var h='<h2 style="margin-top:4px">Load Check</h2><div class="mut small">Add what is on the trailer with gross weights (lb). Checks segregation (177.848) and placards (172.504/505).</div>';
+ h+='<div class="card"><input id="lq" class="search" type="search" placeholder="Add product: name or UN number" autocomplete="off"><div id="lres"></div><div class="row" style="margin-top:8px"><select id="addcls" class="grow"><option value="">&hellip;or add a hazard class</option>'+CLASSOPTS.map(function(o){return '<option value="'+o[0]+'">'+esc(o[1])+'</option>'}).join('')+'</select><button class="btn sec" onclick="addClass()">Add</button></div></div>';
+ if(!load.length)h+='<div class="empty">No items yet. Search above or pick a class.</div>';
+ load.forEach(function(it,i){h+='<div class="load-it"><div class="row"><div class="grow"><b>'+esc(it.name)+'</b><div class="mut small">'+esc(it.un||'')+' Class '+esc(it.cls)+(it.pg?' PG '+it.pg:'')+(it.subs.length?' (sub '+esc(it.subs.join(', '))+')':'')+(it.pih?' &middot; PIH Zone '+esc(it.zone):'')+'</div></div><button class="btn sec sm" onclick="delItem('+i+')">&#10005;</button></div>'+
+  '<div class="opts"><label>Weight <input type="number" inputmode="decimal" min="0" value="'+(it.weight||'')+'" placeholder="lb" oninput="upd('+i+',\'weight\',+this.value)"> lb</label>'+
+  '<label><input type="checkbox" '+(it.bulk?'checked':'')+' onchange="upd('+i+',\'bulk\',this.checked)"> Bulk packaging (e.g. cargo tank)</label>'+
+  ((it.cls==='8'||it.cls==='6.1')?'<label><input type="checkbox" '+(it.liquid?'checked':'')+' onchange="upd('+i+',\'liquid\',this.checked)"> Liquid</label>':'')+
+  (it.cls==='7'?'<label><input type="checkbox" '+(it.yellow3?'checked':'')+' onchange="upd('+i+',\'yellow3\',this.checked)"> Yellow-III label</label>':'')+
+  (it.cls==='5.2'&&!it.un?'<label><input type="checkbox" '+(it.orgBTC?'checked':'')+' onchange="upd('+i+',\'orgBTC\',this.checked)"> Type B, temp. controlled</label>':'')+
+  ((it.cls==='2.3'||it.cls==='6.1')&&!it.un?'<label>Inhalation zone <select onchange="upd('+i+',\'zone\',this.value)">'+['','A','B','C','D'].map(function(z){return '<option '+(it.zone===z?'selected':'')+' value="'+z+'">'+(z||'None')+'</option>'}).join('')+'</select></label>':'')+
+  ((it.cls==='6.1')&&!it.un?'<label>PG <select onchange="upd('+i+',\'pg\',this.value)">'+['','I','II','III'].map(function(z){return '<option '+(it.pg===z?'selected':'')+'>'+z+'</option>'}).join('')+'</select></label>':'')+
+  '</div></div>';});
+ if(load.length)h+='<div class="opts" style="margin:6px 2px"><label><input type="checkbox" '+(opts.domestic?'checked':'')+' onchange="opts.domestic=this.checked;store.set(\'opts\',opts);renderResult()"> Domestic (US-only) trip</label><button class="btn sec sm" onclick="askClear()">Clear load</button></div><div id="result"></div>';
+ m.innerHTML=h;var lq=document.getElementById('lq');lq.oninput=function(){var r=doSearch(lq.value).filter(function(e){return e.c&&e.c!=='Forbidden'}).slice(0,12);
+  document.getElementById('lres').innerHTML=r.map(function(e){return '<div class="res" onclick="addToLoad('+e.i+');renderLoad(document.getElementById(\'main\'))"><div class="grow"><div class="nm">'+esc(e.n)+'</div><div class="sub">'+esc(e.u)+' &middot; Class '+esc(e.c)+(e.pg?' &middot; PG '+e.pg:'')+(e.s?' &middot; '+esc(e.s):'')+'</div></div><b style="color:var(--acc)">+</b></div>'}).join('');};
+ renderResult();}
+function renderResult(){var el=document.getElementById('result');if(!el)return;
+ var pr=HZ.placards(load,{domestic:opts.domestic}),pairs=HZ.checkLoad(load);
+ var h='<div class="card"><h3 style="margin-top:0">Placards needed</h3>';
+ h+=pr.placards.length?'<div class="grid">'+pr.placards.map(function(p){return plc(p)}).join('')+'</div>':'<div class="pill ok" style="font-size:14px">No placards required</div>';
+ if(pr.placards.length)h+='<div class="small mut">On each side and each end of the vehicle.</div>';
+ if(pr.dangerous)h+='<div class="row" style="margin-top:8px"><div style="flex:none">'+placardSVG('DANGEROUS',64)+'</div><div class="small">'+esc(pr.dangerous.text)+'</div></div>';
+ h+='<div class="small" style="margin-top:8px">Table 2 total (non-bulk): <b>'+pr.t2total.toLocaleString()+' lb</b>'+(pr.t2total>=1001?' &ndash; at or over 1,001 lb':' &ndash; under 1,001 lb')+'</div>';
+ var w=Object.keys(pr.why).filter(function(p){return pr.placards.indexOf(p)>=0});if(w.length)h+='<details style="margin-top:6px"><summary class="small">Why</summary><ul class="small">'+w.map(function(p){return '<li><b>'+esc(p)+'</b>: '+esc(pr.why[p].join('; '))+'</li>'}).join('')+'</ul></details>';
+ if(pr.notes.length)h+='<ul class="small mut">'+pr.notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>';
+ h+='</div>';
+ if(load.length>1){var bad=pairs.filter(function(p){return p.level==='X'}).length,sep=pairs.filter(function(p){return p.level==='O'}).length;
+  h+='<div class="card"><h3 style="margin-top:0">Can these ride together?</h3><div>'+(bad?'<span class="pill x">'+bad+' forbidden</span>':'')+(sep?'<span class="pill o">'+sep+' need separation</span>':'')+(!bad&&!sep?'<span class="pill ok">No segregation conflicts found</span>':'')+'</div>';
+  pairs.forEach(function(p){var a=load[p.a],b=load[p.b],L=p.level||'OK';h+='<div class="pair '+L+'"><div><b>'+esc(a.name)+'</b> + <b>'+esc(b.name)+'</b></div><div><span class="pill '+({X:'x',O:'o',C:'c',OK:'ok'})[L]+'">'+({X:'X &ndash; Do not load together',O:'O &ndash; Separate so leaks cannot mix',C:'Check note',OK:'OK together'})[L]+'</span></div>'+(p.notes.length?'<ul class="small" style="margin:4px 0 0;padding-left:18px">'+p.notes.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul>':'')+'</div>';});
+  h+='</div>';}
+ h+='<div class="mut small">Reference only. Your shipping papers and the current regulations control.</div>';
+ el.innerHTML=h;}
+// ---------- Placards ----------
+function renderPlacards(m){var t1=['EXPLOSIVES 1.1','EXPLOSIVES 1.2','EXPLOSIVES 1.3','POISON GAS','DANGEROUS WHEN WET','ORGANIC PEROXIDE','POISON INHALATION HAZARD','RADIOACTIVE'],t2=['EXPLOSIVES 1.4','EXPLOSIVES 1.5','EXPLOSIVES 1.6','FLAMMABLE GAS','NON-FLAMMABLE GAS','OXYGEN','FLAMMABLE','COMBUSTIBLE','FLAMMABLE SOLID','SPONTANEOUSLY COMBUSTIBLE','OXIDIZER','ORGANIC PEROXIDE','POISON','CORROSIVE','CLASS 9','DANGEROUS'];
+ var h='<h2 style="margin-top:4px">Placard rules</h2><div class="card small"><b>The basics (172.504)</b><ul style="padding-left:18px;margin:6px 0">'+
+ '<li><b>Table 1 = any amount.</b> Even one package means you placard.</li>'+
+ '<li><b>Table 2 = 1,001 lb rule.</b> If the total gross weight of all Table 2 materials on the vehicle is under 1,001 lb (454 kg), no Table 2 placards are needed. Doesn\'t apply to bulk packagings or 172.505 materials.</li>'+
+ '<li><b>Bulk packaging</b> (cargo tank, portable tank, big IBC) needs placards at any amount.</li>'+
+ '<li><b>DANGEROUS</b> may replace separate Table 2 placards when there are 2+ Table 2 categories, but any one category with 2,205 lb (1,000 kg) or more loaded at one facility must get its own placard.</li>'+
+ '<li><b>Subsidiary placards (172.505):</b> inhalation hazard materials need POISON INHALATION HAZARD or POISON GAS; materials with a dangerous-when-wet subsidiary need DANGEROUS WHEN WET; 1,001 lb+ of uranium hexafluoride needs CORROSIVE and POISON too.</li>'+
+ '<li>Placards go on <b>each side and each end</b>.</li></ul>'+
+ '<b>Exceptions (172.504(f))</b><ul style="padding-left:18px;margin:6px 0"><li>Multiple explosive divisions: show only the lowest division.</li><li>FLAMMABLE may replace COMBUSTIBLE on a cargo tank or portable tank.</li><li>No NON-FLAMMABLE GAS placard needed if FLAMMABLE GAS or OXYGEN is displayed.</li><li>No OXIDIZER with EXPLOSIVES 1.1/1.2 (or 1.5 by vehicle).</li><li>Domestic: no PIH placard if POISON GAS shown; no POISON placard if PIH or POISON GAS shown.</li><li>Domestic: CLASS 9 placard not required (bulk still shows the ID number).</li><li>1.4S not required to be labeled 1.4S needs no placard.</li></ul></div>';
+ h+='<h3>Table 1 &ndash; any quantity</h3><div class="card grid">'+t1.map(function(p){return '<div class="plc" onclick="plInfo(\''+p+'\')">'+placardSVG(p,92)+'<div>'+esc(p)+'</div></div>'}).join('')+'</div>';
+ h+='<h3>Table 2 &ndash; 1,001 lb aggregate</h3><div class="card grid">'+t2.map(function(p){return '<div class="plc" onclick="plInfo(\''+p+'\')">'+placardSVG(p,92)+'<div>'+esc(p)+'</div></div>'}).join('')+'</div><div class="mut small">Tap a placard for details. Placard art is simplified; real placard specs are in 172.519&ndash;172.560.</div>';
+ var K=HZ.SEG_KEYS,lab={'1.1/1.2':'1.1 1.2','2.3A':'2.3 A','2.3B':'2.3 B','6.1A':'6.1 *','8L':'8 liq'};
+ h+='<h3>Segregation table (177.848)</h3><div class="card"><div class="scroll"><table class="segt"><tr><th></th>'+K.map(function(k){return '<th>'+(lab[k]||k)+'</th>'}).join('')+'</tr>'+K.map(function(r){return '<tr><th>'+(lab[r]||r)+'</th>'+HZ.SEG_ROWS[r].map(function(v){return '<td class="'+(v==='*'?'S':v)+'">'+v+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>'+
+ '<div class="small" style="margin-top:8px"><span class="pill x">X</span> may not be loaded together &nbsp;<span class="pill o">O</span> only if separated so leaks can\'t mix &nbsp; blank = no restriction &nbsp; * = explosives compatibility table<br>2.3 A/B = poison gas hazard zone A/B. 6.1 * = poisonous liquids PG I Zone A only. 8 liq = corrosive liquids only.<br>Note A: ammonium nitrate (UN1942) and AN fertilizer may go with 1.1 or 1.5 unless 177.835(c) prohibits.<br>Also (177.848(c)): no cyanides with acids if they could make hydrogen cyanide; Class 8 liquids never above or next to Class 4 or 5 materials.</div></div>';
+ h+='<h3>Explosives compatibility (177.848(f))</h3><div class="card"><div class="scroll"><table class="segt"><tr><th></th>'+HZ.CG.map(function(g){return '<th>'+g+'</th>'}).join('')+'</tr>'+HZ.CG.map(function(r){return '<tr><th>'+r+'</th>'+HZ.CG_ROWS[r].map(function(v){return '<td class="'+(v[0]==='X'?'X':v?'O':'')+'">'+v+'</td>'}).join('')+'</tr>'}).join('')+'</table></div><div class="small mut" style="margin-top:6px">1 = group L only with an identical explosive. 2 = C/D/E mix becomes group E. 3 = C/D/E with N becomes group D. 4 = see 177.835(g) for detonators. 5 = 1.4S fireworks not with 1.1/1.2. 6 = group G articles (not fireworks) may ride with C/D/E articles if no explosive substances are aboard.</div></div>';
+ m.innerHTML=h;}
+// ---------- Favorites ----------
+function renderFavs(m){m.innerHTML='<h2 style="margin-top:4px">Favorites</h2>'+(favs.length?'<div class="card" style="padding:0">'+favs.map(function(i){return HMT[i]?resHTML(HMT[i]):''}).join('')+'</div>':'<div class="empty">Tap the &#9733; on any product to save it here.</div>');}
+// ---------- About ----------
+function renderAbout(m){m.innerHTML='<h2 style="margin-top:4px">About Hazmat Helper v1.0</h2><div class="warn"><b>Reference only, not legal advice.</b> Always follow your shipping papers, the shipper\'s instructions and the current Hazardous Materials Regulations (49 CFR Parts 171&ndash;180). If anything here disagrees with them, they control. In an emergency call 911 and the emergency response number on the shipping papers.</div>'+
+ '<div class="card small"><h3 style="margin-top:0">Data sources (built in, works offline)</h3><ul style="padding-left:18px">'+
+ '<li><b>Hazardous Materials Table:</b> '+esc(M.hmtSource)+'. '+M.rows.toLocaleString()+' table rows, '+M.ids.toLocaleString()+' unique UN/NA numbers.</li>'+
+ '<li><b>ERG guides:</b> '+esc(M.ergSource)+'. '+M.ergIds.toLocaleString()+' ID numbers mapped, '+M.guides+' guide titles, '+M.green+' IDs in green Table 1.</li>'+
+ '<li><b>Segregation:</b> '+esc(M.segSource)+'.</li><li><b>Placarding:</b> '+esc(M.plcSource)+'.</li></ul>'+
+ '<p>Data as of Oct 23, 2026. Regulations change; check <a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-I/subchapter-C" target="_blank">ecfr.gov</a> for the latest.</p>'+
+ '<h3>Good to know</h3><ul style="padding-left:18px"><li>Load Check assumes highway transport. Class 8 rules apply to liquids, the 6.1 row to PG I Zone A liquids, 2.3 rows to Zone A/B gases. Check the boxes on each item.</li><li>Corrosive liquid/solid is guessed from the packaging section; change it if it\'s wrong.</li><li>Hazardous substance (RQ), marine pollutant and hazardous waste rules are not covered.</li><li>Placard pictures are simplified drawings.</li></ul></div><div class="mut small" style="text-align:center">Built by Tavi for Trucker Chris &middot; v1.0</div>';}
+// ---------- misc ----------
+function toast(t){var d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#ff8a1f;color:#1a1205;padding:8px 14px;border-radius:10px;font-weight:600;z-index:30';document.body.appendChild(d);setTimeout(function(){d.remove()},1400);}
+function showModal(h){document.getElementById('mbox').innerHTML=h+'<div style="text-align:right;margin-top:10px"><button class="btn sec" onclick="closeModal()">Close</button></div>';document.getElementById('modal').style.display='flex';}
+document.getElementById('modal').onclick=function(ev){if(ev.target.id==='modal')closeModal();};
+function plInfo(p){showModal('<div class="row"><div style="flex:none">'+placardSVG(p,110)+'</div><div><b>'+esc(p)+'</b><div class="small" style="margin-top:6px">'+esc(PLDESC[p]||'')+'</div></div></div>');}
+function askClear(){showModal('<b>Clear the whole load?</b><div style="margin-top:10px"><button class="btn" onclick="load=[];store.set(\'load\',load);closeModal();render()">Yes, clear it</button></div>');}
+function closeModal(){var m=document.getElementById('modal');if(m.style.display==='flex'){m.style.display='none';return true}return false;}
+render();
+</script></body></html>
