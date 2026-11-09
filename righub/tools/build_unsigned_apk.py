@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build an unsigned Rig Hub 1.8.0 APK.
+"""Build an unsigned Rig Hub 1.9.0 APK.
 
 The 1.5.1 classes.dex is the source of MainActivity, MileService and MileStore.
 Only HubActivity is recompiled. The binary manifest is the 1.5.1 manifest with
-versionCode 13 and versionName 1.8.0 written in place, so resource ids stay
+versionCode 15 and versionName 1.9.0 written in place, so resource ids stay
 0x7f010000 ic_launcher, 0x7f010001 ic_stat, 0x7f020000 app_name, 0x7f030000 Theme.RigHub.
 
 This script does not create a keystore and does not sign the APK.
@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ANDROID = ROOT / "android"
 DIST = ROOT / "dist"
 TOOLS = Path(os.environ.get("RIGHUB_TOOLS", ROOT / ".toolcache"))
-VER_CODE = 14
-VER_NAME = "1.8.0"
-UA = "RigHub/1.8.0 (trucker.chris02@gmail.com)"
+VER_CODE = 15
+VER_NAME = "1.9.0"
+UA = "RigHub/1.9.0 (trucker.chris02@gmail.com)"
 
 DOWNLOADS = {
     "android.jar": "https://raw.githubusercontent.com/Sable/android-platforms/master/android-34/android.jar",
@@ -191,8 +191,8 @@ def build():
         dex[12:32] = hashlib.sha1(dex[32:]).digest()
         dex[8:12] = struct.pack("<I", zlib.adler32(dex[12:]) & 0xFFFFFFFF)
         dex = bytes(dex)
-        if b"file:///android_asset/hazmat/index.html" not in dex or b"file:///android_asset/inspection/index.html" not in dex or b"file:///android_asset/rigcare/index.html" not in dex:
-            raise SystemExit("merged dex is missing Hazmat or Inspection")
+        if b"file:///android_asset/hazmat/index.html" not in dex or b"file:///android_asset/inspection/index.html" not in dex or b"file:///android_asset/rigcare/index.html" not in dex or b"file:///android_asset/stores/index.html" not in dex:
+            raise SystemExit("merged dex is missing Hazmat, Inspection, RigCare, or Store Finder")
         if b"file:///android_asset/tandem/index.html" not in dex:
             raise SystemExit("merged dex is missing the Tandem Slide asset URL")
         if b"Trip Logger needs location access" not in dex:
@@ -221,6 +221,9 @@ def build():
             extras.append("assets/inspection/index.html")
             for rel in (ANDROID / "assets/rigcare").iterdir():
                 extras.append("assets/rigcare/" + rel.name)
+            for rel in (ANDROID / "assets/stores").iterdir():
+                if rel.is_file():
+                    extras.append("assets/stores/" + rel.name)
             for extra in extras:
                 if extra in seen:
                     raise SystemExit("base apk already contains " + extra)
@@ -238,7 +241,7 @@ def build():
                 items[by_name[rel]] = (rel, (ANDROID / rel).read_bytes(), zipfile.ZIP_DEFLATED)
         else:
             raise SystemExit("Set RIGHUB_BASE_APK to the published RigHub-v1.5.1.apk so resource bytes stay unchanged")
-        out = DIST / "RigHub-v1.8.0-unsigned.apk"
+        out = DIST / "RigHub-v1.9.0-unsigned.apk"
         write_apk(out, items)
     verify(out)
     print(out)
@@ -255,6 +258,8 @@ def verify(path: Path):
                 "assets/hazmat/engine.js", "assets/hazmat/index.html", "assets/hazmat/data.js",
                 "assets/inspection/index.html",
                 "assets/rigcare/index.html", "assets/rigcare/logic.js",
+                "assets/stores/index.html", "assets/stores/app.js", "assets/stores/navlink.js",
+                "assets/stores/us-stores.js", "assets/stores/dcs.js", "assets/stores/stores.js",
                 "assets/www/index.html", "assets/rignav/index.html", "assets/weather/index.html"]:
         if req not in names:
             raise SystemExit("missing " + req)

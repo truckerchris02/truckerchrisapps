@@ -1,0 +1,30 @@
+app-id: com.truckerchris.StoreFinder
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: storefinder
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --share=network
+  - --device=dri
+modules:
+  - name: storefinder
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 flatpak/storefinder.py /app/bin/storefinder
+      - mkdir -p /app/share/storefinder && cp -a www/. /app/share/storefinder/
+      - install -Dm644 flatpak/com.truckerchris.StoreFinder.desktop /app/share/applications/com.truckerchris.StoreFinder.desktop
+      - install -Dm644 flatpak/com.truckerchris.StoreFinder.metainfo.xml /app/share/metainfo/com.truckerchris.StoreFinder.metainfo.xml
+      - for n in 16 24 32 48 64 128 256 512; do install -Dm644 flatpak/icons/icon$n.png /app/share/icons/hicolor/${n}x${n}/apps/com.truckerchris.StoreFinder.png; done
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .toolcache
+          - dist
+          - data/raw
+          - flatpak/build
+          - flatpak/repo
+          - flatpak/.flatpak-builder

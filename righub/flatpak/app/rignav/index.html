@@ -169,7 +169,7 @@ button.gatehere{border-color:#2fbf5b !important;color:#7dff9c}
 <!-- Browse mode UI -->
 <div id="browse">
   <div id="top">
-    <input id="q" type="search" placeholder="Where to? (address, business, city)" autocomplete="off" enterkeyhint="search">
+    <input id="q" type="search" placeholder="Where to? (address, Walmart #, city)" autocomplete="off" enterkeyhint="search">
     <button id="btnSettings" aria-label="Settings">⚙</button>
   </div>
   <div id="sugg" class="hidden"></div>
@@ -193,7 +193,7 @@ button.gatehere{border-color:#2fbf5b !important;color:#7dff9c}
         <button class="go" id="btnStart">▶ Start</button>
       </div>
     </div>
-    <div id="idleHint" class="prof">Search a destination, or long-press the map to drop a pin. Truck routing only.</div>
+    <div id="idleHint" class="prof">Search a destination, including a Walmart store or DC, or long-press the map to drop a pin. Truck routing only.</div>
   </div>
 </div>
 
@@ -248,6 +248,7 @@ button.gatehere{border-color:#2fbf5b !important;color:#7dff9c}
 <!-- Settings -->
 <div id="settings" class="overlay hidden">
   <h1>Settings</h1>
+  <p id="handedDest" class="hidden" style="color:#ffb000;font-weight:700"></p>
   <h2>HERE API key</h2>
   <p>Get a free key at platform.here.com (Access Manager → Apps → API keys). The key is stored only on this computer.</p>
   <label for="apiKey">API key</label>
@@ -328,7 +329,7 @@ button.gatehere{border-color:#2fbf5b !important;color:#7dff9c}
   <p style="font-size:15px">When the map sends you to the wrong entrance, tap "Set truck entrance" on the route card. Rig Nav remembers it for that address.</p>
   <div id="gateList"></div>
   <button class="ghost" id="btnShowDisclaimer" style="width:100%;margin-top:10px">Show safety notice</button>
-  <p style="font-size:14px">Rig Nav v1.5.0 · <a href="../index.html" style="color:#ffb000">Rig Hub v1.8.0</a> · Maps &amp; routing © HERE</p>
+  <p style="font-size:14px">Rig Nav v1.5.0 · <a href="../index.html" style="color:#ffb000">Rig Hub v1.9.0</a> · Maps &amp; routing © HERE</p>
   <p style="font-size:12px;opacity:.7">1.0.0 truck routing · 1.1.0 truck stops, weigh stations · 1.2.0 favorites, recents · 1.2.x traffic, closures, stoplights, quick buttons · 1.3.0 closure-distance, stoplight and reroute fixes · 1.4.0 saved truck entrances · 1.4.1 CAT scales split from DOT weigh stations · 1.4.2 Reroute button · 1.5.0 one-tap 🚚 Gate button saves the entrance where you're parked</p>
 
   <div class="footer-btns">
@@ -517,7 +518,7 @@ function openSettings() {
   $("mapStyle").value = cfg.mapStyle; $("truckLayer").checked = cfg.truckLayer; $("trafficOn").checked = cfg.traffic; $("stoplightsOn").checked = cfg.stoplights; $("voiceOn").checked = cfg.voice; $("weighAlert").checked = cfg.weighAlert;
   $("testres").textContent = ""; $("testres").className = "";
   renderGateList();
-  $("btnCancelSettings").classList.toggle("hidden", !cfg.key);
+  $("btnCancelSettings").classList.toggle("hidden", !cfg.key && !dest);
   showOverlay("settings");
 }
 function readProfileFromForm() {
@@ -677,45 +678,128 @@ function setTruckRot(b) { var el = $("truckRot"); if (el) el.style.transform = "
 /* ================= Search ================= */
 var suggTimer = null, suggSeq = 0;
 function atParam() { return pos ? pos.lat.toFixed(5) + "," + pos.lng.toFixed(5) : (map ? map.getCenter().lat.toFixed(5) + "," + map.getCenter().lng.toFixed(5) : "36.03,-95.69"); }
+var wmItems = [], wmLoading = false;
+function storeAsset(name) {
+  if (location.protocol === "file:" && String(location.pathname || "").indexOf("/android_asset/") >= 0) return "file:///android_asset/stores/" + name;
+  return "../stores/" + name;
+}
+function ensureStoreData(done) {
+  if (window.RigHubStoreNav && window.US_STORES) { done(); return; }
+  if (wmLoading) { (ensureStoreData.waiters = ensureStoreData.waiters || []).push(done); return; }
+  wmLoading = true;
+  ensureStoreData.waiters = [done];
+  function finish() {
+    wmLoading = false;
+    var waiters = ensureStoreData.waiters || [];
+    ensureStoreData.waiters = [];
+    waiters.forEach(function (fn) { fn(); });
+  }
+  function load(src, next) {
+    var s = document.createElement("script");
+    s.src = src;
+    s.onload = next;
+    s.onerror = finish;
+    document.head.appendChild(s);
+  }
+  load(storeAsset("us-stores.js"), function () {
+    load(storeAsset("dcs.js"), function () {
+      load(storeAsset("app.js"), function () {
+        load(storeAsset("navlink.js"), finish);
+      });
+    });
+  });
+}
+/* Examples that must resolve from the bundled list: "Walmart 59" and "DC 6006". */
+function walmartHits(q) {
+  if (!window.RigHubStoreNav || !window.US_STORES) return [];
+  var catalog = US_STORES.concat(window.DC_SEED || []);
+  var search = window.StoreFinder ? StoreFinder.searchCatalog : null;
+  return RigHubStoreNav.catalogHits(catalog, q, search).slice(0, 8);
+}
+function walmartSuggHtml(q) {
+  wmItems = walmartHits(q);
+  if (!wmItems.length) return "";
+  return wmItems.map(function (rec, i) {
+    var body = RigHubStoreNav.labelOf(rec);
+    var kind = rec.type === "DC" ? "Walmart DC" : "Walmart";
+    var num = rec.storeNumber ? " #" + esc(rec.storeNumber) : "";
+    return '<div data-wm="' + i + '"><b>' + esc(body.title) + "</b><small>" + esc(kind + num + (body.address ? " · " + body.address : "")) + "</small></div>";
+  }).join("");
+}
+function applyWalmartHit(rec, label) {
+  var hop = RigHubStoreNav.handoff(rec);
+  if (!hop.ok) return false;
+  $("sugg").classList.add("hidden");
+  $("q").blur();
+  if (hop.mode === "point") setDestination(hop.destination.lat, hop.destination.lng, label || hop.destination.name);
+  else geocodeAddress(hop.destination.address, label || hop.destination.name);
+  return true;
+}
 function onSearchInput() {
   var q = $("q").value.trim();
   clearTimeout(suggTimer);
-  if (!q.length) { suggSeq++; renderQuickList(); return; }
-  if (q.length < 3) { suggSeq++; var fh = favMatchHtml(q); if (fh) { $("sugg").innerHTML = fh; $("sugg").classList.remove("hidden"); } else $("sugg").classList.add("hidden"); return; }
-  suggTimer = setTimeout(function () { autosuggest(q); }, 350);
+  if (!q.length) { suggSeq++; wmItems = []; renderQuickList(); return; }
+  if (q.length < 3 && !/\d/.test(q)) { suggSeq++; var fh = favMatchHtml(q); if (fh) { $("sugg").innerHTML = fh; $("sugg").classList.remove("hidden"); } else $("sugg").classList.add("hidden"); return; }
+  suggTimer = setTimeout(function () { autosuggest(q); }, 250);
 }
 function autosuggest(q) {
-  if (!cfg.key) { openSettings(); return; }
   var my = ++suggSeq;
-  httpGet("https://autosuggest.search.hereapi.com/v1/autosuggest?" + qs({ q: q, at: atParam(), limit: 7, lang: "en-US", apiKey: cfg.key })).then(function (res) {
+  ensureStoreData(function () {
     if (my !== suggSeq) return;
-    if (res.status !== 200) { renderSugg([], apiErrorText(res)); return; }
-    var items = ((res.json && res.json.items) || []).filter(function (it) { return it.position; });
-    renderSugg(items.map(function (it) {
-      return { title: it.title, sub: (it.address && it.address.label) || "", dist: it.distance, lat: it.position.lat, lng: it.position.lng };
-    }));
+    if (!cfg.key) {
+      var wh = walmartSuggHtml(q);
+      var fh = favMatchHtml(q);
+      if (wh || fh) { $("sugg").innerHTML = fh + wh; $("sugg").classList.remove("hidden"); return; }
+      openSettings();
+      return;
+    }
+    httpGet("https://autosuggest.search.hereapi.com/v1/autosuggest?" + qs({ q: q, at: atParam(), limit: 7, lang: "en-US", apiKey: cfg.key })).then(function (res) {
+      if (my !== suggSeq) return;
+      if (res.status !== 200) { renderSugg([], apiErrorText(res)); return; }
+      var items = ((res.json && res.json.items) || []).filter(function (it) { return it.position; });
+      renderSugg(items.map(function (it) {
+        return { title: it.title, sub: (it.address && it.address.label) || "", dist: it.distance, lat: it.position.lat, lng: it.position.lng };
+      }));
+    });
   });
 }
-function geocode(q) {
-  var m = q.match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
-  if (m) { setDestination(+m[1], +m[3], q); return; }
-  if (!cfg.key) { openSettings(); return; }
+function geocodeAddress(q, label) {
+  var m = String(q || "").match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
+  if (m) { setDestination(+m[1], +m[3], label || q); return; }
+  if (!cfg.key) {
+    $("q").value = label || q;
+    $("status").textContent = label ? ("Destination: " + label) : "A HERE key is required to search.";
+    if (label && $("handedDest")) { $("handedDest").textContent = "Destination: " + label; $("handedDest").classList.remove("hidden"); }
+    openSettings();
+    if (label) $("btnCancelSettings").classList.remove("hidden");
+    return;
+  }
   $("status").textContent = "Searching…";
   httpGet("https://geocode.search.hereapi.com/v1/geocode?" + qs({ q: q, at: atParam(), limit: 7, lang: "en-US", apiKey: cfg.key })).then(function (res) {
     if (res.status !== 200) { renderSugg([], apiErrorText(res)); $("status").textContent = "Search failed"; return; }
     var items = (res.json && res.json.items) || [];
     $("status").textContent = items.length ? "Pick a result" : "No results";
-    if (items.length === 1) { var it = items[0]; setDestination(it.position.lat, it.position.lng, it.address && it.address.label || it.title); return; }
+    if (items.length === 1) { var it = items[0]; setDestination(it.position.lat, it.position.lng, label || (it.address && it.address.label) || it.title); return; }
     renderSugg(items.map(function (it) { return { title: it.title, sub: (it.address && it.address.label) || "", dist: it.distance, lat: it.position.lat, lng: it.position.lng }; }));
+  });
+}
+function geocode(q, label) {
+  ensureStoreData(function () {
+    var hits = walmartHits(q);
+    var exact = window.RigHubStoreNav && RigHubStoreNav.numberFrom(q);
+    if (hits.length === 1 && (exact || /^#?\d{1,5}$/.test(q))) { applyWalmartHit(hits[0], label); return; }
+    if (!cfg.key && hits.length) { renderSugg([]); $("status").textContent = "Pick a Walmart match"; return; }
+    geocodeAddress(q, label);
   });
 }
 var suggItems = [];
 function renderSugg(items, err) {
   var box = $("sugg"); suggItems = items;
   var fh = favMatchHtml($("q").value);
-  if (err) { box.innerHTML = fh + '<div class="err"><b>' + esc(err) + "</b></div>"; box.classList.remove("hidden"); return; }
-  if (!items.length) { box.innerHTML = fh + "<div><small>No matches</small></div>"; box.classList.remove("hidden"); return; }
-  box.innerHTML = fh + items.map(function (it, i) {
+  var wh = walmartSuggHtml($("q").value.trim());
+  if (err) { box.innerHTML = fh + wh + '<div class="err"><b>' + esc(err) + "</b></div>"; box.classList.remove("hidden"); return; }
+  if (!items.length && !wh) { box.innerHTML = fh + "<div><small>No matches</small></div>"; box.classList.remove("hidden"); return; }
+  box.innerHTML = fh + wh + items.map(function (it, i) {
     var d = it.dist != null ? " · " + fmtDist(it.dist) : "";
     return '<div data-i="' + i + '"><b>' + esc(it.title) + "</b><small>" + esc(it.sub !== it.title ? it.sub : "") + d + "</small></div>";
   }).join("");
@@ -724,6 +808,8 @@ function renderSugg(items, err) {
 $("sugg").addEventListener("click", function (e) {
   if (favLongPressFired && Date.now() - favLongPressFired < 900) { favLongPressFired = 0; return; }
   if (handleQuickClick(e)) return;
+  var wmEl = e.target.closest("[data-wm]");
+  if (wmEl) { var rec = wmItems[+wmEl.getAttribute("data-wm")]; if (rec) applyWalmartHit(rec); return; }
   var el = e.target.closest("[data-i]"); if (!el) return;
   var it = suggItems[+el.getAttribute("data-i")];
   $("sugg").classList.add("hidden"); $("q").blur();
@@ -818,7 +904,14 @@ function setDestination(lat, lng, name, opts) {
 }
 function planRoute() {
   if (!dest) return;
-  if (!cfg.key) { openSettings(); return; }
+  if (!cfg.key) {
+    $("routePanel").classList.remove("hidden"); $("idleHint").classList.add("hidden");
+    $("destName").textContent = dest.name;
+    $("status").textContent = "Destination set. Add a HERE key to calculate the truck route.";
+    if ($("handedDest")) { $("handedDest").textContent = "Destination: " + dest.name; $("handedDest").classList.remove("hidden"); }
+    openSettings();
+    return;
+  }
   if (!pos) { $("status").textContent = "Waiting for GPS before routing…"; toast("Waiting for a GPS fix — route will be calculated when it arrives."); planRoute.pending = true; return; }
   planRoute.pending = false;
   $("status").textContent = "Calculating truck route…";
@@ -1854,7 +1947,7 @@ window.RN_fav = { list: function () { return favs; }, recents: function () { ret
 /* ================= Overlays / wiring ================= */
 function showOverlay(id) { $(id).classList.remove("hidden"); }
 function hideOverlay(id) { $(id).classList.add("hidden"); }
-$("btnAgree").onclick = function () { LS.setItem("rn_disclaimer", "1"); hideOverlay("disclaimer"); if (!cfg.key) openSettings(); };
+$("btnAgree").onclick = function () { LS.setItem("rn_disclaimer", "1"); hideOverlay("disclaimer"); if (window.__righubPendingBoot) { window.__righubPendingBoot = false; consumeIncomingDest(); return; } if (!cfg.key) openSettings(); };
 $("btnSettings").onclick = openSettings;
 $("btnShowDisclaimer").onclick = function () { showOverlay("disclaimer"); };
 $("btnShowKey").onclick = function () { var k = $("apiKey"); k.type = k.type === "password" ? "text" : "password"; this.textContent = k.type === "password" ? "Show" : "Hide"; };
@@ -1930,8 +2023,45 @@ initMap();
 startLocation();
 var origHandle = handleFix;
 handleFix = function () { origHandle.apply(null, arguments); if (planRoute.pending && pos) planRoute(); if (cfg.stopIcons && !refreshStopIcons.booted && pos) { refreshStopIcons.booted = true; refreshStopIcons(); } };
-if (!LS.getItem("rn_disclaimer")) showOverlay("disclaimer");
-else if (!cfg.key) openSettings();
+window.__righubSetDestination = function (lat, lng, name, addressQuery) {
+  var nlat = Number(lat), nlng = Number(lng), label = name ? String(name) : "";
+  function go(left) {
+    if (typeof setDestination !== "function" || typeof map === "undefined" || !map) {
+      if (left > 0) setTimeout(function () { go(left - 1); }, 200);
+      return;
+    }
+    if (isFinite(nlat) && isFinite(nlng) && !(nlat === 0 && nlng === 0)) { setDestination(nlat, nlng, label || "Destination"); return; }
+    if (addressQuery) { $("q").value = label || addressQuery; geocodeAddress(String(addressQuery), label || ""); }
+  }
+  go(50);
+};
+function hashParam(name) {
+  var parts = String(location.hash || "").replace(/^#/, "").split("&");
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].indexOf(name + "=") === 0) return decodeURIComponent(parts[i].slice(name.length + 1));
+  }
+  return "";
+}
+function consumeIncomingDest() {
+  var destSpec = hashParam("dest");
+  if (destSpec) {
+    var c1 = destSpec.indexOf(","), c2 = c1 >= 0 ? destSpec.indexOf(",", c1 + 1) : -1;
+    if (c2 > c1) { window.__righubSetDestination(Number(destSpec.slice(0, c1)), Number(destSpec.slice(c1 + 1, c2)), destSpec.slice(c2 + 1), null); return; }
+  }
+  var addr = hashParam("addr");
+  if (addr) { window.__righubSetDestination(null, null, hashParam("name"), addr); return; }
+  try {
+    var raw = localStorage.getItem("righub_nav_dest");
+    if (!raw) return;
+    var saved = JSON.parse(raw);
+    localStorage.removeItem("righub_nav_dest");
+    if (!saved || (saved.t && Date.now() - saved.t > 120000)) return;
+    if (saved.mode === "point" && isFinite(Number(saved.lat)) && isFinite(Number(saved.lng))) window.__righubSetDestination(Number(saved.lat), Number(saved.lng), saved.name || "", null);
+    else if (saved.address) window.__righubSetDestination(null, null, saved.name || "", saved.address);
+  } catch (e) {}
+}
+if (!LS.getItem("rn_disclaimer")) { showOverlay("disclaimer"); window.__righubPendingBoot = true; }
+else { if (!cfg.key) openSettings(); consumeIncomingDest(); }
 </script>
 <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(function(){});if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});</script>
 </body>

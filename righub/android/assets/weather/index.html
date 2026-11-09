@@ -44,10 +44,10 @@ select option{background:var(--card2);color:var(--t)}input[type=checkbox]{width:
 <section id="radar"><div id="map"></div><div class="leg">Radar: <span style="color:#8cf">light</span> → <span style="color:#ff0">mod</span> → <span style="color:#f33">heavy</span><br><span style="color:#f33">■</span> warning <span style="color:#f90">■</span> watch</div>
 <div id="rctl"><button id="play" class="y">▶</button><span id="rtime">--</span><input id="rslide" type="range" min="0" max="0" value="0"><span class="mut">Opacity</span><input id="op" type="range" min="20" max="100" value="70" style="max-width:90px"><button onclick="centerMe()">◎</button></div></section>
 <section id="settings"><div id="setc"></div>
-<div class="card mut">Rig Hub v1.8.0 Weather (StormTrack) · Data: National Weather Service (U.S. only) · Radar: RainViewer · Map © Esri, OpenStreetMap.<br>Not a replacement for official warnings, NOAA Weather Radio, or common sense.</div></section>
+<div class="card mut">Rig Hub v1.9.0 Weather (StormTrack) · Data: National Weather Service (U.S. only) · Radar: RainViewer · Map © Esri, OpenStreetMap.<br>Not a replacement for official warnings, NOAA Weather Radio, or common sense.</div></section>
 </main>
 <script>
-const VER='1.8.0',A=window.AndroidBridge,DESK=!A,TZ='America/Chicago';
+const VER='1.9.0',A=window.AndroidBridge,DESK=!A,TZ='America/Chicago';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let seq=0,cb={};window.__got=(id,ok,b)=>{const c=cb[id];delete cb[id];if(!c)return;if(ok){try{c.res(JSON.parse(b))}catch(e){c.res(b)}}else c.rej(new Error(b))};
 const call=(fn,...a)=>new Promise((res,rej)=>{const id=++seq;cb[id]={res,rej};A[fn](id,...a)});
