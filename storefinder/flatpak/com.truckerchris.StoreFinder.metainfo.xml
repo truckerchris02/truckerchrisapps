@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.truckerchris.StoreFinder</id>
+  <name>Walmart Store Finder</name>
+  <summary>Nationwide Walmart store search and a saved distribution-center list</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <developer id="com.trucker"><name>Trucker Chris</name></developer>
+  <description>
+    <p>Desktop version of Walmart Store Finder. Search the bundled United States store list by store number, city, state, or ZIP, save a result, and keep your own stores and distribution centers. Saved entries stay on this computer. Store locations are from OpenStreetMap contributors under the Open Database License. The starter distribution-center list also uses the ABFBA 2026 public warehouse list. Phone numbers and street addresses that were not in those sources are left blank.</p>
+  </description>
+  <icon type="stock">com.truckerchris.StoreFinder</icon>
+  <launchable type="desktop-id">com.truckerchris.StoreFinder.desktop</launchable>
+  <categories><category>Utility</category></categories>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.2.0" date="2026-11-09">
+      <description>
+        <p>Nationwide offline search, a starter distribution-center list, and one-tap save. Lists saved in version 1.1.8 stay in place.</p>
+      </description>
+    </release>
+  </releases>
+</component>
