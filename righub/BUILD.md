@@ -81,4 +81,8 @@ Leave every older release, including `rig-hub-v1.5.1` and `tandem-slide-v1.0`, w
 
 ## iPhone web
 
-The iPhone Rig Hub site is https://github.com/truckerchris02/truckerchriswebapps (`rig-hub/`), published at https://truckerchris02.github.io/truckerchriswebapps/rig-hub/ . Rig Hub 1.9.0 updates that site from v1.5 (Rig Nav, Trip Logger, and Weather) to the current hub: Tandem Slide, Hazmat Helper, Inspection, RigCare, and Store Finder, with the same Navigate in Rig Nav handoff. The service worker cache name is `rig-hub-v1.9.0`. Trip Logger pay logic is the copy already in this repo. Do not publish the `rig-hub-v1.9.0` release from this change.
+The iPhone Rig Hub site is https://github.com/truckerchris02/truckerchriswebapps (`rig-hub/`), published at https://truckerchris02.github.io/truckerchriswebapps/rig-hub/ . It was still v1.5 (Rig Nav, Trip Logger, and Weather). Rig Hub 1.9.0 is ready to replace that folder.
+
+`righub/iphone/index.html`, `righub/iphone/manifest.webmanifest`, and `righub/iphone/sw.js` are the iPhone home page, manifest, and service worker (`rig-hub-v1.9.0`). Every other page is the desktop copy under `righub/flatpak/app/`, with two wording changes for the phone: the HERE key sentence says "this phone", and the RigCare card says "Saved in this browser." The hub list on that repo's home page should say Rig Hub v1.9.0 and mention Tandem Slide, Hazmat Helper, Inspection, RigCare, and Walmart Store Finder. It stays in All-in-One Hub Apps, which that page sorts A to Z.
+
+This agent could not push that update. GitHub denied cursor[bot] write access to truckerchriswebapps (HTTP 403). Trip Logger pay logic is unchanged. Do not publish the `rig-hub-v1.9.0` release from this change.
