@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">Rig Hub</string>
+<style name="Theme.RigHub" parent="@android:style/Theme.Material.NoActionBar"><item name="android:windowBackground">#ff0b0e13</item><item name="android:statusBarColor">#ff0b0e13</item><item name="android:navigationBarColor">#ff11161f</item></style></resources>

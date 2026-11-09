@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14171c"><title>High Mile Tandem Slide v1.0</title>
+<!--PWA-->
+<style>
+:root{color-scheme:dark;--bg:#14171c;--card:#1e232b;--card2:#262c36;--tx:#e9edf2;--mut:#9aa5b4;--acc:#ff8a1f;--x:#e5484d;--o:#f5b625;--ok:#3fb950;--bd:#323a46}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#101318;border-bottom:1px solid var(--bd);padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px}
+header img{width:34px;height:34px;border-radius:8px}
+header h1{font-size:18px;margin:0;flex:1;line-height:1.15}header h1 span{display:block;color:var(--acc);font-size:11px;letter-spacing:.12em;font-weight:700}
+.ver{color:var(--mut);font-size:12px;border:1px solid var(--bd);border-radius:999px;padding:2px 8px}
+main{max-width:640px;margin:0 auto;padding:12px 12px calc(40px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:10px 0}
+.card h2{font-size:14px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}label b{color:var(--tx);font-weight:600}
+.lim{float:right;font-size:12px;color:#6f7a89}
+input,select{width:100%;background:#0f1216!important;color:#e9edf2!important;border:1px solid #3a4452;border-radius:10px;padding:12px;font-size:18px;outline:none;-webkit-appearance:none;appearance:none;caret-color:var(--acc)}
+input:focus,select:focus{border-color:var(--acc)}input::placeholder{color:#5f6a79}
+.seg{display:flex;gap:8px}.seg button{flex:1;background:#0f1216;color:var(--tx);border:1px solid #3a4452;border-radius:10px;padding:11px;font-size:15px;cursor:pointer}
+.seg button.on{background:var(--acc);border-color:var(--acc);color:#1a1205;font-weight:700}
+.btns{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;background:var(--acc);color:#1a1205;border:0;border-radius:10px;padding:13px;font-weight:700;font-size:16px;cursor:pointer}
+.btn.sec{flex:0 0 auto;background:var(--card2);color:var(--tx);border:1px solid var(--bd);font-weight:600}
+.err{color:#ff8f92;margin-top:10px;display:none}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.stat{background:var(--card2);border-radius:10px;padding:8px 4px;border:1px solid var(--bd)}.stat small{display:block;color:var(--mut);font-size:11px}
+.stat b{font-size:15px}.stat.over{border-color:var(--x)}.stat.over b{color:#ff8f92}
+.al{border-radius:10px;padding:10px 12px;margin:8px 0;font-weight:600}
+.al.bad{background:rgba(229,72,77,.14);border:1px solid rgba(229,72,77,.5);color:#ffb3b5}
+.al.warn{background:rgba(245,182,37,.12);border:1px solid rgba(245,182,37,.5);color:#ffd77a}
+.al.ok{background:rgba(63,185,80,.13);border:1px solid rgba(63,185,80,.5);color:#8ee59b}
+.plan{display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:12px;padding:12px;margin:8px 0;border:1px solid var(--bd)}
+.arrow{font-size:34px;line-height:1;color:var(--acc);min-width:44px;text-align:center}
+.plan .big{font-size:20px;font-weight:800}.plan .big em{color:var(--acc);font-style:normal}
+ul.pl{margin:6px 0 0;padding-left:18px}ul.pl li{margin:4px 0}
+.note{color:var(--mut);font-size:13px;margin-top:10px}
+pre{white-space:pre-wrap;background:#0f1216;border:1px solid var(--bd);border-radius:10px;padding:10px;font-size:12px;color:#c8d0da;overflow:auto;display:none}
+.foot{color:#6f7a89;font-size:12px;text-align:center;margin-top:16px}
+a{color:var(--acc)}
+</style></head><body>
+<header><img src="icon-512.png" alt=""><h1><span>HIGH MILE</span>Tandem Slide</h1><div class="ver">v1.0</div></header>
+<main>
+<div class="card"><h2>CAT scale ticket weights</h2>
+<label for="steer"><b>Steer axle</b> (lbs)<span class="lim">limit 12,000</span></label><input id="steer" inputmode="numeric" placeholder="e.g. 11,800" autocomplete="off">
+<label for="drives"><b>Drive axles</b> (lbs)<span class="lim">limit 34,000</span></label><input id="drives" inputmode="numeric" placeholder="e.g. 34,000" autocomplete="off">
+<label for="tandems"><b>Trailer tandems</b> (lbs)<span class="lim">limit 34,000</span></label><input id="tandems" inputmode="numeric" placeholder="e.g. 33,500" autocomplete="off">
+<label><b>Hole pin spacing</b></label>
+<div class="seg" id="sp"><button data-v="4" class="on">4 inch (~300 lbs/hole)</button><button data-v="6">6 inch (~450 lbs/hole)</button></div>
+<div class="btns"><button class="btn" id="go">Calculate slide</button><button class="btn sec" id="clr">Clear</button></div>
+<div class="err" id="err">Invalid input. Please enter whole numbers for scale weights.</div>
+</div>
+<div id="out"></div>
+<div class="foot">High Mile Tandem Slide v1.0 &middot; Gross limit 80,000 lbs &middot; Works offline &middot; Rule-of-thumb estimate, always re-scale.</div>
+</main>
+<script src="engine.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},spacing=4,K='tandemslide.v1';
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+function setSp(v){spacing=v;[].forEach.call($('sp').children,function(b){b.classList.toggle('on',+b.dataset.v===v);});}
+[].forEach.call($('sp').children,function(b){b.onclick=function(){setSp(+b.dataset.v);if($('out').innerHTML)run();save();};});
+['steer','drives','tandems'].forEach(function(id){var el=$(id);
+  el.addEventListener('blur',function(){var n=TS.parseWeight(el.value);if(n!==null)el.value=TS.fmt(n);save();});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var nx={steer:'drives',drives:'tandems'}[id];if(nx)$(nx).focus();else{el.blur();run();}}});});
+function save(){try{localStorage.setItem(K,JSON.stringify({s:$('steer').value,d:$('drives').value,t:$('tandems').value,sp:spacing}));}catch(e){}}
+function load(){try{var o=JSON.parse(localStorage.getItem(K)||'null');if(o){$('steer').value=o.s||'';$('drives').value=o.d||'';$('tandems').value=o.t||'';setSp(o.sp===6?6:4);}}catch(e){}}
+function stat(n,v,lim){return '<div class="stat'+(lim&&v>lim?' over':'')+'"><small>'+n+'</small><b>'+TS.fmt(v)+'</b></div>';}
+function run(){
+  var s=TS.parseWeight($('steer').value),d=TS.parseWeight($('drives').value),t=TS.parseWeight($('tandems').value);
+  if(s===null||d===null||t===null){$('err').style.display='block';$('out').innerHTML='';return;}
+  $('err').style.display='none';
+  var r=TS.calc(s,d,t,spacing),h='<div class="card"><h2>&#9878;&#65039; CAT scale audit &amp; tandem slide analysis</h2><div class="stats">'+
+    stat('Steer',s,12000)+stat('Drives',d,34000)+stat('Tandems',t,34000)+stat('Gross',r.gross,80000)+'</div>';
+  r.alerts.forEach(function(a){h+='<div class="al '+a.kind+'">'+(a.kind==='ok'?'&#9989; ':'&#9888;&#65039; ')+esc(a.text)+'</div>';});
+  if(r.plan){var p=r.plan,ar=p.dir==='FORWARD'?'&#11013;':(p.dir==='BACK'?'&#10145;':'&#9878;');
+    h+='<h2 style="margin-top:14px">Adjustment plan</h2>';
+    if(p.dir==='NONE')h+='<div class="plan"><div class="arrow">'+ar+'</div><div class="big">'+esc(p.action)+'</div></div>';
+    else{h+='<div class="plan"><div class="arrow">'+ar+'</div><div><div class="big">Slide <em>'+p.dir+'</em> '+p.holes+' hole'+(p.holes===1?'':'s')+'</div><div style="color:var(--mut)">'+(p.dir==='FORWARD'?'toward the cab':'toward the rear doors')+'</div></div></div>'+
+      '<ul class="pl"><li><b>Target Transfer:</b> '+esc(p.target)+'</li><li><b>Action:</b> '+esc(p.action)+'</li><li><b>Expected Result:</b> '+esc(p.expected)+'</li></ul>';}
+    h+='<div class="note">('+esc(p.note)+')</div>';}
+  h+='<div class="btns"><button class="btn sec" id="raw" style="flex:1">Show text report</button></div><pre id="rep">'+esc(r.lines.join('\n').trim().replace(/\*\*/g,''))+'</pre></div>';
+  $('out').innerHTML=h;$('raw').onclick=function(){var p=$('rep');var on=p.style.display==='block';p.style.display=on?'none':'block';this.textContent=on?'Show text report':'Hide text report';};
+  save();setTimeout(function(){$('out').scrollIntoView({behavior:'smooth',block:'start'});},30);
+}
+$('go').onclick=run;
+$('clr').onclick=function(){['steer','drives','tandems'].forEach(function(i){$(i).value='';});$('out').innerHTML='';$('err').style.display='none';save();$('steer').focus();};
+window.__back=function(){if($('out').innerHTML){$('out').innerHTML='';return true;}return false;};
+load();
+/*SW*/
+})();
+</script></body></html>

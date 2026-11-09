@@ -1,2 +1,7 @@
 *.apk
 *.flatpak
+righub/.toolcache/
+righub/dist/
+
+__pycache__/
+*.pyc

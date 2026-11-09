@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="theme-color" content="#e07f2e">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rig Hub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rig Hub Weather</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#0e1412;color:#e7f0ea;font:17px system-ui,sans-serif;padding:calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+a{color:#f0b429}
+h1{font-size:26px;margin:0 0 4px}
+.sub{color:#9aab9f;font-size:14px;margin-bottom:14px}
+.card{background:#18211c;border:1px solid #2a3a30;border-radius:14px;padding:14px;margin:10px 0}
+.big{font-size:56px;font-weight:700;line-height:1}
+button,input{font:inherit}
+button{background:#e07f2e;color:#1b1208;border:0;border-radius:12px;padding:12px 14px;font-weight:700;min-height:48px}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid #3a4a3e;background:#101612;color:#fff;margin:8px 0}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.mut{color:#9aab9f;font-size:14px}
+.err{color:#ffb4a8}
+</style>
+</head>
+<body>
+<p><a href="index.html">‹ Rig Hub</a></p>
+<h1>Weather</h1>
+<p class="sub">Rig Hub v1.8.0 · National Weather Service, United States only. Not a substitute for official warnings.</p>
+<div class="card" id="now">Finding a location…</div>
+<div class="row">
+  <input id="q" placeholder="City or ZIP" enterkeyhint="search">
+  <button id="go" style="flex:none">Set</button>
+</div>
+<p class="mut" id="msg"></p>
+<div id="days"></div>
+<script>
+var LS = {
+  g: function (k) { try { return JSON.parse(localStorage.getItem("rhw_" + k)); } catch (e) { return null; } },
+  s: function (k, v) { try { localStorage.setItem("rhw_" + k, JSON.stringify(v)); } catch (e) {} }
+};
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function get(u) {
+  return fetch(u, { headers: { Accept: "application/geo+json, application/json" } }).then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  });
+}
+function showPlace(loc, note) {
+  var la = (+loc.lat).toFixed(4), lo = (+loc.lon).toFixed(4);
+  document.getElementById("now").textContent = "Loading forecast…";
+  get("https://api.weather.gov/points/" + la + "," + lo).then(function (pt) {
+    var P = pt.properties, rl = P.relativeLocation.properties;
+    return get(P.forecast).then(function (fc) {
+      var periods = (fc.properties && fc.properties.periods) || [];
+      var n = periods[0];
+      if (!n) throw new Error("No forecast");
+      document.getElementById("now").innerHTML = '<div class="mut">' + esc(rl.city) + ", " + esc(rl.state) + (note ? " · " + esc(note) : "") + '</div><div class="big">' + n.temperature + "°</div><div>" + esc(n.shortForecast) + "</div><p>" + esc(n.detailedForecast) + "</p>";
+      document.getElementById("days").innerHTML = periods.slice(1, 8).map(function (p) {
+        return '<div class="card"><b>' + esc(p.name) + "</b> · " + p.temperature + "°<div class=\"mut\">" + esc(p.shortForecast) + "</div></div>";
+      }).join("");
+      document.getElementById("msg").textContent = "";
+    });
+  }).catch(function (e) {
+    document.getElementById("now").innerHTML = '<div class="err">Could not load the forecast. ' + esc(e.message) + "</div>";
+    document.getElementById("msg").textContent = "NWS covers the United States. Try a ZIP code if the guess was outside the country.";
+  });
+}
+function gps() {
+  return new Promise(function (res, rej) {
+    if (!navigator.geolocation) return rej(new Error("no gps"));
+    navigator.geolocation.getCurrentPosition(function (p) {
+      res({ lat: p.coords.latitude, lon: p.coords.longitude, src: "GPS" });
+    }, function () { rej(new Error("denied")); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 120000 });
+  });
+}
+function search() {
+  var q = document.getElementById("q").value.trim();
+  if (!q) return;
+  document.getElementById("msg").textContent = "Searching…";
+  var req = /^\d{5}$/.test(q)
+    ? fetch("https://api.zippopotam.us/us/" + q).then(function (r) { if (!r.ok) throw new Error("ZIP"); return r.json(); }).then(function (z) {
+        var p = z.places && z.places[0]; if (!p) throw new Error("ZIP");
+        return { lat: +p.latitude, lon: +p.longitude };
+      })
+    : fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&countryCode=US&name=" + encodeURIComponent(q.split(",")[0])).then(function (r) { return r.json(); }).then(function (g) {
+        if (!g.results || !g.results[0]) throw new Error("place");
+        return { lat: g.results[0].latitude, lon: g.results[0].longitude };
+      });
+  req.then(function (loc) { loc.src = "manual"; LS.s("loc", loc); showPlace(loc, "saved place"); }).catch(function () {
+    document.getElementById("msg").textContent = "Couldn't find that place. Try a 5-digit ZIP.";
+  });
+}
+document.getElementById("go").onclick = search;
+document.getElementById("q").addEventListener("keydown", function (e) { if (e.key === "Enter") search(); });
+var saved = LS.g("loc");
+gps().then(function (loc) { LS.s("loc", loc); showPlace(loc, "GPS"); }).catch(function () {
+  if (saved && saved.lat) showPlace(saved, saved.src || "saved");
+  else {
+    document.getElementById("now").textContent = "Type a city or ZIP. Location permission was not available.";
+  }
+});
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});</script>
+</body>
+</html>

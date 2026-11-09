@@ -1,0 +1,162 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="leaflet.css"><script src="leaflet.js"></script>
+<style>
+:root{--bg:#0A1226;--card:#13203F;--card2:#1B2B52;--y:#FFCC00;--t:#E8EEF8;--m:#93A3C4;--r:#FF4D4D;--o:#FF9F1C}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--t);font:15px system-ui,Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{padding:10px 14px 6px;background:linear-gradient(#0E1A33,#0A1226);display:flex;align-items:center;gap:10px}
+header .ttl{flex:1;min-width:0}header b{color:var(--y);font-size:18px;letter-spacing:.5px}#place{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#checked{font-size:11px;color:var(--m)}
+button{background:var(--card2);color:var(--t);border:1px solid #2C3F6E;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+button.y{background:var(--y);color:#0A1226;border:0;font-weight:700}
+nav{display:flex;background:#0E1A33;border-bottom:1px solid #22325C;overflow-x:auto}
+nav a{flex:1;text-align:center;padding:10px 6px;color:var(--m);text-decoration:none;font-size:13px;white-space:nowrap;border-bottom:3px solid transparent;cursor:pointer}
+nav a.on{color:var(--y);border-color:var(--y)}.badge{background:var(--r);color:#fff;border-radius:9px;padding:0 6px;font-size:11px;margin-left:3px}
+main{flex:1;overflow:auto;position:relative}section{display:none;padding:12px}section.on{display:block}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px}
+.big{font-size:64px;font-weight:300;line-height:1}.row{display:flex;gap:10px;align-items:center}.mut{color:var(--m);font-size:13px}
+.hr{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}.hr div{background:var(--card2);border-radius:10px;padding:8px;min-width:64px;text-align:center;font-size:13px}
+.day{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #22325C}.day:last-child{border:0}
+.day img,.ico{width:44px;height:44px;border-radius:8px}
+.al{border-left:5px solid var(--o);cursor:pointer}.al.sev{border-color:var(--r)}.al.min{border-color:#4DA3FF}
+.al pre{white-space:pre-wrap;font:13px/1.4 system-ui,sans-serif;color:#D5DEEE;display:none}.al.open pre{display:block}
+.banner{background:#5A1010;border:1px solid var(--r);border-radius:12px;padding:10px;margin-bottom:10px;cursor:pointer}
+#radar{display:none;position:absolute;inset:0;padding:0}#radar.on{display:block}#map{position:absolute;inset:0;background:#111}
+#rctl{position:absolute;left:8px;right:8px;bottom:8px;z-index:1000;background:rgba(10,18,38,.92);border-radius:12px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#rctl input[type=range]{flex:1;accent-color:var(--y)}#rtime{font-weight:700;color:var(--y);min-width:105px}
+.leg{position:absolute;top:8px;right:8px;z-index:1000;background:rgba(10,18,38,.85);border-radius:8px;padding:6px 8px;font-size:11px}
+label.sw{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #22325C;gap:10px}
+select,input[type=text]{background:var(--card2);color:var(--t);border:1px solid #2C3F6E;border-radius:8px;padding:8px;font:inherit;color-scheme:dark}
+select option{background:var(--card2);color:var(--t)}input[type=checkbox]{width:22px;height:22px;accent-color:var(--y)}
+.st{padding:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #22325C}.ok{color:#5BE37D}.no{color:var(--r)}
+#err{display:none;background:#5A1010;padding:8px 12px;font-size:13px}
+.me{width:16px;height:16px;border-radius:50%;background:#2E8BFF;border:3px solid #fff;box-shadow:0 0 0 6px rgba(46,139,255,.3)}
+</style></head><body>
+<header><svg width="38" height="38" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#13203F"/><g fill="#E2EAF6"><circle cx="32" cy="46" r="16.8"/><circle cx="52" cy="35" r="23"/><circle cx="73" cy="48" r="15.7"/><rect x="14" y="46" width="75" height="18" rx="8"/></g><polygon points="54,54 37,77 49,77 42,98 65,69 53,69 60,54" fill="#FFCC00"/></svg>
+<div class="ttl"><b>Weather</b><div id="place">Finding you…</div><div id="checked"></div></div><button id="rf" onclick="refresh(true)">⟳</button></header>
+<nav><a data-t="now" class="on">Now</a><a data-t="hourly">Hourly</a><a data-t="week">7-Day</a><a data-t="alerts">Alerts<span id="ab"></span></a><a data-t="radar">Radar</a><a data-t="settings">Settings</a></nav>
+<div id="err"></div>
+<main>
+<section id="now" class="on"><div id="nowc" class="card">Loading…</div><div id="todays"></div></section>
+<section id="hourly"><div id="hrl" class="card"></div></section>
+<section id="week"><div id="wk" class="card"></div></section>
+<section id="alerts"><div id="all"></div></section>
+<section id="radar"><div id="map"></div><div class="leg">Radar: <span style="color:#8cf">light</span> → <span style="color:#ff0">mod</span> → <span style="color:#f33">heavy</span><br><span style="color:#f33">■</span> warning <span style="color:#f90">■</span> watch</div>
+<div id="rctl"><button id="play" class="y">▶</button><span id="rtime">--</span><input id="rslide" type="range" min="0" max="0" value="0"><span class="mut">Opacity</span><input id="op" type="range" min="20" max="100" value="70" style="max-width:90px"><button onclick="centerMe()">◎</button></div></section>
+<section id="settings"><div id="setc"></div>
+<div class="card mut">Rig Hub v1.8.0 Weather (StormTrack) · Data: National Weather Service (U.S. only) · Radar: RainViewer · Map © Esri, OpenStreetMap.<br>Not a replacement for official warnings, NOAA Weather Radio, or common sense.</div></section>
+</main>
+<script>
+const VER='1.8.0',A=window.AndroidBridge,DESK=!A,TZ='America/Chicago';
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let seq=0,cb={};window.__got=(id,ok,b)=>{const c=cb[id];delete cb[id];if(!c)return;if(ok){try{c.res(JSON.parse(b))}catch(e){c.res(b)}}else c.rej(new Error(b))};
+const call=(fn,...a)=>new Promise((res,rej)=>{const id=++seq;cb[id]={res,rej};A[fn](id,...a)});
+const get=u=>A?call('get',u):fetch(u,{headers:{Accept:'application/geo+json'}}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});
+const LS={g:(k,d)=>{try{return JSON.parse(localStorage.getItem('st_'+k))??d}catch(e){return d}},s:(k,v)=>localStorage.setItem('st_'+k,JSON.stringify(v))};
+let loc=LS.g('loc',null),pt=null,alerts=[],cur='now';
+function tm(d,o){return new Date(d).toLocaleString('en-US',Object.assign({hour:'numeric',minute:'2-digit'},o||{}))}
+function show(t){cur=t;document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.t==t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==t));
+  if(t=='radar')initRadar();if(t=='settings')renderSettings();location.hash=t}
+document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>show(a.dataset.t));
+function err(m){$('err').style.display=m?'block':'none';$('err').textContent=m||''}
+async function locate(){
+  if(A){const p=JSON.parse(A.perms());if(!p.loc){show('settings');throw new Error('Location permission needed — tap "Allow location" in Settings.')}
+    const r=await call('locate');return {lat:r.lat,lon:r.lon,src:'GPS'}}
+  const mode=LS.g('mode','auto');if(mode=='manual'&&loc)return loc;
+  const tf=(u,ms)=>{const c=new AbortController();setTimeout(()=>c.abort(),ms||6000);return fetch(u,{signal:c.signal}).then(r=>r.json())};
+  try{const r=await tf('https://get.geojs.io/v1/ip/geo.json');if(r.latitude)return {lat:+r.latitude,lon:+r.longitude,src:'internet location'}}catch(e){}
+  try{const r=await tf('http://ip-api.com/json/?fields=status,lat,lon');if(r.status=='success')return {lat:r.lat,lon:r.lon,src:'internet location'}}catch(e){}
+  try{const r=await tf('https://ipapi.co/json/');if(r.latitude)return {lat:r.latitude,lon:r.longitude,src:'internet location'}}catch(e){}
+  if(loc)return loc;show('settings');throw new Error('Could not find your location automatically. Type a city or ZIP in Settings.')}
+async function refresh(fresh){
+  $('rf').textContent='…';err('');
+  try{if(fresh||!loc||A){try{loc=await locate();LS.s('loc',loc)}catch(e){if(!loc)throw e;err(e.message)}}
+    const la=(+loc.lat).toFixed(4),lo=(+loc.lon).toFixed(4);
+    pt=await get(`https://api.weather.gov/points/${la},${lo}`);const P=pt.properties,rl=P.relativeLocation.properties;
+    const dist=Math.round(rl.distance.value/1609);$('place').textContent=(dist>1?dist+' mi from ':'')+rl.city+', '+rl.state;
+    const [fc,hr,al]=await Promise.all([get(P.forecast),get(P.forecastHourly),get(`https://api.weather.gov/alerts/active?point=${la},${lo}`)]);
+    alerts=al.features.map(f=>f.properties);renderNow(fc.properties.periods,hr.properties.periods);renderHourly(hr.properties.periods);renderWeek(fc.properties.periods);renderAlerts();
+    LS.s('last',Date.now());notifyDesk();if(map)loadAlertShapes(al.features)}
+  catch(e){err('Could not update: '+e.message+(String(e.message).includes('404')?' (NWS only covers the U.S.)':''))}
+  stamp();$('rf').textContent='⟳'}
+function stamp(){const t=LS.g('last',0);let s=t?'Last checked '+tm(t,{timeZoneName:'short'}):'';
+  if(A){const p=JSON.parse(A.prefs());if(p.lastCheck)s+=' · background '+tm(p.lastCheck)}$('checked').textContent=s}
+const sevCls=a=>/Warning|Emergency/.test(a.event)||a.severity=='Extreme'?'sev':/Watch/.test(a.event)?'':'min';
+function renderNow(fp,hp){const h=hp[0],n=fp[0];
+  const ban=alerts.length?`<div class="banner" onclick="show('alerts')">⚠ <b>${esc(alerts[0].event)}</b>${alerts.length>1?' + '+(alerts.length-1)+' more':''}<div class="mut" style="color:#fcc">Tap for details</div></div>`:'';
+  $('nowc').outerHTML=`<div id="nowc">${ban}<div class="card"><div class="row"><img class="ico" style="width:72px;height:72px" src="${esc(h.icon)}"><div><div class="big">${h.temperature}°</div><div>${esc(h.shortForecast)}</div></div></div>
+  <div class="row mut" style="margin-top:10px;flex-wrap:wrap">💨 ${esc(h.windDirection)} ${esc(h.windSpeed)} · 💧 ${h.relativeHumidity?.value??'--'}% humidity · ☔ ${h.probabilityOfPrecipitation?.value??0}% rain</div>
+  <div class="mut" style="margin-top:6px">${alerts.length?'':'✅ No active alerts here'}</div></div></div>`;
+  $('todays').innerHTML=fp.slice(0,2).map(p=>`<div class="card"><b style="color:var(--y)">${esc(p.name)}</b> · ${p.temperature}°<div style="margin-top:6px">${esc(p.detailedForecast)}</div></div>`).join('')}
+function renderHourly(hp){$('hrl').innerHTML='<div class="hr">'+hp.slice(0,24).map(h=>`<div><div class="mut">${tm(h.startTime,{minute:undefined})}</div><img class="ico" src="${esc(h.icon)}"><div><b>${h.temperature}°</b></div><div class="mut">☔${h.probabilityOfPrecipitation?.value??0}%</div><div class="mut">${esc(h.windSpeed.replace(' mph',''))}mph</div></div>`).join('')+'</div>'+
+  hp.slice(0,24).map(h=>`<div class="day"><span style="width:60px">${tm(h.startTime,{minute:undefined})}</span><b style="width:44px">${h.temperature}°</b><span style="flex:1">${esc(h.shortForecast)}</span><span class="mut">${esc(h.windDirection)} ${esc(h.windSpeed)}</span></div>`).join('')}
+function renderWeek(fp){$('wk').innerHTML=fp.map(p=>`<div class="day"><img src="${esc(p.icon)}"><div style="flex:1"><b>${esc(p.name)}</b> <span style="color:${p.isDaytime?'var(--y)':'#8cf'}">${p.temperature}°</span><div class="mut">${esc(p.detailedForecast)}</div></div></div>`).join('')}
+function renderAlerts(){$('ab').innerHTML=alerts.length?`<span class="badge">${alerts.length}</span>`:'';
+  $('all').innerHTML=alerts.length?alerts.map(a=>`<div class="card al ${sevCls(a)}" onclick="this.classList.toggle('open')"><b>${esc(a.event)}</b><div class="mut">${esc(a.severity)} · until ${a.ends||a.expires?tm(a.ends||a.expires,{weekday:'short',timeZoneName:'short'}):'further notice'}</div><div style="margin:6px 0">${esc(a.headline)}</div><div class="mut">Tap for full text ▾</div><pre>${esc(a.description)}\n\n${a.instruction?'WHAT TO DO:\n'+esc(a.instruction)+'\n\n':''}Areas: ${esc(a.areaDesc)}\nIssued by ${esc(a.senderName)}</pre></div>`).join(''):'<div class="card">✅ No active watches, warnings, or advisories for your location.</div>'}
+// ---- desktop notifications
+function wanted(a){const r={Extreme:4,Severe:3,Moderate:2,Minor:1}[a.severity]||0,min=LS.g('minSev',3);
+  if(/Watch/.test(a.event))return LS.g('watches',true)&&r>=2;if(/Advisory|Statement/.test(a.event))return LS.g('adv',false);return r>=min||/Warning|Emergency/.test(a.event)&&r>=min}
+function notifyDesk(){if(A)return;const seen=LS.g('seen',[]);const fresh=alerts.filter(a=>!seen.includes(a.id)&&wanted(a));
+  fresh.forEach(a=>{try{window.webkit.messageHandlers.notify.postMessage(JSON.stringify({title:'⚠ '+a.event,body:a.headline||''}))}catch(e){}});
+  LS.s('seen',alerts.map(a=>a.id))}
+// ---- radar
+let map,me,frames=[],layers={},fi=0,timer=null,shapes=null,rvHost='';
+function initRadar(){if(map){setTimeout(()=>map.invalidateSize(),50);return}
+  const c=loc?[loc.lat,loc.lon]:[36.05,-95.79];map=L.map('map',{zoomControl:true,attributionControl:true}).setView(c,7);
+  const E='https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_';L.tileLayer(E+'Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri, HERE, Garmin, © OpenStreetMap · Radar © RainViewer'}).addTo(map);
+  map.createPane('labels').style.zIndex=460;map.getPane('labels').style.pointerEvents='none';L.tileLayer(E+'Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,pane:'labels'}).addTo(map);
+  me=L.marker(c,{icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map).bindPopup('You are here');
+  map.createPane('alertPane').style.zIndex=450;loadFrames();setInterval(loadFrames,5*60000);
+  get(`https://api.weather.gov/alerts/active?point=${(+c[0]).toFixed(4)},${(+c[1]).toFixed(4)}`).then(a=>loadAlertShapes(a.features)).catch(()=>{});
+  setTimeout(()=>map.invalidateSize(),100)}
+function centerMe(){if(loc){me.setLatLng([loc.lat,loc.lon]);map.setView([loc.lat,loc.lon],8)}}
+async function loadFrames(){try{const d=await get('https://api.rainviewer.com/public/weather-maps.json');rvHost=d.host;const nf=[...d.radar.past,...(d.radar.nowcast||[])];
+  const keep={};nf.forEach(f=>{keep[f.path]=1});Object.keys(layers).forEach(k=>{if(!keep[k]){map.removeLayer(layers[k]);delete layers[k]}});
+  frames=nf;nowIdx=d.radar.past.length-1;$('rslide').max=frames.length-1;if(!timer)setFrame(nowIdx)}catch(e){$('rtime').textContent='Radar unavailable'}}
+let nowIdx=0;
+function layer(f){if(!layers[f.path]){layers[f.path]=L.tileLayer(rvHost+f.path+'/256/{z}/{x}/{y}/2/1_1.png',{opacity:0,zIndex:300,maxNativeZoom:7,maxZoom:19,tileSize:256});layers[f.path].addTo(map)}return layers[f.path]}
+function setFrame(i){if(!frames.length)return;fi=(i+frames.length)%frames.length;const op=$('op').value/100;
+  frames.forEach((f,j)=>{if(layers[f.path])layers[f.path].setOpacity(j==fi?op:0)});layer(frames[fi]).setOpacity(op);layer(frames[(fi+1)%frames.length]);
+  const f=frames[fi];$('rtime').textContent=new Date(f.time*1000).toLocaleTimeString('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'})+' CT'+(fi>nowIdx?' (forecast)':'');$('rslide').value=fi}
+$('rslide').oninput=e=>setFrame(+e.target.value);$('op').oninput=()=>setFrame(fi);
+$('play').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('play').textContent='▶';setFrame(nowIdx)}else{$('play').textContent='❚❚';timer=setInterval(()=>setFrame(fi+1),700)}};
+function loadAlertShapes(fs){if(!map)return;if(shapes)map.removeLayer(shapes);
+  shapes=L.geoJSON({type:'FeatureCollection',features:fs.filter(f=>f.geometry)},{pane:'alertPane',style:f=>{const e=f.properties.event;const c=/Tornado/.test(e)?'#FF2D2D':/Warning/.test(e)?'#FF5A36':/Watch/.test(e)?'#FF9F1C':'#4DA3FF';return{color:c,weight:2,fillOpacity:.15}},
+    onEachFeature:(f,l)=>l.bindPopup('<b>'+esc(f.properties.event)+'</b><br>'+esc(f.properties.headline))}).addTo(map);
+  if(loc&&me)me.setLatLng([loc.lat,loc.lon])}
+// ---- settings
+function sw(label,sub,checked,fn){return `<label class="sw"><span>${label}<div class="mut">${sub}</div></span><input type="checkbox" ${checked?'checked':''} onchange="${fn}(this.checked)"></label>`}
+function sevSel(v){return `<label class="sw"><span>Alert me for<div class="mut">Minimum severity for warnings</div></span><select onchange="setSev(+this.value)">${[[4,'Extreme only'],[3,'Severe & up'],[2,'Moderate & up'],[1,'Everything']].map(o=>`<option value="${o[0]}" ${o[0]==v?'selected':''}>${o[1]}</option>`).join('')}</select></label>`}
+function setSev(v){LS.s('minSev',v);if(A)A.setInt('minSev',v)}
+function setW(v){LS.s('watches',v);if(A)A.setBool('watches',v)}function setAdv(v){LS.s('adv',v);if(A)A.setBool('adv',v)}
+function renderSettings(){let h='';
+  if(A){const p=JSON.parse(A.perms()),q=JSON.parse(A.prefs());const st=(ok,t,sub,btn)=>`<div class="st"><span><span class="${ok?'ok':'no'}">${ok?'✔':'✖'}</span> ${t}<div class="mut">${sub}</div></span>${ok?'':btn}</div>`;
+    h+=`<div class="card"><b style="color:var(--y)">Setup (do these in order)</b>
+    ${st(p.loc,'1. Location','So Rig Hub knows where you are.',`<button class="y" onclick="A.ask('loc')">Allow</button>`)}
+    ${st(p.bg,'2. Location "All the time"','Needed to check for storms while the app is closed. On the next screen choose <b>Allow all the time</b>.',p.loc?`<button class="y" onclick="A.ask('bg')">Allow</button>`:'')}
+    ${st(p.notif,'3. Notifications','So severe weather alerts can sound and vibrate.',`<button class="y" onclick="A.ask('notif')">Allow</button>`)}
+    ${st(p.battery,'4. Battery: Unrestricted','So Android doesn\'t delay checks. Find Rig Hub → Don\'t optimize / Unrestricted.',`<button onclick="A.ask('battery')">Open</button>`)}</div>
+    <div class="card">${sw('Watch weather in background','Shows a quiet "Watching weather near you" notification and checks every ~15 min or when you move ~10 mi.',q.watch,'setWatch')}
+    ${sw('Backup timer','Also checks about every 15 min with Android\'s alarm timer (works even if the watcher is off).',q.alarm,'setAlarm')}
+    ${sevSel(q.minSev)}${sw('Include watches','Tornado Watch, Severe Thunderstorm Watch, etc.',q.watches,'setW')}${sw('Include advisories','Wind Advisory, Dense Fog, etc.',q.adv,'setAdv')}
+    <div class="row" style="margin-top:10px;flex-wrap:wrap"><button onclick="A.test()">🔔 Test alert sound</button><button onclick="bgCheck()">Check now</button></div>
+    <div class="mut" style="margin-top:8px" id="bgs">${q.lastCheck?'Last background check: '+tm(q.lastCheck,{weekday:'short',timeZoneName:'short'}):'No background check yet.'}${q.lastErr?' · Problem: '+esc(q.lastErr):''}</div></div>`}
+  else{const m=LS.g('mode','auto');h+=`<div class="card"><b style="color:var(--y)">Location</b>
+    <label class="sw"><span>Find me automatically<div class="mut">Uses your internet connection's approximate location.</div></span><input type="checkbox" ${m=='auto'?'checked':''} onchange="LS.s('mode',this.checked?'auto':'manual');refresh(true)"></label>
+    <div style="margin-top:10px" class="row"><input type="text" id="q" placeholder="City, State or ZIP" style="flex:1"><button class="y" onclick="search()">Set</button></div><div id="qr" class="mut" style="margin-top:6px">${loc?'Now using: '+esc($('place').textContent):''}</div></div>
+    <div class="card"><b style="color:var(--y)">Desktop alerts</b><div class="mut">Pops up a notification for new alerts while StormTrack is open (checks every 10 min). Use your phone for alerts on the road.</div>
+    ${sevSel(LS.g('minSev',3))}${sw('Include watches','',LS.g('watches',true),'setW')}${sw('Include advisories','',LS.g('adv',false),'setAdv')}
+    <button style="margin-top:10px" onclick="window.webkit.messageHandlers.notify.postMessage(JSON.stringify({title:'⚠ Test alert',body:'This is how a StormTrack alert looks.'}))">🔔 Test notification</button></div>`}
+  $('setc').innerHTML=h}
+function setWatch(v){A.setBool('watch',v)}function setAlarm(v){A.setBool('alarm',v)}
+async function bgCheck(){$('bgs').textContent='Checking…';await call('checkNow');renderSettings();stamp()}
+async function search(){const q=$('q').value.trim();if(!q)return;$('qr').textContent='Searching…';
+  try{let r;if(/^\d{5}$/.test(q)){const z=await fetch('https://api.zippopotam.us/us/'+q).then(r=>r.json());const p=z.places[0];r={lat:+p.latitude,lon:+p.longitude}}
+    else{const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&countryCode=US&name='+encodeURIComponent(q.split(',')[0])).then(r=>r.json());if(!g.results)throw 0;r={lat:g.results[0].latitude,lon:g.results[0].longitude}}
+    loc=Object.assign(r,{src:'manual'});LS.s('loc',loc);LS.s('mode','manual');await refresh(false);if(me){me.setLatLng([loc.lat,loc.lon]);map.setView([loc.lat,loc.lon],7)}renderSettings()}
+  catch(e){$('qr').textContent='Couldn\'t find that place. Try a ZIP code.'}}
+window.__perm=()=>{renderSettings();refresh(true)};window.__resume=()=>{if(cur=='settings')renderSettings();if(Date.now()-LS.g('last',0)>5*60000)refresh(true);else stamp()};
+setInterval(()=>refresh(true),10*60000);
+const h0=location.hash.slice(1);if(h0)show(h0);
+if(A&&!JSON.parse(A.perms()).loc){show('settings');$('place').textContent='Tap Allow in Settings to start'}else refresh(true);
+</script></body></html>
