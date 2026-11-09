@@ -1,2 +1,11 @@
 *.apk
 *.flatpak
+
+storefinder/.toolcache/
+storefinder/**/__pycache__/
+*.pyc
+storefinder/dist/
+storefinder/data/raw/
+storefinder/flatpak/build/
+storefinder/flatpak/repo/
+storefinder/flatpak/.flatpak-builder/
